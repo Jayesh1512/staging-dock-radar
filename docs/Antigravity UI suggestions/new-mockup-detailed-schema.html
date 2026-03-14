@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BD Pulse - Comprehensive Master-Detail Flow</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .tab-active { border-bottom: 2px solid #0f172a; color: #0f172a; font-weight: 600; }
+        .tab-inactive { color: #64748b; font-weight: 500; }
+        .tab-inactive:hover { color: #334155; }
+        
+        .master-card { transition: all 0.2s; border: 1px solid transparent; }
+        .master-card:hover { background-color: #f1f5f9; }
+        .master-card.active { background-color: #f8fafc; border-left: 3px solid #3b82f6; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-800">
+
+    <!-- Header / Navigation -->
+    <header class="bg-white border-b border-slate-200 px-6 py-3 shrink-0 flex items-center justify-between z-10">
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2 font-bold text-lg text-slate-900 tracking-tight">
+                <i data-lucide="activity" class="text-blue-600 w-5 h-5"></i> BD Pulse <span class="text-xs font-mono font-normal ml-2 bg-slate-100 text-slate-500 px-2 py-0.5 rounded border border-slate-200">v2.0 Beta</span>
+            </div>
+            
+            <nav class="flex gap-1 -mb-[13px] ml-4">
+                <button class="nav-tab tab-inactive border-b-2 border-transparent px-4 pb-3 text-sm flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs">1</span>
+                    Search Parameters
+                </button>
+                <button class="nav-tab tab-inactive border-b-2 border-transparent px-4 pb-3 text-sm flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs">2</span>
+                    Signal Processing
+                </button>
+                <button class="nav-tab tab-active px-4 pb-3 text-sm flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs">3</span>
+                    Opportunity Intelligence
+                </button>
+            </nav>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 text-xs text-slate-500 font-mono">
+                Tokens: <span class="font-bold text-slate-700">124k</span> | Enrichment Credits: <span class="font-bold text-slate-700">850</span>
+            </div>
+            <button class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-md shadow-sm transition-colors flex items-center gap-2">
+                <i data-lucide="settings" class="w-4 h-4"></i> System Config
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area: STEP 3 (Master-Detail) Default View -->
+    <main class="flex-1 flex overflow-hidden relative">
+
+        <!-- LEFT PANE: Master List (30%) -->
+        <div class="w-[420px] shrink-0 border-r border-slate-200 flex flex-col bg-slate-50">
+            <!-- Filters Header -->
+            <div class="p-4 border-b border-slate-200 bg-white shrink-0 shadow-sm z-10">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="font-bold text-slate-900 flex items-center gap-2">
+                        Collected Signals 
+                        <span class="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">4 Open</span>
+                    </h2>
+                    <div class="flex gap-2">
+                        <button class="text-slate-400 hover:text-slate-600 bg-slate-100 p-1.5 rounded"><i data-lucide="filter" class="w-4 h-4"></i></button>
+                        <button class="text-slate-400 hover:text-slate-600 bg-slate-100 p-1.5 rounded"><i data-lucide="arrow-up-down" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+                    <input type="text" placeholder="Search companies, use cases, or regions..." class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50">
+                </div>
+                <div class="flex items-center gap-2 mt-3 overflow-x-auto pb-1">
+                    <span class="shrink-0 text-[10px] font-medium px-2 py-1 bg-slate-800 text-white rounded-full">All Intends</span>
+                    <span class="shrink-0 text-[10px] font-medium px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-slate-50 cursor-pointer">Live Deployment</span>
+                    <span class="shrink-0 text-[10px] font-medium px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-slate-50 cursor-pointer">Contract Award</span>
+                </div>
+            </div>
+
+            <!-- Scrollable List -->
+            <div class="flex-1 overflow-y-auto p-3 space-y-2">
+                
+                <!-- Card 1 (Active) -->
+                <div class="master-card active bg-white rounded-lg p-3.5 cursor-pointer">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="flex items-center gap-1.5 mb-1">
+                                <h3 class="font-bold text-sm text-slate-900">Shell Energy</h3>
+                                <i data-lucide="badge-check" class="w-3.5 h-3.5 text-blue-500"></i>
+                            </div>
+                            <p class="text-[11px] text-slate-500 line-clamp-2 max-w-[240px] leading-relaxed">Shell expands DJI-based drone program for offshore North Sea inspection across 5 remote platforms.</p>
+                        </div>
+                        <div class="flex flex-col items-end gap-1.5 shrink-0">
+                            <span class="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 shadow-sm">87</span>
+                            <span class="text-[9px] font-bold uppercase tracking-wide text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">HIGH URGENCY</span>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-slate-100 mt-2 pt-2 flex flex-wrap gap-1.5">
+                        <span class="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200">Expansion</span>
+                        <span class="text-[10px] font-medium px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1"><i data-lucide="factory" class="w-3 h-3"></i> O&G</span>
+                        <span class="text-[10px] font-medium px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1"><i data-lucide="users" class="w-3 h-3"></i> 3 Contacts</span>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="master-card rounded-lg p-3.5 cursor-pointer bg-white border border-slate-200">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="flex items-center gap-1.5 mb-1">
+                                <h3 class="font-bold text-sm text-slate-900">Rio Tinto</h3>
+                            </div>
+                            <p class="text-[11px] text-slate-500 line-clamp-2 max-w-[240px] leading-relaxed">Rio Tinto announces $15M tender for autonomous fleet management in Pilbara mining operations.</p>
+                        </div>
+                        <div class="flex flex-col items-end gap-1.5 shrink-0">
+                            <span class="text-sm font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">82</span>
+                            <span class="text-[9px] font-bold uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">MED URGENCY</span>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-slate-100 mt-2 pt-2 flex flex-wrap gap-1.5">
+                        <span class="text-[10px] font-medium px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200">Tender</span>
+                        <span class="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1"><i data-lucide="pick" class="w-3 h-3"></i> Mining</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT PANE: Detail View (Opportunity Pack + Scan Results + Contacts) -->
+        <div class="flex-1 overflow-y-auto bg-[#F8FAFC]">
+            <div class="max-w-4xl mx-auto p-8 space-y-8">
+                
+                <!-- Section 0: Header & Company Profile -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -z-0 opacity-50"></div>
+                    
+                    <div class="flex items-start justify-between relative z-10">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Shell Energy</h1>
+                                <a href="https://shell.com" target="_blank" class="text-slate-400 hover:text-blue-600 bg-slate-50 p-1.5 rounded-md border border-slate-100"><i data-lucide="external-link" class="w-4 h-4"></i></a>
+                            </div>
+                            
+                            <div class="flex flex-wrap items-center gap-3 mt-3 text-sm">
+                                <span class="flex items-center gap-1.5 text-slate-600 font-medium">
+                                    <i data-lucide="building-2" class="w-4 h-4 text-slate-400"></i> Oil & Gas (Enterprise Grade)
+                                </span>
+                                <span class="text-slate-300">|</span>
+                                <span class="flex items-center gap-1.5 text-slate-600 font-medium">
+                                    <i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i> Aberdeen, UK (Europe)
+                                </span>
+                                <span class="text-slate-300">|</span>
+                                <span class="flex items-center gap-1.5 text-slate-600 font-medium">
+                                    <i data-lucide="target" class="w-4 h-4 text-slate-400"></i> Buyer: End User
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Scoring & Status Actions -->
+                        <div class="flex flex-col items-end gap-3">
+                            <div class="flex items-center gap-4">
+                                <!-- Breakdown of Subscores -->
+                                <div class="hidden xl:flex flex-col items-end gap-1 text-[10px] font-mono text-slate-500">
+                                    <span>Lead Clarity: <b class="text-slate-800">90</b></span>
+                                    <span>Buying Intent: <b class="text-slate-800">85</b></span>
+                                    <span>Source Quality: <b class="text-slate-800">88</b></span>
+                                    <span>BD Impact: <b class="text-slate-800">85</b></span>
+                                </div>
+                                <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 flex flex-col items-center justify-center shadow-sm">
+                                    <span class="text-[10px] font-bold uppercase text-blue-600 tracking-wider mb-1">BD Score</span>
+                                    <span class="text-3xl font-black text-blue-700 leading-none">87</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="px-3 py-1.5 text-xs font-semibold border-2 border-slate-200 text-slate-500 rounded-md hover:border-red-400 hover:text-red-500 transition-colors flex items-center gap-1.5">
+                                    <i data-lucide="archive-x" class="w-3.5 h-3.5"></i> Reject
+                                </button>
+                                <button class="px-3 py-1.5 text-xs font-semibold bg-emerald-500 text-white rounded-md shadow-sm hover:bg-emerald-600 hover:shadow transition-all flex items-center gap-1.5">
+                                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Mark Working
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Source & Signal Metrics Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Source Article -->
+                    <div class="col-span-1 md:col-span-3 bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-500 shrink-0">
+                                <i data-lucide="newspaper" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Source Trigger</p>
+                                <a href="#" class="text-sm font-semibold text-blue-600 hover:underline line-clamp-1">Shell expands DJI-based drone program for offshore North Sea inspection</a>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 text-xs font-mono text-slate-500 shrink-0">
+                            <span class="flex items-center gap-1.5"><i data-lucide="globe" class="w-3.5 h-3.5"></i> reuters.com</span>
+                            <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> 12 Oct 2023</span>
+                        </div>
+                    </div>
+
+                    <!-- Signal Snapshot (DeploymentSignal & ScanResult) -->
+                    <div class="col-span-1 md:col-span-3 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                        <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2 uppercase tracking-wide">
+                            <i data-lucide="radar" class="w-4 h-4 text-blue-500"></i> Signal Snapshot
+                            <span class="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded border border-green-200 ml-2 font-mono">CONFIDENCE: HIGH</span>
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Event Type</span>
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">EXPANSION</span>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Scale / Units</span>
+                                <div class="flex items-baseline gap-1.5">
+                                    <span class="text-sm font-semibold text-slate-900 border-b border-dashed border-slate-300">Enterprise Fleet</span>
+                                    <span class="text-xs font-mono text-slate-500">(24 units)</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Use Case</span>
+                                <span class="text-sm font-semibold text-slate-900 border-b border-dashed border-slate-300">Inspection / Survey</span>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Urgency & Likelihood</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="flex items-center gap-1 text-xs font-bold text-amber-600 border border-amber-200 bg-amber-50 px-1.5 py-0.5 rounded"><i data-lucide="flame" class="w-3 h-3"></i> HIGH</span>
+                                    <span class="text-xs font-medium text-slate-600">Expansion: HIGH</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Additional Scan Info -->
+                            <div class="col-span-2 pt-3 border-t border-slate-100">
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Partner / SI Mentioned</span>
+                                <span class="text-sm font-medium text-slate-700 flex items-center gap-1.5"><i data-lucide="handshake" class="w-3.5 h-3.5 text-slate-400"></i> Baker Hughes (Drone Service Provider)</span>
+                            </div>
+                            <div class="col-span-2 pt-3 border-t border-slate-100">
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Deal Value Matrix</span>
+                                <span class="text-sm font-mono text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 w-max flex items-center gap-1.5">
+                                    <i data-lucide="circle-dollar-sign" class="w-4 h-4"></i> Est. $500k ARR
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opportunity Assessment (LLM Reasoning) -->
+                <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-[1px] shadow-lg">
+                    <div class="bg-white rounded-[11px] p-6 h-full">
+                        <div class="flex items-center justify-between mb-5">
+                            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 uppercase tracking-wide">
+                                <div class="bg-amber-100 p-1 rounded-md"><i data-lucide="brain-circuit" class="w-4 h-4 text-amber-600"></i></div>
+                                Opportunity Assessment
+                            </h3>
+                            <button class="text-[10px] font-mono text-blue-600 hover:underline flex items-center gap-1">
+                                <i data-lucide="copy" class="w-3 h-3"></i> Copy prompt data
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-500 uppercase mb-1.5">Why This Is Hot</h4>
+                                <div class="bg-amber-50/50 border border-amber-100 rounded-lg p-3 text-sm text-slate-800 leading-relaxed font-medium">
+                                    Shell is moving from a 3-unit pilot phase to deploying 24 DJI Matrice 300 RTKs with docks across 5 offshore platforms. At this scale, manual remote piloting breaks down. This implies a critical, immediate need for centralized, multi-site fleet orchestration software capable of BVLOS operations.
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-1.5">Strategic Entry Point</h4>
+                                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-700 leading-relaxed h-full">
+                                        Position our software not as a data gathering tool, but as the only platform certified to manage unified DJI Dock operations over private LTE/5G networks on offshore rigs.
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div>
+                                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-1.5">Partnership Angle</h4>
+                                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-700 leading-relaxed flex items-start gap-2">
+                                            <i data-lucide="network" class="w-4 h-4 text-blue-500 shrink-0 mt-0.5"></i>
+                                            Reach out via Baker Hughes (the apparent SI provider) simultaneously to offer a rev-share integration.
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-1.5">Risk Factors</h4>
+                                        <div class="bg-red-50 border border-red-100 rounded-lg p-3 text-sm text-red-800 leading-relaxed flex items-start gap-2">
+                                            <i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 shrink-0 mt-0.5"></i>
+                                            Strict offshore cyber-security compliance (ISO/IEC 27001) requirement might delay sales cycle.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- CRM Notes -->
+                            <div class="mt-4 pt-4 border-t border-slate-100">
+                                <h4 class="text-xs font-bold text-slate-500 uppercase mb-1.5 flex items-center justify-between">
+                                    CRM Ready Notes
+                                    <span class="text-[9px] font-normal text-slate-400 normal-case">(Auto-synced to Salesforce)</span>
+                                </h4>
+                                <div class="bg-slate-800 rounded-lg p-3 text-sm text-emerald-400 font-mono leading-relaxed whitespace-pre-wrap">Lead Gen Trigger: Fleet Expansion (24 units, Offshore)
+Platform: DJI Enterprise Docks
+Urgency: High
+Pitch: Multi-site BVLOS orchestration & centralized data ingest.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enriched Contacts Master Table -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2 uppercase tracking-wide">
+                            <i data-lucide="users" class="w-4 h-4 text-blue-500"></i> Enriched Contacts 
+                            <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">3 found</span>
+                        </h3>
+                        <div class="flex items-center gap-3 text-xs font-mono text-slate-500">
+                            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-violet-500"></span> Article NLP Drop</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Apollo.io API</span>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-white border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-3 w-[5px]"></th>
+                                    <th class="px-3 py-3 w-[250px]">Contact Info</th>
+                                    <th class="px-3 py-3 w-[200px]">Intelligence / Role</th>
+                                    <th class="px-3 py-3">Outreach Data</th>
+                                    <th class="px-6 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                
+                                <!-- Contact 1: Complete and Highly Rated -->
+                                <tr class="hover:bg-slate-50 transition-colors group">
+                                    <td class="w-[5px] bg-emerald-500"></td> <!-- High Priority indicator -->
+                                    <td class="px-3 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shrink-0">JH</div>
+                                            <div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="font-bold text-slate-900">James Hartley</span>
+                                                    <span class="text-[9px] px-1.5 py-0.5 rounded font-mono border bg-violet-50 text-violet-700 border-violet-200" title="Source">Article</span>
+                                                </div>
+                                                <p class="text-xs text-slate-600 font-medium my-0.5 max-w-[180px] break-words leading-tight">Head of Digital Operations</p>
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <a href="#" class="text-blue-600 hover:text-blue-800" title="LinkedIn"><i data-lucide="linkedin" class="w-3.5 h-3.5"></i></a>
+                                                    <span class="text-[10px] text-slate-400">UK</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 align-top">
+                                        <div class="space-y-1.5">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                <i data-lucide="target" class="w-3 h-3"></i> High Priority Lead
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-100 text-slate-600 border border-slate-200">
+                                                Economic Buyer
+                                            </span>
+                                            <p class="text-[10px] text-slate-500 mt-1 italic border-l-2 border-slate-200 pl-2">Mentioned in article as project sponsor.</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 align-top">
+                                        <div class="space-y-2">
+                                            <div class="flex items-center gap-1.5 text-xs">
+                                                <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400"></i>
+                                                <span class="font-mono text-slate-700">j.hartley@shell.com</span>
+                                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold" title="Hunter.io Verified">Verified</span>
+                                            </div>
+                                            <div class="flex items-center gap-1.5 text-xs">
+                                                <i data-lucide="phone" class="w-3.5 h-3.5 text-slate-400"></i>
+                                                <span class="font-mono text-slate-700">+44 1224 200 000</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 align-top text-right">
+                                        <div class="flex flex-col items-end gap-1.5">
+                                            <div class="flex items-center gap-2">
+                                                <button class="px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 text-slate-700 rounded shadow-sm hover:bg-slate-50 flex items-center gap-1.5 transition-colors">
+                                                    <i data-lucide="hash" class="w-3.5 h-3.5"></i> Slack
+                                                </button>
+                                                <button class="px-3 py-1.5 text-xs font-semibold bg-blue-600 text-white border border-blue-700 rounded shadow-sm hover:bg-blue-700 flex items-center gap-1.5 transition-colors">
+                                                    <i data-lucide="mail-plus" class="w-3.5 h-3.5"></i> Draft Email
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Contact 2: Medium Priority, Shows Outreach History -->
+                                <tr class="bg-amber-50/20 hover:bg-amber-50/50 transition-colors group">
+                                    <td class="w-[5px] bg-amber-400"></td> <!-- Medium Priority indicator -->
+                                    <td class="px-3 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0">SR</div>
+                                            <div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="font-bold text-slate-900">Sarah Rowlands</span>
+                                                    <span class="text-[9px] px-1.5 py-0.5 rounded font-mono border bg-blue-50 text-blue-700 border-blue-200" title="Source">Apollo</span>
+                                                </div>
+                                                <p class="text-xs text-slate-600 font-medium my-0.5 max-w-[180px] break-words leading-tight">Global Director of Robotics</p>
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <a href="#" class="text-blue-600 hover:text-blue-800" title="LinkedIn"><i data-lucide="linkedin" class="w-3.5 h-3.5"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 align-top">
+                                        <div class="space-y-1.5">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-amber-100 text-amber-800 border border-amber-200">
+                                                <i data-lucide="align-end-horizontal" class="w-3 h-3"></i> Medium Priority
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-100 text-slate-600 border border-slate-200">
+                                                Champion
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 align-top">
+                                        <div class="space-y-2">
+                                            <div class="flex items-center gap-1.5 text-xs">
+                                                <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400"></i>
+                                                <span class="font-mono text-slate-700">sarah.r@shell.com</span>
+                                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-200 font-bold" title="Pattern Match">Estimated</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 align-top text-right">
+                                        <div class="flex flex-col items-end gap-1.5">
+                                            <div class="flex items-center gap-2">
+                                                <button class="px-3 py-1.5 text-xs font-semibold bg-white border border-amber-400 text-amber-700 rounded shadow-sm hover:bg-amber-50 flex items-center gap-1.5 transition-colors" title="Already slacked internally for review">
+                                                    <i data-lucide="hash" class="w-3.5 h-3.5"></i> Slack <span class="bg-amber-100 px-1 rounded text-[9px] font-bold">⚠</span>
+                                                </button>
+                                                <button class="px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 text-slate-700 rounded shadow-sm hover:bg-slate-50 flex items-center gap-1.5 transition-colors text-opacity-70">
+                                                    <i data-lucide="mail-plus" class="w-3.5 h-3.5"></i> Draft Email
+                                                </button>
+                                            </div>
+                                            <!-- Tracking field visualization -->
+                                            <p class="text-[9px] font-mono text-amber-600 flex items-center justify-end gap-1">
+                                                <i data-lucide="clock" class="w-3 h-3"></i> Slacked for review 2h ago
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Contact 3: Bad Data / Low Priority -->
+                                <tr class="opacity-70 hover:opacity-100 hover:bg-slate-50 transition-all group">
+                                    <td class="w-[5px] bg-slate-300"></td> <!-- Low Priority indicator -->
+                                    <td class="px-3 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-full border border-dashed border-slate-300 text-slate-400 flex items-center justify-center font-bold text-sm shrink-0">
+                                                <i data-lucide="user" class="w-5 h-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="font-bold text-slate-600">Unknown Analyst</span>
+                                                    <span class="text-[9px] px-1.5 py-0.5 rounded font-mono border bg-slate-100 text-slate-600 border-slate-200" title="Source">Article</span>
+                                                </div>
+                                                <p class="text-[10px] text-slate-500 mt-1 italic leading-tight max-w-[180px]">"Data science team reviewing drone operations..."</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 align-top">
+                                        <div class="space-y-1.5">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-100 text-slate-500 border border-slate-200">
+                                                <i data-lucide="arrow-down" class="w-3 h-3"></i> Low Priority
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 align-top">
+                                        <span class="text-xs text-slate-400 font-mono bg-slate-100 px-2 py-1 rounded border border-slate-200">Email: Not Found</span>
+                                    </td>
+                                    <td class="px-6 py-4 align-top text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button disabled class="opacity-50 cursor-not-allowed px-3 py-1.5 text-xs font-semibold bg-slate-100 border border-slate-200 text-slate-400 rounded flex items-center gap-1.5">
+                                                <i data-lucide="mail-x" class="w-3.5 h-3.5"></i> No Email
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Bottom spacing -->
+                <div class="h-10"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Initialize lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
