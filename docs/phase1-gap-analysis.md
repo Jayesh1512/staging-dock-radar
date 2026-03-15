@@ -216,8 +216,7 @@ Only two actual code changes emerge from this entire analysis. Everything else i
 ```typescript
 // types.ts — add to ConfigItem interface:
 options?: { label: string; value: string }[];
-// Also add 'toggle' type for Review Gate:
-type: 'number' | 'text' | 'select' | 'toggle';
+type: 'number' | 'text' | 'select';
 
 // Also add SlackMessage interface:
 export interface SlackMessage {
@@ -260,20 +259,9 @@ The following decisions were made in a second design review session and supersed
 
 **Design principle confirmed:** All collection parameters are immutable after Step 1 completes. Changing any parameter requires starting a new collection.
 
-**Full Step 1 config bar:** `Max Articles [editable] | Title Similarity: 0.80 [readonly] | Min Score [editable] | Review Gate [toggle]`
+**Full Step 1 config bar:** `Max Articles [editable] | Title Similarity: 0.80 [readonly] | Min Score [editable]`
 
 **Full Step 2 config bar:** `Max Articles [readonly] | Min Score [readonly] | Title Similarity: 0.80 [readonly] | Run: [dropdown — only interactive element]`
-
----
-
-### DECISION 3 — Review Gate toggle in Step 1 config bar
-
-**Decision:** Add a `Review Gate` toggle switch to Step 1 config bar.
-
-- **ON:** After scoring completes, Step 2 shows a "Proceed to Queue (N articles) →" button. User must click it to advance to Step 3. Allows inspection and dismissal of scored articles before they enter the queue.
-- **OFF (default):** After scoring completes, Step 3 tab unlocks + toast "Queue ready — N articles". Step 2 is display-only. User navigates manually.
-
-**ConfigItem type change:** Add `'toggle'` to the `type` union.
 
 ---
 
@@ -395,3 +383,67 @@ Score: [X]/100 | Use Case: [value]
 | Cross-batch bulk dismiss | Each batch's Bulk Dismiss only affects its own selected rows. |
 | Step 1 form state after collection | Stays filled. User reuses parameters for next run. |
 | Step 2 dismissal with Review Gate OFF | Dismissal sets status='dismissed' immediately. Article won't appear in queue regardless of Review Gate. |
+
+---
+
+### DECISION 16 — Review Gate removed from Phase 1
+
+**Decision:** The Review Gate toggle is removed entirely from Phase 1.
+
+**Behavior:** After scoring completes, Step 3 tab unlocks automatically + toast "Queue ready — N articles". No gating mechanism. No "Proceed to Queue" button.
+
+**Rationale:** Added complexity without proportionate value for Phase 1. Users can still inspect Step 2 manually before navigating to Step 3. Re-evaluate for Phase 2 if user research shows need.
+
+---
+
+### DECISION 17 — Multi-Action + Mark as Reviewed model
+
+**Decision:** Replace single-action-exits-queue model with multi-action model.
+
+- Slack Internally: adds 'slack' to `actions_taken[]`, sets `slack_sent_at`. Article STAYS in queue. Button shows ✓ state.
+- Bookmark: adds 'bookmarked' to `actions_taken[]`. Article STAYS in queue. Button shows filled ★.
+- Mark as Reviewed: always visible. Sets `status='reviewed'`, sets `reviewed_at`. Article exits Active Queue to Reviewed tab.
+- Dismiss: sets `status='dismissed'`. Permanent removal. No undo. Overrides all other actions.
+
+**Data model impact:**
+- `ArticleStatus`: `'new' | 'reviewed' | 'dismissed'` (removed 'bookmarked')
+- `ScoredArticle` adds: `actions_taken: ('slack' | 'bookmarked' | 'email')[]`, `reviewed_at: string | null`
+- `ScoredArticle` removes: `bookmarked_at`
+- Phase 2 will add 'email' as a third action in `actions_taken`
+
+---
+
+### DECISION 18 — Reviewed Inbox replaces Sent/Bookmarked collapsible sections
+
+**Decision:** Step 3 has two sub-views via a tab bar within the panel:
+- **Active Queue** (default): `status='new'`, batch-grouped
+- **Reviewed**: `status='reviewed'`, flat list, sorted by `reviewed_at` desc
+
+**Reviewed tab filter bar:** `[All] [Slack icon Slacked] [★ Bookmarked] [Date ▾]`
+- Slack filter uses Slack brand icon (not bell)
+- Bookmarked filter uses star icon
+
+**Phase 1 behavior:**
+- Read-only expand in Reviewed tab: shows summary only, no action strip
+- No bulk actions in Reviewed tab
+- Articles marked reviewed with no prior actions still appear (confirmed Decision B)
+- Dismissed = gone forever, never shown (confirmed Decision C)
+
+**Phase 3:** Top-right nav bar provides on-demand dismissed articles audit trail (soft delete, records remain in DB).
+
+**Rationale:** Gmail-style unified inbox. Single read history. Supports multi-action model. Extensible for Phase 2 email action filter.
+
+---
+
+### DECISION 19 — Phase 2 analytics capability (parked)
+
+**Decision:** Analytics dashboard parked for Phase 2 implementation.
+
+**Planned features:**
+- Regional drone news counts (articles by country/continent over time)
+- FlytBase presence % by region
+- Score distributions by region and use-case
+- Signal type frequency (DEPLOYMENT vs CONTRACT vs FUNDING, etc.)
+- Competitor activity heatmap
+
+Implementation: Aggregate queries on scored_articles + runs. Read-only. Accessible from top-right nav bar.

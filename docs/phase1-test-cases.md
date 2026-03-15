@@ -1,8 +1,8 @@
 # Dock Radar Phase 1 — Test Cases
 
 > Comprehensive test cases for the 3-step flow: Collect, Score, Queue.
-> Covers all critical scenarios including duplicates, re-runs, scoring, queue persistence, and multi-action behavior.
-> Last updated: March 15, 2026
+> Covers all critical scenarios including duplicates, re-runs, scoring, queue persistence, multi-action model (Slack/Bookmark stay in queue; Mark as Reviewed exits to Reviewed Inbox), and Reviewed Inbox sub-view.
+> Last updated: March 15, 2026 — Updated: comma-always-splits (TC-102), removed TC-103/TC-113/TC-220/TC-705, backend scope tags on TC-401–409 and TC-606–609, multi-action model updates across TC-300/TC-900 series, new TC-730–TC-734 (Reviewed Inbox), TC-703 updated to empty-on-fresh-load.
 
 ---
 
@@ -50,27 +50,12 @@
 1. Type "DJI Dock, Zipline" in the keyword input (include the comma).
 2. Observe behavior as soon as the comma is typed.
 
-**Expected Result:** As soon as the comma is typed, "DJI Dock" is immediately created as a pill. The input retains "Zipline" (or the text after the comma) for the user to continue typing. If the user then presses Enter or types another comma, "Zipline" becomes a second pill. Whitespace is trimmed from each side.
+**Expected Result:** Comma ALWAYS splits immediately on keypress — no exceptions. The 'DJI Dock' and 'Zipline' pills are created the moment the comma is typed. No pill ever contains a comma character.
 
 **Priority:** P1
 
 ---
 
-### TC-103 — Enter does not split on commas
-
-**Scenario:** Pressing Enter adds the full buffer as a single pill without splitting on commas.
-
-**Pre-conditions:** App loaded, Step 1 active, keyword input empty.
-
-**Steps:**
-1. Type "DJI Dock, Zipline" in the keyword input (without triggering a comma split — paste the string or type quickly before the comma handler fires).
-2. Press Enter.
-
-**Expected Result:** One pill is created with the full text "DJI Dock, Zipline". It is NOT split into two pills. Enter adds the complete buffer as-is.
-
-**Priority:** P1
-
----
 
 ### TC-104 — Empty keyword validation
 
@@ -230,22 +215,6 @@
 
 ---
 
-### TC-113 — Review Gate toggle
-
-**Scenario:** Review Gate defaults to OFF and can be toggled.
-
-**Pre-conditions:** App loaded, Step 1 active.
-
-**Steps:**
-1. Observe Review Gate toggle default state.
-2. Toggle it ON.
-3. Toggle it OFF.
-
-**Expected Result:** Default state is OFF. Toggling ON/OFF works smoothly. The toggle state affects post-scoring navigation behavior (tested separately in TC-220/TC-221).
-
-**Priority:** P1
-
----
 
 ### TC-114 — Collect button loading state
 
@@ -590,7 +559,7 @@
 1. Navigate to Step 3 (Queue).
 2. Search for the dismissed article in the queue.
 
-**Expected Result:** The dismissed article is not present in the queue. It does not appear in the "new" articles list, nor in Sent or Bookmarked sections. It is permanently removed from the user's workflow.
+**Expected Result:** The dismissed article is not present in the Active Queue. It does not appear in the Reviewed tab either. It is permanently removed from the user's workflow — it will not resurface in any view.
 
 **Priority:** P0
 
@@ -643,36 +612,18 @@
 
 ---
 
-### TC-220 — Review Gate ON: Proceed to Queue button
+### TC-221 — Step 3 tab unlocks + toast after scoring completes
 
-**Scenario:** With Review Gate ON, a "Proceed to Queue" button appears after scoring.
+**Scenario:** After scoring completes, Step 3 tab unlocks automatically and a toast appears.
 
-**Pre-conditions:** Review Gate toggled ON in Step 1 before collection. Scoring completed in Step 2.
-
-**Steps:**
-1. Observe Step 2 after scoring completes.
-2. Look for a "Proceed to Queue" button.
-3. Click the button.
-
-**Expected Result:** A "Proceed to Queue (N articles)" button is visible after scoring. Clicking it navigates to Step 3 (Queue). Step 3 tab was locked/grayed before clicking this button.
-
-**Priority:** P1
-
----
-
-### TC-221 — Review Gate OFF: Auto-unlock Step 3
-
-**Scenario:** With Review Gate OFF (default), Step 3 tab unlocks automatically after scoring.
-
-**Pre-conditions:** Review Gate is OFF (default). Scoring completed in Step 2.
+**Pre-conditions:** Scoring completed in Step 2.
 
 **Steps:**
 1. Observe Step 2 after scoring completes.
-2. Check for "Proceed to Queue" button.
-3. Observe Step 3 tab state.
-4. Check for a toast notification.
+2. Observe Step 3 tab state.
+3. Check for a toast notification.
 
-**Expected Result:** No "Proceed to Queue" button is visible. Step 3 tab becomes enabled/clickable. A toast appears: "Queue ready — N articles". User can navigate to Step 3 manually by clicking the tab.
+**Expected Result:** Step 3 tab becomes enabled/clickable automatically once scoring finishes. A toast appears: "Queue ready — N articles". User can navigate to Step 3 manually by clicking the tab. No "Proceed to Queue" button is required.
 
 **Priority:** P1
 
@@ -709,7 +660,7 @@
 1. Observe the main queue table.
 2. Verify no shared, bookmarked, or dismissed articles appear in it.
 
-**Expected Result:** Only articles with status='new' appear in the queue table. Shared articles appear only in the Sent section. Bookmarked articles appear only in the Bookmarked section. Dismissed articles appear nowhere.
+**Expected Result:** Only articles with status='new' appear in the Active Queue. Slacked and Bookmarked articles remain in the Active Queue (with button states showing actions taken) until "Mark as Reviewed" or "Dismiss" is clicked. Reviewed articles appear in the Reviewed tab. Dismissed articles appear nowhere.
 
 **Priority:** P0
 
@@ -921,7 +872,7 @@ Score: 92/100 | Use Case: [value]
 
 ### TC-314 — Slack Internally button
 
-**Scenario:** Clicking "Slack Internally" sends the message, shows toast, moves article to Sent.
+**Scenario:** Clicking "Slack Internally" sends the message, shows toast, and article STAYS in queue.
 
 **Pre-conditions:** Article drawer expanded with Slack compose filled.
 
@@ -929,9 +880,9 @@ Score: 92/100 | Use Case: [value]
 1. Click "Slack Internally" button.
 2. Observe the queue table.
 3. Observe the toast.
-4. Observe the Sent section.
+4. Observe the button state.
 
-**Expected Result:** The article row disappears from the queue. The drawer closes. A toast appears: "Sent to #dock-radar". The article now appears in the Sent section below the queue with read-only data.
+**Expected Result:** A toast appears: "Sent to #dock-radar". The article REMAINS in the queue — it does NOT move to a Sent section. The Slack button shows a ✓ state indicating it has been sent. The drawer stays open. Article only exits the queue when "Mark as Reviewed" or "Dismiss" is clicked.
 
 **Priority:** P0
 
@@ -939,16 +890,16 @@ Score: 92/100 | Use Case: [value]
 
 ### TC-315 — Bookmark button
 
-**Scenario:** Clicking Bookmark moves the article to the Bookmarked section.
+**Scenario:** Clicking Bookmark marks the article and it STAYS in queue.
 
 **Pre-conditions:** Article drawer expanded for a queue article.
 
 **Steps:**
 1. Click "Bookmark" button (gold/star icon).
 2. Observe the queue table.
-3. Observe the Bookmarked section.
+3. Observe the button state.
 
-**Expected Result:** The article row disappears from the queue. The drawer closes. The article now appears in the Bookmarked section below the queue with read-only data.
+**Expected Result:** The article REMAINS in the queue — it does NOT move to a Bookmarked section. The Bookmark button shows a filled ★ state indicating it has been bookmarked. No toast. Article only exits the queue when "Mark as Reviewed" or "Dismiss" is clicked.
 
 **Priority:** P0
 
@@ -998,7 +949,7 @@ Score: 92/100 | Use Case: [value]
 2. Observe article status.
 3. (If the article remains accessible) Click "Bookmark" as well.
 
-**Expected Result:** The article can have both actions applied. After Slack, it moves to Sent section. After also bookmarking, it should reflect both statuses. The article appears in the Sent section (Slack takes precedence for display). A user can perform both actions — the system supports multi-action on a single article.
+**Expected Result:** The article can have both actions applied independently. After Slack, article stays in queue with ✓ button state. After Bookmark, article stays in queue with filled ★ button state. Both buttons show their active states simultaneously. Article remains in Active Queue throughout — it only exits when "Mark as Reviewed" or "Dismiss" is clicked. The system fully supports multi-action on a single article.
 
 **Priority:** P1
 
@@ -1014,71 +965,72 @@ Score: 92/100 | Use Case: [value]
 1. If the article is still actionable, dismiss it.
 2. Observe all sections.
 
-**Expected Result:** Once dismissed, the article disappears from all sections — queue, Sent, and Bookmarked. Dismiss is the ultimate override. The article never reappears, even in future runs.
+**Expected Result:** Once dismissed, the article disappears from the Active Queue permanently. Dismiss is the ultimate override — it removes the article even if Slack or Bookmark actions had been applied. The article never reappears, even in future runs.
 
 **Priority:** P1
 
 ---
 
-### TC-320 — Sent section: collapsible, read-only
+### TC-320 — Reviewed tab: shows articles after Mark as Reviewed
 
-**Scenario:** Sent section shows shared articles with no interactive controls.
+**Scenario:** Reviewed tab (sub-view of Step 3) shows articles that have been marked as reviewed.
 
-**Pre-conditions:** At least one article has been sent to Slack.
+**Pre-conditions:** At least one article has been marked as reviewed via "Mark as Reviewed" button.
 
 **Steps:**
-1. Observe the Sent section below the queue.
-2. Check for expand toggles or checkboxes on rows.
-3. Try clicking a row.
+1. Navigate to the Reviewed sub-view tab in Step 3.
+2. Observe the list of reviewed articles.
+3. Check that previously slacked/bookmarked articles marked as reviewed appear here.
 
-**Expected Result:** Sent section is collapsible (can expand/collapse the section header). Rows inside are read-only — no checkbox, no expand toggle, no drawer. The section header shows count.
+**Expected Result:** Reviewed tab shows a flat list of articles with status='reviewed', sorted by reviewed_at desc. Each row shows title, company, country, signal badge, score badge, actions taken icons (Slack ✓ and/or ★), and timestamp. A filter bar allows filtering by Slacked, Bookmarked, or All.
 
 **Priority:** P1
 
 ---
 
-### TC-321 — Bookmarked section: collapsible, read-only
+### TC-321 — Reviewed tab: Bookmarked filter shows bookmarked articles
 
-**Scenario:** Bookmarked section shows bookmarked articles with no interactive controls.
+**Scenario:** Bookmarked filter in the Reviewed tab shows only articles with bookmark action taken.
 
-**Pre-conditions:** At least one article has been bookmarked.
+**Pre-conditions:** Several articles in Reviewed tab, at least one with Bookmark action taken before marking as reviewed.
 
 **Steps:**
-1. Observe the Bookmarked section below the queue.
-2. Check for expand toggles or checkboxes on rows.
+1. Navigate to Reviewed tab in Step 3.
+2. Click the Bookmarked filter (star icon).
+3. Observe filtered results.
 
-**Expected Result:** Bookmarked section is collapsible. Rows are read-only — no checkbox, no expand toggle, no drawer. The section header shows count.
+**Expected Result:** Only articles with 'bookmarked' in actions_taken are shown. Articles that were marked reviewed without bookmarking are hidden. The filter accurately reflects the bookmark state.
 
 **Priority:** P1
 
 ---
 
-### TC-322 — Sent/Bookmarked row columns
+### TC-322 — Reviewed tab row columns
 
-**Scenario:** Read-only rows in Sent/Bookmarked show the correct columns.
+**Scenario:** Rows in the Reviewed tab show the correct columns including actions taken.
 
-**Pre-conditions:** Sent or Bookmarked section expanded with at least one article.
+**Pre-conditions:** Reviewed tab open with at least one reviewed article.
 
 **Steps:**
-1. Observe the columns displayed for a row in the Sent section.
+1. Observe the columns displayed for a row in the Reviewed tab.
 
-**Expected Result:** Each row shows: Title (as a link), Company, Country, Signal type badge, Score badge, and Timestamp (e.g., "Sent 2h ago" or "Bookmarked 1d ago").
+**Expected Result:** Each row shows: Title (as a link), Company, Country, Signal type badge, Score badge, Actions Taken column (showing Slack ✓ icon and/or ★ icon for actions applied before review), and Timestamp (e.g., "Reviewed 2h ago").
 
 **Priority:** P2
 
 ---
 
-### TC-323 — Hidden sections when empty
+### TC-323 — Reviewed tab empty state
 
-**Scenario:** Sent/Bookmarked sections are hidden when they contain no articles.
+**Scenario:** Reviewed tab shows appropriate empty state when no articles have been reviewed yet.
 
-**Pre-conditions:** No articles have been sent or bookmarked yet.
+**Pre-conditions:** No articles have been marked as reviewed yet (fresh state).
 
 **Steps:**
 1. Navigate to Step 3.
-2. Look for Sent and Bookmarked sections.
+2. Click the Reviewed sub-view tab.
 
-**Expected Result:** Neither the Sent section nor the Bookmarked section is visible. They only appear once at least one article enters that status.
+**Expected Result:** Reviewed tab is always accessible (tab is always visible), but shows an empty state message when no articles have been reviewed. Empty state communicates that reviewed articles will appear here once actioned.
 
 **Priority:** P1
 
@@ -1119,6 +1071,8 @@ Score: 92/100 | Use Case: [value]
 
 **Priority:** P0
 
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
+
 ---
 
 ### TC-402 — Gate 1 URL dedup: www vs non-www
@@ -1136,6 +1090,8 @@ Score: 92/100 | Use Case: [value]
 
 **Priority:** P0
 
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
+
 ---
 
 ### TC-403 — Gate 1 URL dedup: AMP variant
@@ -1152,6 +1108,8 @@ Score: 92/100 | Use Case: [value]
 **Expected Result:** URL normalization handles AMP variants. Both resolve to the same base article. Only one is stored.
 
 **Priority:** P1
+
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
 
 ---
 
@@ -1171,6 +1129,8 @@ Score: 92/100 | Use Case: [value]
 
 **Priority:** P0
 
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
+
 ---
 
 ### TC-405 — Gate 1 title dedup: Jaccard < 0.80
@@ -1188,6 +1148,8 @@ Score: 92/100 | Use Case: [value]
 **Expected Result:** Jaccard similarity is below 0.80 threshold. Both articles are stored as separate entries. No dedup occurs.
 
 **Priority:** P1
+
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
 
 ---
 
@@ -1208,6 +1170,8 @@ Score: 92/100 | Use Case: [value]
 
 **Priority:** P0
 
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
+
 ---
 
 ### TC-407 — Gate 2 cross-language duplicate
@@ -1227,6 +1191,8 @@ Score: 92/100 | Use Case: [value]
 
 **Priority:** P0
 
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
+
 ---
 
 ### TC-408 — Gate 2: Higher score survives
@@ -1244,6 +1210,8 @@ Score: 92/100 | Use Case: [value]
 
 **Priority:** P0
 
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
+
 ---
 
 ### TC-409 — DB constraint: UNIQUE(normalized_url)
@@ -1259,6 +1227,8 @@ Score: 92/100 | Use Case: [value]
 **Expected Result:** UPSERT with `ON CONFLICT DO NOTHING` handles it gracefully. No error is thrown. The existing article remains unchanged. The run_articles junction links the new run to the existing article.
 
 **Priority:** P0
+
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
 
 ---
 
@@ -1321,7 +1291,7 @@ Score: 92/100 | Use Case: [value]
 2. Navigate to Step 3 (Queue).
 3. Check the Sent section.
 
-**Expected Result:** Article Y does NOT appear in the queue as a new article. It remains in the Sent section from Run 1. It is not re-queued for action.
+**Expected Result:** Article Y does NOT appear in the Active Queue as a new article. It appears in the Reviewed tab (since it was actioned in Run 1). It is not re-queued for action.
 
 **Priority:** P0
 
@@ -1453,7 +1423,7 @@ Score: 92/100 | Use Case: [value]
 **Steps:**
 1. Observe the batch divider.
 
-**Expected Result:** Batch divider shows "3 signals" (only the 3 remaining status='new' articles). Dismissed and shared articles are not counted in the signal count.
+**Expected Result:** Batch divider shows "3 signals" (only the 3 remaining status='new' articles). Dismissed and reviewed articles are not counted in the signal count. Note: slacked/bookmarked articles that have NOT been marked as reviewed still count as 'new' and appear in the batch.
 
 **Priority:** P1
 
@@ -1467,10 +1437,10 @@ Score: 92/100 | Use Case: [value]
 
 **Steps:**
 1. Dismiss the first article.
-2. Send the second article to Slack.
+2. Click "Mark as Reviewed" on the second article.
 3. Observe the batch area.
 
-**Expected Result:** With zero status='new' articles remaining in the batch, the batch divider/header disappears entirely. No empty batch sections are shown.
+**Expected Result:** With zero status='new' articles remaining in the batch, the batch divider/header disappears entirely. No empty batch sections are shown. Note: merely Slacking or Bookmarking without marking as reviewed does NOT cause the batch to disappear.
 
 **Priority:** P2
 
@@ -1623,6 +1593,8 @@ Score: 92/100 | Use Case: [value]
 
 **Priority:** P0
 
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
+
 ---
 
 ### TC-607 — Country = where event happens, not publication
@@ -1637,6 +1609,8 @@ Score: 92/100 | Use Case: [value]
 **Expected Result:** Country shows "Brazil" (where the deployment happens), NOT "United States" (where the article was published).
 
 **Priority:** P0
+
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
 
 ---
 
@@ -1653,6 +1627,8 @@ Score: 92/100 | Use Case: [value]
 
 **Priority:** P1
 
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
+
 ---
 
 ### TC-609 — All output in English
@@ -1667,6 +1643,8 @@ Score: 92/100 | Use Case: [value]
 **Expected Result:** All extracted text fields are in English, regardless of the article's original language. Summary is a coherent English sentence. Company name may remain in original language if it's a proper noun, but descriptive fields are English.
 
 **Priority:** P0
+
+**Scope:** Backend — Phase 1 backend build. Not a frontend UI test.
 
 ---
 
@@ -1771,16 +1749,16 @@ Score: 92/100 | Use Case: [value]
 
 ---
 
-### TC-703 — Queue tab always enabled
+### TC-703 — Queue tab always enabled, empty on fresh load
 
-**Scenario:** Queue tab is accessible at any time (pre-seeded with mock data).
+**Scenario:** Queue tab is accessible at any time but shows empty state on fresh load.
 
 **Pre-conditions:** Fresh app load, no collection performed.
 
 **Steps:**
 1. Click the Queue tab.
 
-**Expected Result:** Queue tab is always enabled and clickable. On fresh load, it shows pre-seeded mock articles (per Decision 4 in gap analysis), making the app immediately explorable and demo-ready.
+**Expected Result:** Queue tab is always enabled and clickable. Queue is EMPTY on fresh load. Empty state shows: 'All caught up — no new signals to review' with checkmark icon. Articles only appear after a collection + scoring run completes.
 
 **Priority:** P0
 
@@ -1802,22 +1780,6 @@ Score: 92/100 | Use Case: [value]
 
 ---
 
-### TC-705 — Review Gate ON: must click Proceed
-
-**Scenario:** With Review Gate ON, user must explicitly advance to Step 3.
-
-**Pre-conditions:** Review Gate ON. Scoring completed in Step 2.
-
-**Steps:**
-1. Observe Step 3 tab — it should be locked.
-2. Click "Proceed to Queue (N articles)" button in Step 2.
-3. Observe Step 3 tab.
-
-**Expected Result:** Step 3 tab is disabled until "Proceed to Queue" is clicked. After clicking, Step 3 tab becomes enabled and user navigates there. This gives users time to review and dismiss articles in Step 2 before they enter the queue.
-
-**Priority:** P1
-
----
 
 ### TC-706 — Review Gate OFF: Step 3 unlocks with toast
 
@@ -1883,6 +1845,97 @@ Score: 92/100 | Use Case: [value]
 - Step 1: Max Articles (editable), Title Similarity: 0.80 (readonly), Min Score (editable), Review Gate (toggle)
 - Step 2: Max Articles (readonly), Min Score (readonly), Title Similarity: 0.80 (readonly), Run selector (dropdown — only interactive element)
 - Step 3: No config bar (or no parameters displayed)
+
+**Priority:** P1
+
+---
+
+### TC-730 — Active Queue and Reviewed sub-views exist in Step 3
+
+**Scenario:** Step 3 has two sub-views: Active Queue (default) and Reviewed.
+
+**Pre-conditions:** Step 3 loaded with some articles in queue.
+
+**Steps:**
+1. Observe Step 3 panel.
+2. Check that "Active Queue" is selected by default.
+3. Click "Reviewed" sub-view tab.
+
+**Expected Result:** Step 3 has two sub-view tabs: "Active Queue" and "Reviewed". Active Queue shows batch-grouped articles with status='new'. Reviewed tab shows a flat list with filter bar.
+
+**Priority:** P0
+
+---
+
+### TC-731 — Mark as Reviewed moves article from Active Queue to Reviewed tab
+
+**Scenario:** Clicking "Mark as Reviewed" on an article exits it from the Active Queue.
+
+**Pre-conditions:** Step 3 open, article drawer open on a 'new' article.
+
+**Steps:**
+1. Open article drawer.
+2. Click "Mark as Reviewed" button (green check button).
+3. Observe Active Queue.
+4. Navigate to Reviewed tab.
+
+**Expected Result:** Article immediately disappears from Active Queue. No toast. Drawer closes. Article appears in Reviewed tab sorted by reviewed_at desc.
+
+**Priority:** P0
+
+---
+
+### TC-732 — Slack + Bookmark are independent, article stays in queue
+
+**Scenario:** Clicking Slack and Bookmark does NOT remove article from Active Queue.
+
+**Pre-conditions:** Step 3 open, article drawer open.
+
+**Steps:**
+1. Click "Slack Internally".
+2. Observe article row in queue.
+3. Click "Bookmark".
+4. Observe article row.
+
+**Expected Result:** After Slack: toast "Sent to #dock-radar", button shows ✓ state, article REMAINS in queue. After Bookmark: button shows filled ★ state, article REMAINS in queue. Article only exits queue when "Mark as Reviewed" or "Dismiss" is clicked.
+
+**Priority:** P0
+
+---
+
+### TC-733 — Reviewed tab filter bar works
+
+**Scenario:** Reviewed tab filter bar filters reviewed articles by action taken.
+
+**Pre-conditions:** Several articles in Reviewed tab — some slacked, some bookmarked, some with no actions.
+
+**Steps:**
+1. Navigate to Reviewed tab.
+2. Click "Slacked" filter (Slack icon).
+3. Observe results.
+4. Click "Bookmarked" filter (star icon).
+5. Observe results.
+6. Click "All" filter.
+
+**Expected Result:** Slacked filter shows only articles with 'slack' in actions_taken. Bookmarked filter shows only articles with 'bookmarked' in actions_taken. All shows all reviewed articles including those with no actions.
+
+**Priority:** P1
+
+---
+
+### TC-734 — Articles marked reviewed with no prior actions appear in Reviewed tab
+
+**Scenario:** An article marked reviewed without Slack or Bookmark still appears in Reviewed tab.
+
+**Pre-conditions:** Step 3 open, article drawer open, no prior actions taken on the article.
+
+**Steps:**
+1. Open article drawer without clicking Slack or Bookmark.
+2. Click "Mark as Reviewed".
+3. Navigate to Reviewed tab.
+4. Check the "All" filter.
+
+**Expected Result:** Article appears in Reviewed tab under "All" filter. It does not appear under Slacked or Bookmarked filters. It has no action icons displayed in the actions column.
 
 **Priority:** P1
 
@@ -2133,7 +2186,7 @@ All fields are populated from the scored article data.
 3. Observe queue table.
 4. Observe Sent section.
 
-**Expected Result:** Toast appears: "Sent to #dock-radar." Article row disappears from the queue. Drawer closes. Article appears in the Sent section with the "Sent X ago" timestamp. Article status is now 'shared'.
+**Expected Result:** Toast appears: "Sent to #dock-radar." Article REMAINS in the queue. Slack button shows ✓ state. Drawer stays open. Article status updates to reflect it has been shared, but it remains in the Active Queue until "Mark as Reviewed" or "Dismiss" is clicked.
 
 **Priority:** P0
 
@@ -2146,10 +2199,10 @@ All fields are populated from the scored article data.
 **Pre-conditions:** Article drawer open in Step 3.
 
 **Steps:**
-1. Click "Slack Internally" — article moves to Sent.
-2. If the article is still accessible (or in a future interaction), also Bookmark it.
+1. Click "Slack Internally" — Slack button shows ✓, article stays in queue.
+2. Click "Bookmark" — Bookmark button shows filled ★, article stays in queue.
 
-**Expected Result:** The system supports both actions on the same article. The article has both `shared_at` and `bookmarked_at` timestamps. It appears in the Sent section (primary display). Dismiss would override both if applied later.
+**Expected Result:** The system supports both actions on the same article simultaneously. The article has both `shared_at` and `bookmarked_at` timestamps. Both button states (✓ and ★) are visible at the same time. Article remains in Active Queue. Dismiss would permanently remove it if applied later.
 
 **Priority:** P1
 
@@ -2190,16 +2243,16 @@ All fields are populated from the scored article data.
 
 | Category | Test Cases | P0 | P1 | P2 |
 |----------|-----------|-----|-----|-----|
-| 1. Step 1 — Collection | TC-101 to TC-117 | 5 | 10 | 2 |
-| 2. Step 2 — Scoring | TC-201 to TC-222 | 4 | 16 | 2 |
+| 1. Step 1 — Collection | TC-101 to TC-117 | 5 | 8 | 2 |
+| 2. Step 2 — Scoring | TC-201 to TC-222 | 4 | 15 | 2 |
 | 3. Step 3 — Queue | TC-301 to TC-324 | 7 | 13 | 4 |
 | 4. Duplicate Handling & Smart Memory | TC-401 to TC-414 | 10 | 4 | 0 |
 | 5. Multi-Run Queue Behavior | TC-501 to TC-511 | 5 | 5 | 1 |
 | 6. Scoring Edge Cases | TC-601 to TC-613 | 3 | 7 | 3 |
-| 7. Step Navigation & State | TC-701 to TC-709 | 4 | 5 | 0 |
+| 7. Step Navigation & State | TC-701 to TC-734 | 6 | 7 | 0 |
 | 8. UI/UX Polish | TC-801 to TC-810 | 1 | 3 | 6 |
 | 9. Slack Integration | TC-901 to TC-907 | 3 | 2 | 2 |
-| **Total** | **91 test cases** | **42** | **65** | **20** |
+| **Total** | **~93 test cases** | **44** | **64** | **20** |
 
 > **P0 tests must all pass** before Phase 1 can be considered shippable.
 > P1 tests should pass for a quality release.

@@ -62,7 +62,6 @@ Step 1: COLLECT (no LLM)
 Step 2: SCORE (GPT-4o, auto-triggered)
   Batch scoring -> Extract fields -> Dedup Gate 2 (cross-language) -> Store
   User can dismiss articles here to prevent them from reaching queue
-  Optional Review Gate: user reviews before articles flow to queue
     |
     v
 Step 3: QUEUE (no LLM, persistent)
@@ -86,7 +85,6 @@ Step 3: QUEUE (no LLM, persistent)
 | filter_days | INTEGER | Default: 30 |
 | min_score | INTEGER | Default: 50 |
 | max_articles | INTEGER | Default: 50 |
-| review_gate | BOOLEAN | Default: false |
 | status | TEXT | running / completed / failed |
 | articles_fetched | INTEGER | Total from all sources |
 | articles_stored | INTEGER | After dedup + date filter |
@@ -132,10 +130,11 @@ Step 3: QUEUE (no LLM, persistent)
 | entities | JSONB | [{name, type}] — types: buyer/operator/regulator/partner/si/oem |
 | drop_reason | TEXT | Null if relevant |
 | is_duplicate | BOOLEAN | Gate 2 cross-language dedup |
-| status | TEXT | new/dismissed/bookmarked |
+| status | TEXT | new/reviewed/dismissed |
+| actions_taken | TEXT[] | Actions performed: ['slack', 'bookmarked', 'email'] |
+| reviewed_at | TIMESTAMPTZ | When marked as reviewed |
 | dismissed_at | TIMESTAMPTZ | When dismissed |
 | slack_sent_at | TIMESTAMPTZ | When sent to Slack |
-| bookmarked_at | TIMESTAMPTZ | When bookmarked |
 | created_at | TIMESTAMPTZ | |
 
 **`slack_messages`** — Tracks Slack messages sent
@@ -178,7 +177,6 @@ Step 3: QUEUE (no LLM, persistent)
 | Region | Grouped checkbox selector | Global (all selected) | Hierarchy: Global > Continent > Country. See 5.1.3. |
 | Max Articles | Number input | 50 | Configurable in config bar. Set to 5 for testing. |
 | Min Score | Number input | 50 | Configurable in config bar. Immutable after collection starts. |
-| Review Gate | Toggle | OFF | See 5.1.4. |
 
 #### 5.1.1 Keyword Input Behavior
 - Comma always splits immediately and creates pills for each part
@@ -213,21 +211,12 @@ Grouped hierarchical selector. **Default: all countries selected (Global checked
 - Deselecting one country unchecks continent but keeps siblings
 - Shows count of selected regions in collapsed state
 
-#### 5.1.4 Review Gate Toggle
-Toggle switch in Step 1 config bar. Default: **OFF**.
-
-- **ON**: After scoring completes, Step 2 shows a "Proceed to Queue (N articles) →" button. User must click to advance to Step 3. This allows inspection and dismissal of scored articles before they enter the queue.
-- **OFF**: After scoring completes, Step 3 tab unlocks + toast "Queue ready — N articles". Step 2 is display-only. User navigates to Step 3 manually. No auto-navigation.
-
-Dismissals in Step 2 are immediate regardless of Review Gate setting — a dismissed article will not appear in the queue.
-
-#### 5.1.5 Config Bar (Step 1)
+#### 5.1.4 Config Bar (Step 1)
 | Parameter | Value | Editable | Display |
 |-----------|-------|----------|---------|
 | Max Articles | 50 | Yes (number input) | Input field |
 | Title Similarity | 0.80 | No | Read-only badge |
 | Min Score | 50 | Yes (number input) | Input field |
-| Review Gate | OFF | Yes (toggle) | Toggle switch |
 
 **Design principle**: ALL collection parameters become immutable after Step 1 completes. Changing any parameter requires starting a new collection.
 
@@ -303,7 +292,7 @@ Dismissals in Step 2 are immediate regardless of Review Gate setting — a dismi
 | Country | 100px | Where event happens |
 | Signal | 110px | Signal type badge (color-coded) |
 | Use Case | 80px | Short label |
-| FB | 40px | FlytBase mentioned flag |
+| FlytBase | 40px | FlytBase mentioned flag |
 | Dismiss | 40px | X icon button |
 
 **Dropped Articles Panel**:
@@ -380,21 +369,31 @@ When user clicks expand toggle, a detail section opens below that row. Only one 
 
 **Full width below** — rendered by `ArticleDrawer.tsx`:
 - **Slack Compose**: Editable textarea pre-filled with structured content (see 5.3.6). Label: "Message to #dock-radar"
-- **Action Buttons**:
-  - "Slack Internally" (blue primary button, send icon)
-  - "Bookmark" (gold outline button, star icon)
-  - "Dismiss" (red outline button, x icon)
+- **Action Buttons** (left group):
+  - "Slack Internally" (blue primary button, send icon) — shows ✓ state after clicking
+  - "Bookmark" (gold outline button, star icon) — shows filled ★ after clicking
   - "Open Article" (gray outline button, external link icon)
+- **Right side**:
+  - "Mark as Reviewed" (green outline button, check icon) — always visible
+  - "Dismiss" (red ghost button, x icon)
 
-#### 5.3.5 Article Actions
+#### 5.3.5 Article Actions — Multi-Action Model
+
+Actions are non-exclusive. Articles stay in the Active Queue until explicitly marked reviewed or dismissed. Buttons show completion state (checkmark/filled icon) after clicking.
+
 | Action | Effect | Row Behavior | Toast |
 |--------|--------|-------------|-------|
-| Dismiss | Sets `status='dismissed'`. Permanent. No undo. | Row vanishes immediately. Drawer closes. | None (single dismiss). "X articles dismissed" for bulk dismiss. |
-| Slack Internally | Sets `slack_sent_at` timestamp. Posts to #dock-radar. | Row moves to Sent section. Drawer closes. | "Sent to #dock-radar" |
-| Bookmark | Sets `status='bookmarked'`. | Row moves to Bookmarked section. Drawer closes. | None |
+| Slack Internally | Adds 'slack' to `actions_taken`. Sets `slack_sent_at`. Posts to #dock-radar. Button turns to ✓ state. | Article stays in queue. Drawer stays open. | "Sent to #dock-radar" |
+| Bookmark | Adds 'bookmarked' to `actions_taken`. Button turns to filled ★ state. | Article stays in queue. Drawer stays open. | None |
+| Mark as Reviewed | Sets `status='reviewed'`, sets `reviewed_at` timestamp. | Row exits Active Queue immediately. Appears in Reviewed tab. Drawer closes. | None |
+| Dismiss | Sets `status='dismissed'`. Permanent. No undo. | Row vanishes immediately everywhere. Drawer closes. | None (single). "X articles dismissed" for bulk. |
 | Open Article | Opens original URL in new tab. | No change. | None |
 
-A user CAN both Slack AND Bookmark the same article. Dismiss overrides all — once dismissed, always gone.
+**Key rules:**
+- A user CAN Slack AND Bookmark the same article — both actions recorded in `actions_taken[]`
+- Dismiss overrides all — once dismissed, always gone
+- "Mark as Reviewed" is always visible in the action strip; it is the explicit exit from the queue
+- Articles with no actions but marked reviewed appear in the Reviewed tab (Decision B confirmed)
 
 #### 5.3.6 Slack Message Pre-fill Format
 ```
@@ -409,17 +408,30 @@ Score: [X]/100 | Use Case: [value]
 - Posted to `#dock-radar` channel by `dock-radar` bot
 - Non-English articles use the English summary (already translated by LLM)
 
-#### 5.3.7 Sent & Bookmarked Sections
-Collapsible sections below the queue batches. Hidden if empty.
+#### 5.3.7 Reviewed Inbox (Sub-view)
 
-- **Sent to Slack**: Articles where `slack_sent_at IS NOT NULL`, sorted by sent date desc
-- **Bookmarked**: Articles with `status = 'bookmarked'`, sorted by bookmarked_at desc
+Step 3 has two sub-views toggled by a tab bar within the panel:
 
-These are **read-only rows**. No checkbox, no expand trigger, no article drawer.
+**Active Queue** (default) — All articles with `status='new'`, grouped by batch (see 5.3.2)
 
-**Columns**: Title (link) | Company | Country | Signal badge | Score badge | Timestamp ("Sent 2h ago" / "Bookmarked 1d ago")
+**Reviewed** — All articles with `status='reviewed'`, flat list sorted by `reviewed_at` desc
 
-Extracted as reusable `CollapsibleSection.tsx` component.
+**Reviewed tab filter bar**:
+```
+[All] [Slack icon Slacked] [★ Bookmarked] [Date ▾]
+```
+- **All**: Shows all reviewed articles
+- **Slacked** (Slack icon, not bell): Filters to articles with `'slack' IN actions_taken`
+- **Bookmarked**: Filters to articles with `'bookmarked' IN actions_taken`
+- **Date**: Sort control (newest first / oldest first)
+
+**Reviewed tab columns**: Title (link) | Company | Country | Signal badge | Score badge | Actions taken (icons) | Reviewed timestamp
+
+**Reviewed tab behavior** (Phase 1):
+- Read-only expand: row expands to show summary only (no action strip)
+- No bulk actions
+- Articles with no actions (marked reviewed without Slack/Bookmark) appear here (Decision B)
+- Dismissed articles never appear anywhere in the UI (Decision C)
 
 #### 5.3.8 Empty States
 | Scenario | Display |
@@ -571,7 +583,8 @@ Dashboard (top-level) owns:
 - `activeStep: number` — current tab (1, 2, 3)
 - `currentRun: Run | null` — most recent collection run
 - `scoredArticles: ArticleWithScore[]` — full scored array (never pruned by min score)
-- `articleStatuses: Map<string, ArticleStatus>` — overlay for status mutations across Steps 2 and 3
+- `articleStatuses: Map<string, ArticleStatus>` — overlay for status mutations (new/reviewed/dismissed) across Steps 2 and 3
+- `articleActions: Map<string, string[]>` — overlay for actions_taken mutations (slack/bookmarked) per article
 
 Both `ScorePanel` and `QueuePanel` read from `articleStatuses` and dispatch mutations up via callbacks. Single source of truth, no cross-panel state drift.
 
@@ -596,7 +609,7 @@ Both `ScorePanel` and `QueuePanel` read from `articleStatuses` and dispatch muta
 | `ArticleDetail.tsx` | Left column of drawer: summary, metadata grid, People Mentioned section |
 | `ArticleDrawer.tsx` | 2-column shell, right column (entities, source), bottom action strip (SlackCompose, ArticleActions) |
 | `QueuePanel.tsx` | Orchestrator only — no inline JSX beyond layout wrapper |
-| `CollapsibleSection.tsx` | Reusable component for Sent/Bookmarked collapsible sections |
+| `ReviewedInbox.tsx` | Reviewed sub-view with filter bar (All / Slacked / Bookmarked / Date) |
 | `DroppedArticles.tsx` | Pure display component — parent pre-filters, this only renders |
 | `PersonCard.tsx` | Person avatar + name + role + organization. Includes Phase 2 `DetailLine` slot for email/LinkedIn. |
 
@@ -636,12 +649,13 @@ Both `ScorePanel` and `QueuePanel` read from `articleStatuses` and dispatch muta
 | Date range (days) | 30 | Yes (combo) | 1 | Dropdown presets + custom input | Filter article age |
 | Title similarity threshold | 0.80 | Read-only | 1 and 2 | Badge | Transparency |
 | Min relevance score | 50 | Yes | 1 (editable), 2 (readonly) | Input field / badge | Lower for testing, raise for strict |
-| Review Gate | OFF | Yes (toggle) | 1 | Toggle switch | Control queue flow |
 | Run selector | Latest run | Yes (dropdown) | 2 | Dropdown | Switch between past runs |
 
 **Testing Mode**: Set max articles to 5, min score to 20 for fast cheap test cycles.
 
-**Removed Parameters**: LLM Model is NOT displayed in any config bar. GPT-4o is baked in for Phase 1. Will be re-introduced as a selector in Phase 2.
+**Removed Parameters**:
+- LLM Model is NOT displayed in any config bar. GPT-4o is baked in for Phase 1. Will be re-introduced as a selector in Phase 2.
+- Review Gate toggle removed entirely from Phase 1. After scoring completes, Step 3 tab unlocks + toast "Queue ready — N articles". No gating mechanism.
 
 ---
 
@@ -673,7 +687,8 @@ Score: [X]/100 | Use Case: [value]
 
 ```typescript
 type SignalType = 'DEPLOYMENT' | 'CONTRACT' | 'TENDER' | 'PARTNERSHIP' | 'EXPANSION' | 'FUNDING' | 'REGULATION' | 'OTHER';
-type ArticleStatus = 'new' | 'dismissed' | 'bookmarked';
+type ArticleStatus = 'new' | 'reviewed' | 'dismissed';
+type ArticleAction = 'slack' | 'bookmarked' | 'email';
 type ArticleSource = 'google_news' | 'linkedin' | 'facebook';
 
 interface Run {
@@ -684,7 +699,6 @@ interface Run {
   filter_days: number;
   min_score: number;
   max_articles: number;
-  review_gate: boolean;
   status: 'running' | 'completed' | 'failed';
   articles_fetched: number;
   articles_stored: number;
@@ -732,9 +746,10 @@ interface ScoredArticle {
   drop_reason: string | null;
   is_duplicate: boolean;
   status: ArticleStatus;
+  actions_taken: ArticleAction[];
+  reviewed_at: string | null;
   dismissed_at: string | null;
   slack_sent_at: string | null;
-  bookmarked_at: string | null;
   created_at: string;
 }
 
@@ -755,7 +770,7 @@ interface ConfigItem {
   label: string;
   value: string | number | boolean;
   editable: boolean;
-  type: 'number' | 'text' | 'select' | 'toggle';
+  type: 'number' | 'text' | 'select';
   options?: { label: string; value: string }[];
   onChange?: (value: string | number | boolean) => void;
 }
@@ -782,7 +797,7 @@ interface SlackMessage {
 - [ ] Region selector with Global/Continent/Country hierarchy, all selected by default
 - [ ] Collect button triggers Google News RSS fetch
 - [ ] Pipeline stats show funnel visualization after completion
-- [ ] Config bar shows: Max Articles (editable), Title Similarity (readonly), Min Score (editable), Review Gate (toggle)
+- [ ] Config bar shows: Max Articles (editable), Title Similarity (readonly), Min Score (editable)
 - [ ] LLM model is NOT displayed anywhere
 - [ ] Auto-navigates to Step 2 on completion
 - [ ] Form stays filled after collection for parameter reuse
@@ -803,8 +818,7 @@ interface SlackMessage {
 - [ ] User can dismiss articles from Step 2 (prevents flow to Step 3)
 - [ ] Run selector dropdown shows previous runs (only interactive config element)
 - [ ] Config bar shows all parameters as read-only except run selector
-- [ ] Review Gate ON: "Proceed to Queue (N articles) →" button visible after scoring
-- [ ] Review Gate OFF: Step 3 tab unlocks + toast on scoring completion
+- [ ] After scoring completes: Step 3 tab unlocks + toast "Queue ready — N articles"
 
 ### Step 3: Queue
 - [ ] Queue is a persistent global backlog — new runs add, never replace
@@ -819,16 +833,20 @@ interface SlackMessage {
 - [ ] ArticleDetail (left column): summary, metadata, persons with DetailLine slot
 - [ ] ArticleDrawer (right column + bottom): entities, source, SlackCompose, actions
 - [ ] Editable Slack message pre-filled with structured format
-- [ ] "Slack Internally" posts to #dock-radar, sets slack_sent_at, row moves to Sent
-- [ ] "Bookmark" sets status, row moves to Bookmarked
-- [ ] "Dismiss" sets status, row vanishes permanently, no undo
+- [ ] "Slack Internally" adds 'slack' to actions_taken, sets slack_sent_at, button shows ✓ state, article stays in queue
+- [ ] "Bookmark" adds 'bookmarked' to actions_taken, button shows filled ★ state, article stays in queue
+- [ ] "Mark as Reviewed" sets status='reviewed', row exits Active Queue, appears in Reviewed tab
+- [ ] "Dismiss" sets status='dismissed', row vanishes permanently everywhere, no undo
 - [ ] "Open Article" opens original URL in new tab
-- [ ] User can both Slack and Bookmark same article; dismiss overrides all
-- [ ] Post-action: row disappears immediately, drawer closes
-- [ ] Toast only for: Slack send, bulk dismiss. No toast for: single dismiss, bookmark
-- [ ] Sent section: read-only rows, no checkbox/expand/drawer
-- [ ] Bookmarked section: read-only rows, no checkbox/expand/drawer
-- [ ] Sent/Bookmarked columns: Title (link), Company, Country, Signal badge, Score badge, Timestamp
+- [ ] User can both Slack and Bookmark same article (multi-action model)
+- [ ] Dismiss overrides all — once dismissed, gone forever
+- [ ] Toast only for: Slack send, bulk dismiss. No toast for: single dismiss, bookmark, mark reviewed
+- [ ] Reviewed tab sub-view exists alongside Active Queue sub-view in Step 3
+- [ ] Reviewed tab filter bar: All | Slacked (Slack icon) | ★ Bookmarked | Date sort
+- [ ] Reviewed tab shows flat list sorted by reviewed_at desc
+- [ ] Reviewed tab is read-only expand in Phase 1 (summary only, no action strip)
+- [ ] Articles with no actions but marked reviewed still appear in Reviewed tab
+- [ ] Reviewed columns: Title (link), Company, Country, Signal badge, Score badge, Actions taken icons, Reviewed timestamp
 - [ ] Empty queue: "All caught up — no new signals to review" with checkmark icon
 - [ ] Dismissed articles never reappear even from new runs (no expiry)
 
@@ -855,12 +873,29 @@ interface SlackMessage {
 - LLM selector dropdown re-introduced in UI (currently hidden)
 - Competitor detection (DroneSense, etc.) in scoring prompt
 - PersonCard `DetailLine` slot populated with email/LinkedIn data
+- Email action added to ArticleActions (3rd action alongside Slack/Bookmark)
+
+### Phase 2 Analytics (Parked)
+Analytics dashboard showing aggregated intelligence across runs:
+- Regional drone news counts (articles by country/continent over time)
+- FlytBase presence percentage (% of articles mentioning FlytBase by region)
+- Score distributions by region and use-case
+- Signal type frequency charts (DEPLOYMENT vs CONTRACT vs FUNDING, etc.)
+- Competitor activity heatmap
+Implementation: Aggregate queries on scored_articles + runs tables. Read-only. Accessible from top-right nav bar.
 
 ### Phase 3 Extension Points
 - `send-email` edge function
 - `pending_approvals` table
 - Slack approval workflow → auto-send email
 - Email templates with industry/region awareness
+- Dismissed articles audit trail: top-right nav bar view showing all dismissed articles (soft delete — records exist in DB with `status='dismissed'`, shown on-demand in dedicated view)
+
+### App-Level Navigation (Phase 3 consideration)
+Top-right nav bar for app-level features (accessible from any step):
+- Analytics page (Phase 2)
+- Dismissed articles audit view (Phase 3)
+- Future: Settings, API keys, team management
 
 ---
 

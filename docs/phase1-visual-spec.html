@@ -732,7 +732,7 @@
     <div class="logo-mark">DR</div>
     <div class="navbar-brand">
       <span class="brand-name">Dock Radar</span>
-      <span class="brand-sub">Social Listening &amp; BD Intelligence</span>
+      <span class="brand-sub">Social Listening &amp; BD Intelligence &nbsp;·&nbsp; v2 — Mar 15 2026</span>
     </div>
   </div>
   <div class="navbar-right">
@@ -785,15 +785,6 @@
         <span class="config-label">Min Score</span>
         <input type="number" class="config-input" value="50" />
         <span class="badge-changed">Changed</span>
-      </div>
-      <!-- Review Gate — NEW badge -->
-      <div class="config-item">
-        <span class="config-label">Review Gate</span>
-        <div class="toggle-wrap">
-          <button class="toggle" id="review-gate-toggle" onclick="toggleReviewGate()" title="Toggle Review Gate"></button>
-          <span class="toggle-hint" id="rg-hint">ON = pause at Step 2 &nbsp;|&nbsp; OFF = auto-flow</span>
-        </div>
-        <span class="badge-new">New</span>
       </div>
     </div>
   </div>
@@ -1003,7 +994,7 @@
                 <th style="width:72px;">Country</th>
                 <th>Signal</th>
                 <th>Use Case</th>
-                <th style="width:36px;">FB</th>
+                <th style="width:40px;">FlytBase</th>
                 <th style="width:36px;"></th>
               </tr>
             </thead>
@@ -1087,24 +1078,10 @@
           <span class="dropped-hint">Click to expand</span>
         </div>
 
-        <!-- Proceed to Queue Button — NEW, gated by Review Gate -->
-        <div id="proceed-wrap" style="display:none;" class="proceed-wrap">
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span class="badge-new">New</span>
-              <span style="font-size:11px;color:var(--muted);">Only shown when Review Gate = ON in Step 1</span>
-            </div>
-            <button class="btn-primary" style="padding:9px 22px;font-size:13.5px;">
-              Proceed to Queue (20 articles) &nbsp;→
-            </button>
-          </div>
-        </div>
-
-        <!-- Auto-flow note (when Review Gate is OFF) -->
+        <!-- Auto-flow note: articles flow to queue when scoring completes -->
         <div class="auto-flow-note" id="auto-flow-note">
           <span style="font-size:14px;">ℹ</span>
-          Review Gate is currently <strong>OFF</strong> — articles auto-flow to queue when scoring completes.
-          Toggle <em>Review Gate</em> in Step 1 to enable manual review.
+          Articles auto-flow to queue when scoring completes.
         </div>
 
       </div>
@@ -1117,6 +1094,15 @@
   <div class="step-panel" id="step-3">
     <div class="card">
       <div class="card-body">
+
+        <!-- Sub-view tab bar — NEW: Active Queue | Reviewed -->
+        <div style="display:flex;gap:2px;border-bottom:1px solid #E5E7EB;margin-bottom:16px;">
+          <button id="tab-active-queue" onclick="switchQueueTab('active')" style="padding:8px 16px;font-size:13px;font-weight:600;color:#2C7BF2;border-bottom:2px solid #2C7BF2;background:none;border-top:none;border-left:none;border-right:none;cursor:pointer;">Active Queue</button>
+          <button id="tab-reviewed" onclick="switchQueueTab('reviewed')" style="padding:8px 16px;font-size:13px;font-weight:500;color:#6B7280;background:none;border:none;cursor:pointer;">Reviewed</button>
+        </div>
+
+        <!-- ─── ACTIVE QUEUE VIEW ─────────────────────────── -->
+        <div id="queue-active-view">
 
         <!-- Queue Header — CHANGED -->
         <div class="queue-main-header">
@@ -1337,10 +1323,18 @@ Indian Railways has announced a large-scale drone deployment with FlytBase as th
 
 https://timesofindia.com/article/indian-railways-200-drones-flytbase-2026...</textarea>
                 <div class="action-strip">
-                  <button class="btn-slack">→ &nbsp;Slack Internally</button>
-                  <button class="btn-bookmark">⭐ &nbsp;Bookmark</button>
-                  <button class="btn-dismiss">✕ &nbsp;Dismiss</button>
-                  <button class="btn-open">↗ &nbsp;Open Article</button>
+                  <!-- Left group: actions that keep article in queue -->
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="btn-slack" title="Sends to Slack — article stays in queue">→ &nbsp;Slack Internally</button>
+                    <button class="btn-bookmark" title="Bookmark — article stays in queue">⭐ &nbsp;Bookmark</button>
+                    <button class="btn-open" style="margin-left:0;">↗ &nbsp;Open Article</button>
+                  </div>
+                  <span style="font-size:10.5px;color:#9CA3AF;font-style:italic;flex:1;text-align:center;">Slack &amp; Bookmark keep article in queue</span>
+                  <!-- Right group: terminal / exit actions -->
+                  <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+                    <button style="background:#fff;color:#16A34A;padding:7px 14px;border-radius:6px;border:1.5px solid #86EFAC;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;" title="Moves article out of queue to Reviewed inbox">✓ &nbsp;Mark as Reviewed</button>
+                    <button class="btn-dismiss" title="Permanently dismisses article">✕ &nbsp;Dismiss</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1385,98 +1379,87 @@ https://timesofindia.com/article/indian-railways-200-drones-flytbase-2026...</te
           </div>
         </div>
 
-        <!-- ─── SENT TO SLACK ──────────────────────────────── -->
-        <div class="collapsible-section">
-          <div class="collapsible-header collapsed" onclick="toggleSection('sent-body', this)">
-            <span class="collapsible-title">
-              <span class="collapsible-arrow" id="sent-arrow">▶</span>
-              Sent to Slack (5 articles)
-              <span class="badge-changed">Changed</span>
-            </span>
-            <span style="font-size:11px;color:#9CA3AF;">Read-only rows — no expand drawer</span>
-          </div>
-          <div class="collapsible-body" id="sent-body" style="display:none;">
-            <!-- Readonly rows -->
-            <div class="readonly-row">
-              <a class="readonly-article-link truncate">Seoul Metro Drone Security Contract Awarded</a>
-              <span style="font-size:12px;font-weight:500;color:#374151;">Seoul Metro</span>
-              <span style="font-size:12px;color:var(--muted);">South Korea</span>
-              <span class="signal-badge sig-contract">CONTRACT</span>
-              <span class="score-badge score-green" style="font-size:11px;height:20px;width:32px;">91</span>
-              <span class="sent-time">Sent 2h ago</span>
-            </div>
-            <div class="readonly-row">
-              <a class="readonly-article-link truncate">Abu Dhabi Ports Drone Surveillance Expansion</a>
-              <span style="font-size:12px;font-weight:500;color:#374151;">Abu Dhabi Ports</span>
-              <span style="font-size:12px;color:var(--muted);">UAE</span>
-              <span class="signal-badge sig-expansion">EXPANSION</span>
-              <span class="score-badge score-green" style="font-size:11px;height:20px;width:32px;">88</span>
-              <span class="sent-time">Sent 5h ago</span>
-            </div>
-            <div class="readonly-row">
-              <a class="readonly-article-link truncate">Hitachi Energy Awards Drone Inspection Services Tender</a>
-              <span style="font-size:12px;font-weight:500;color:#374151;">Hitachi Energy</span>
-              <span style="font-size:12px;color:var(--muted);">Japan</span>
-              <span class="signal-badge sig-tender">TENDER</span>
-              <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">76</span>
-              <span class="sent-time">Sent 1d ago</span>
-            </div>
-            <div class="readonly-row">
-              <a class="readonly-article-link truncate">Brazil Federal Police Expands Drone Fleet Nationwide</a>
-              <span style="font-size:12px;font-weight:500;color:#374151;">Fed. Police Brazil</span>
-              <span style="font-size:12px;color:var(--muted);">Brazil</span>
-              <span class="signal-badge sig-deployment">DEPLOYMENT</span>
-              <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">74</span>
-              <span class="sent-time">Sent 1d ago</span>
-            </div>
-            <div class="readonly-row">
-              <a class="readonly-article-link truncate">Port of Hamburg Autonomous Inspection UAV Pilot</a>
-              <span style="font-size:12px;font-weight:500;color:#374151;">Port of Hamburg</span>
-              <span style="font-size:12px;color:var(--muted);">Germany</span>
-              <span class="signal-badge sig-deployment">DEPLOYMENT</span>
-              <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">71</span>
-              <span class="sent-time">Sent 2d ago</span>
-            </div>
-          </div>
-        </div>
+        </div><!-- /queue-active-view -->
 
-        <!-- ─── BOOKMARKED ─────────────────────────────────── -->
-        <div class="collapsible-section">
-          <div class="collapsible-header collapsed" onclick="toggleSection('bm-body', this)">
-            <span class="collapsible-title">
-              <span class="collapsible-arrow" id="bm-arrow">▶</span>
-              Bookmarked (3 articles)
-              <span class="badge-changed">Changed</span>
-            </span>
-            <span style="font-size:11px;color:#9CA3AF;">Read-only rows — no expand drawer</span>
+        <!-- ─── REVIEWED VIEW ──────────────────────────────── -->
+        <div id="queue-reviewed-view" style="display:none;">
+
+          <!-- Filter bar -->
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+            <button style="padding:5px 12px;border-radius:6px;background:var(--blue-light);color:var(--blue);border:1px solid #BFDBFE;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">All</button>
+            <button style="padding:5px 12px;border-radius:6px;background:#fff;color:var(--muted);border:1px solid var(--border);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">→ Slacked</button>
+            <button style="padding:5px 12px;border-radius:6px;background:#fff;color:var(--muted);border:1px solid var(--border);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">★ Bookmarked</button>
+            <button style="padding:5px 12px;border-radius:6px;background:#fff;color:var(--muted);border:1px solid var(--border);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">Date ▾</button>
           </div>
-          <div class="collapsible-body" id="bm-body" style="display:none;">
-            <div class="readonly-row">
-              <a class="readonly-article-link truncate">Airbus UTM Division Partners with Drone Software Firm</a>
-              <span style="font-size:12px;font-weight:500;color:#374151;">Airbus</span>
-              <span style="font-size:12px;color:var(--muted);">France</span>
-              <span class="signal-badge sig-contract">CONTRACT</span>
-              <span class="score-badge score-green" style="font-size:11px;height:20px;width:32px;">89</span>
-              <span class="sent-time">Bookmarked 1d ago</span>
-            </div>
-            <div class="readonly-row">
-              <a class="readonly-article-link truncate">DP World Singapore Drone Ops Tender Issued</a>
-              <span style="font-size:12px;font-weight:500;color:#374151;">DP World</span>
-              <span style="font-size:12px;color:var(--muted);">Singapore</span>
-              <span class="signal-badge sig-tender">TENDER</span>
-              <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">80</span>
-              <span class="sent-time">Bookmarked 2d ago</span>
-            </div>
-            <div class="readonly-row">
-              <a class="readonly-article-link truncate">Saudi Aramco Drone Inspection Program Scale-Up</a>
-              <span style="font-size:12px;font-weight:500;color:#374151;">Saudi Aramco</span>
-              <span style="font-size:12px;color:var(--muted);">Saudi Arabia</span>
-              <span class="signal-badge sig-expansion">EXPANSION</span>
-              <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">77</span>
-              <span class="sent-time">Bookmarked 3d ago</span>
-            </div>
+
+          <!-- Reviewed articles table -->
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <table class="scored-table" style="width:100%;">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Company</th>
+                  <th style="width:80px;">Country</th>
+                  <th>Signal</th>
+                  <th style="width:52px;">Score</th>
+                  <th style="width:110px;">Actions</th>
+                  <th style="width:100px;">Reviewed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Row 1: Slacked -->
+                <tr>
+                  <td><span class="article-title-text">Seoul Metro Drone Security Contract Awarded</span></td>
+                  <td style="font-size:12.5px;font-weight:500;">Seoul Metro</td>
+                  <td style="font-size:12.5px;color:var(--muted);">South Korea</td>
+                  <td><span class="signal-badge sig-contract">CONTRACT</span></td>
+                  <td><span class="score-badge score-green">91</span></td>
+                  <td>
+                    <span title="Sent to Slack" style="color:#2C7BF2;font-size:13px;font-weight:700;">→✓</span>
+                  </td>
+                  <td><span class="sent-time">2h ago</span></td>
+                </tr>
+                <!-- Row 2: Slacked + Bookmarked -->
+                <tr>
+                  <td><span class="article-title-text">Abu Dhabi Ports Drone Surveillance Expansion</span></td>
+                  <td style="font-size:12.5px;font-weight:500;">Abu Dhabi Ports</td>
+                  <td style="font-size:12.5px;color:var(--muted);">UAE</td>
+                  <td><span class="signal-badge sig-expansion">EXPANSION</span></td>
+                  <td><span class="score-badge score-green">88</span></td>
+                  <td>
+                    <span title="Sent to Slack" style="color:#2C7BF2;font-size:13px;font-weight:700;">→✓</span>
+                    <span title="Bookmarked" style="color:#FFAB49;font-size:13px;font-weight:700;margin-left:4px;">★</span>
+                  </td>
+                  <td><span class="sent-time">5h ago</span></td>
+                </tr>
+                <!-- Row 3: Reviewed only (no Slack/Bookmark) -->
+                <tr>
+                  <td><span class="article-title-text">Airbus UTM Division Partners with Drone Software Firm</span></td>
+                  <td style="font-size:12.5px;font-weight:500;">Airbus</td>
+                  <td style="font-size:12.5px;color:var(--muted);">France</td>
+                  <td><span class="signal-badge sig-contract">CONTRACT</span></td>
+                  <td><span class="score-badge score-green">89</span></td>
+                  <td>
+                    <span style="color:#9CA3AF;font-size:11.5px;font-style:italic;">—</span>
+                  </td>
+                  <td><span class="sent-time">1d ago</span></td>
+                </tr>
+                <!-- Row 4: Bookmarked only -->
+                <tr>
+                  <td><span class="article-title-text">DP World Singapore Drone Ops Tender Issued</span></td>
+                  <td style="font-size:12.5px;font-weight:500;">DP World</td>
+                  <td style="font-size:12.5px;color:var(--muted);">Singapore</td>
+                  <td><span class="signal-badge sig-tender">TENDER</span></td>
+                  <td><span class="score-badge score-blue">80</span></td>
+                  <td>
+                    <span title="Bookmarked" style="color:#FFAB49;font-size:13px;font-weight:700;">★</span>
+                  </td>
+                  <td><span class="sent-time">2d ago</span></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
+        </div><!-- /queue-reviewed-view -->
 
       </div><!-- /card-body -->
     </div><!-- /card -->
@@ -1499,8 +1482,8 @@ https://timesofindia.com/article/indian-railways-200-drones-flytbase-2026...</te
         <span class="legend-item-text"><strong>Min Score moved from Step 2 → Step 1</strong> config bar. Editable at collection time; read-only display in Step 2. Fixes the state drift problem (GAP 2) where re-filtering after pruning couldn't rehydrate dropped articles.</span>
       </li>
       <li class="legend-item">
-        <span class="badge-new" style="flex-shrink:0;">New</span>
-        <span class="legend-item-text"><strong>Review Gate toggle</strong> in Step 1 config bar. When ON: Step 2 pauses and shows "Proceed to Queue" button. When OFF: articles auto-flow to Step 3 when scoring completes. Resolves the undefined post-scoring transition (GAP 6).</span>
+        <span class="badge-removed" style="flex-shrink:0;">Removed</span>
+        <span class="legend-item-text"><strong>Review Gate toggle removed</strong> from Step 1 config bar. Articles always auto-flow to Step 3 when scoring completes. The gate concept is replaced by the Reviewed Inbox sub-view in Step 3, which provides post-hoc visibility without blocking the pipeline.</span>
       </li>
       <li class="legend-item">
         <span class="badge-changed" style="flex-shrink:0;">Changed</span>
@@ -1524,11 +1507,11 @@ https://timesofindia.com/article/indian-railways-200-drones-flytbase-2026...</te
       </li>
       <li class="legend-item">
         <span class="badge-changed" style="flex-shrink:0;">Changed</span>
-        <span class="legend-item-text"><strong>Multiple article actions allowed</strong> — Slack send and Bookmark can coexist. Dismiss is the only terminal action. Row disappears immediately from the new queue when any action is taken (GAP 6).</span>
+        <span class="legend-item-text"><strong>Multi-action model: Slack and Bookmark no longer exit the queue.</strong> Article stays in the Active Queue after Slack or Bookmark. Only "Mark as Reviewed" moves an article to the Reviewed inbox. Dismiss permanently removes it. This eliminates the re-bookmarking edge case (GAP 18) and makes article state explicit.</span>
       </li>
       <li class="legend-item">
-        <span class="badge-changed" style="flex-shrink:0;">Changed</span>
-        <span class="legend-item-text"><strong>Sent/Bookmarked sections: read-only rows, no article drawer</strong>. These sections are archives — no further action available. Eliminates the re-bookmarking edge case (GAP 18) by architectural separation.</span>
+        <span class="badge-removed" style="flex-shrink:0;">Removed</span>
+        <span class="legend-item-text"><strong>Sent/Bookmarked collapsible sections removed.</strong> Replaced by the <strong>Reviewed Inbox sub-view</strong> — a tab inside Step 3 (Active Queue | Reviewed). The Reviewed view shows a flat table filterable by All / Slacked / Bookmarked / Date, with action icons per article. This gives full post-action visibility without an archival sidebar.</span>
       </li>
       <li class="legend-item">
         <span class="badge-new" style="flex-shrink:0;">New</span>
@@ -1543,8 +1526,8 @@ https://timesofindia.com/article/indian-railways-200-drones-flytbase-2026...</te
         <span class="legend-item-text"><strong>Scoring progress shows cached article count</strong> — "X already cached from previous runs" shown below progress bar. Transparent smart-memory behaviour (from GAP 5 run-selector design).</span>
       </li>
       <li class="legend-item">
-        <span class="badge-new" style="flex-shrink:0;">New</span>
-        <span class="legend-item-text"><strong>"Proceed to Queue" button in Step 2</strong> — only visible when Review Gate is ON. Hidden with an explanatory note when OFF. Resolves undefined post-scoring transition (GAP 6).</span>
+        <span class="badge-removed" style="flex-shrink:0;">Removed</span>
+        <span class="legend-item-text"><strong>"Proceed to Queue" button removed from Step 2</strong> — no longer needed as the Review Gate toggle is removed. Articles auto-flow to the queue on scoring completion.</span>
       </li>
       <li class="legend-item">
         <span class="badge-new" style="flex-shrink:0;">New</span>
@@ -1565,7 +1548,6 @@ https://timesofindia.com/article/indian-railways-200-drones-flytbase-2026...</te
 <script>
   /* ── State ──────────────────────────────────────────── */
   let activeStep = 1;
-  let reviewGateOn = false;
   let drawerOpen = true; // Indian Railways row starts expanded
 
   /* ── Tab Switching ──────────────────────────────────── */
@@ -1581,31 +1563,6 @@ https://timesofindia.com/article/indian-railways-200-drones-flytbase-2026...</te
       cfg.classList.toggle('active', i === n - 1);
     });
     activeStep = n;
-  }
-
-  /* ── Review Gate Toggle ─────────────────────────────── */
-  function toggleReviewGate() {
-    reviewGateOn = !reviewGateOn;
-    const toggle = document.getElementById('review-gate-toggle');
-    const hint = document.getElementById('rg-hint');
-    const proceedWrap = document.getElementById('proceed-wrap');
-    const autoFlowNote = document.getElementById('auto-flow-note');
-
-    toggle.classList.toggle('on', reviewGateOn);
-
-    if (reviewGateOn) {
-      hint.textContent = 'ON = pause at Step 2 | OFF = auto-flow';
-      hint.style.color = '#2C7BF2';
-      hint.style.fontWeight = '600';
-      proceedWrap.style.display = 'flex';
-      autoFlowNote.style.display = 'none';
-    } else {
-      hint.textContent = 'ON = pause at Step 2 | OFF = auto-flow';
-      hint.style.color = '';
-      hint.style.fontWeight = '';
-      proceedWrap.style.display = 'none';
-      autoFlowNote.style.display = 'flex';
-    }
   }
 
   /* ── Article Drawer ─────────────────────────────────── */
@@ -1629,6 +1586,34 @@ https://timesofindia.com/article/indian-railways-200-drones-flytbase-2026...</te
     body.style.display = isOpen ? 'none' : 'block';
     arrow.style.transform = isOpen ? '' : 'rotate(90deg)';
     headerEl.classList.toggle('collapsed', isOpen);
+  }
+
+  /* ── Queue Sub-view Tabs ─────────────────────────────── */
+  function switchQueueTab(tab) {
+    const activeView = document.getElementById('queue-active-view');
+    const reviewedView = document.getElementById('queue-reviewed-view');
+    const tabActive = document.getElementById('tab-active-queue');
+    const tabReviewed = document.getElementById('tab-reviewed');
+
+    if (tab === 'active') {
+      activeView.style.display = 'block';
+      reviewedView.style.display = 'none';
+      tabActive.style.color = '#2C7BF2';
+      tabActive.style.borderBottom = '2px solid #2C7BF2';
+      tabActive.style.fontWeight = '600';
+      tabReviewed.style.color = '#6B7280';
+      tabReviewed.style.borderBottom = 'none';
+      tabReviewed.style.fontWeight = '500';
+    } else {
+      activeView.style.display = 'none';
+      reviewedView.style.display = 'block';
+      tabActive.style.color = '#6B7280';
+      tabActive.style.borderBottom = 'none';
+      tabActive.style.fontWeight = '500';
+      tabReviewed.style.color = '#2C7BF2';
+      tabReviewed.style.borderBottom = '2px solid #2C7BF2';
+      tabReviewed.style.fontWeight = '600';
+    }
   }
 
   /* ── Preset date buttons ─────────────────────────────── */
