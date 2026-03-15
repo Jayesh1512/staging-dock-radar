@@ -127,3 +127,43 @@
     @apply font-sans;
   }
 }
+
+/* ─── Dock Radar Design Tokens ────────────────── */
+:root {
+  --dr-blue: #2C7BF2;
+  --dr-blue-hover: #1B6AE0;
+  --dr-blue-light: #EBF2FE;
+  --dr-gold: #FFAB49;
+  --dr-surface: #F9FAFB;
+  --dr-border: #E5E7EB;
+  --dr-text: #111827;
+  --dr-text-secondary: #374151;
+  --dr-text-muted: #6B7280;
+  --dr-text-disabled: #9CA3AF;
+  --dr-radius-card: 12px;
+  --dr-radius-btn: 7px;
+  --dr-max-w: 1280px;
+}
+
+body {
+  background: #F3F4F6 !important;
+  font-size: 14px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2.5px solid #BFDBFE;
+  border-top-color: var(--dr-blue);
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }

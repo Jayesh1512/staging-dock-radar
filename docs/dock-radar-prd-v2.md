@@ -56,7 +56,7 @@ User inputs keywords + filters + sources
     |
     v
 Step 1: COLLECT (no LLM)
-  Google News RSS -> Dedup Gate 1 (URL + title) -> Date filter -> Store
+  Google News RSS -> Date filter -> Dedup Gate 1 (URL + title) -> Store (Shuffled the logic to optimize filter by using date earlier to dedup. Consider this approach for rest of the relevant places as applicable) 
     |
     v
 Step 2: SCORE (GPT-4o, auto-triggered)
