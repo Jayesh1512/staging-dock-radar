@@ -50,6 +50,10 @@ export interface Entity {
 export interface ScoredArticle {
   id: string;
   article_id: string;
+  /** Canonical URL for dedup (legacy) */
+  normalized_url?: string | null;
+  /** URL params fingerprint + entities used for dedup: same fingerprint + same company/country/city = duplicate */
+  url_fingerprint?: string | null;
   relevance_score: number;
   company: string | null;
   country: string | null;

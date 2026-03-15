@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { llmComplete, getActiveLLMInfo } from '@/lib/llm';
 import { SCORING_SYSTEM_PROMPT, formatBatchScoringPrompt } from '@/lib/scoring-prompt';
 import { fetchArticleBody } from '@/lib/article-body';
-import { insertScoredArticles, updateArticleResolvedUrl, loadScoredByArticleIds } from '@/lib/db';
+import { insertScoredArticles, updateArticleResolvedUrl, loadScoredByArticleIds, loadDedupKeysFromScoredArticles } from '@/lib/db';
 import { gateTwoDedup } from '@/lib/dedup';
 import { articleMatchesRegions } from '@/lib/utils';
+import { urlFingerprint, dedupKey } from '@/lib/url-fingerprint';
 import type { Article, ScoredArticle, ArticleWithScore, SignalType } from '@/lib/types';
 
 /** Strip markdown code fences that some LLMs add even when told not to */
@@ -77,20 +78,119 @@ function parseBatchResponse(raw: string, articles: Article[]): ArticleWithScore[
   });
 }
 
+/** Build exclude keywords: request body wins, else env EXCLUDE_TITLE_KEYWORDS (comma-separated) */
+function getExcludeTitleKeywords(body: { excludeTitleKeywords?: string[] }): string[] {
+  if (Array.isArray(body.excludeTitleKeywords) && body.excludeTitleKeywords.length > 0) {
+    return body.excludeTitleKeywords.map((s) => String(s).trim()).filter(Boolean);
+  }
+  const env = process.env.EXCLUDE_TITLE_KEYWORDS;
+  if (!env || typeof env !== 'string') return [];
+  return env.split(',').map((s) => s.trim()).filter(Boolean);
+}
+
+/** Articles whose title contains any of the keywords (case-insensitive) are excluded from Step 2. */
+function filterExcludedByTitle(articles: Article[], excludeKeywords: string[]): { included: Article[]; excluded: Article[] } {
+  if (excludeKeywords.length === 0) return { included: articles, excluded: [] };
+  const lower = excludeKeywords.map((k) => k.toLowerCase());
+  const included: Article[] = [];
+  const excluded: Article[] = [];
+  for (const a of articles) {
+    const titleLower = a.title.toLowerCase();
+    if (lower.some((kw) => titleLower.includes(kw))) excluded.push(a);
+    else included.push(a);
+  }
+  return { included, excluded };
+}
+
 export async function POST(req: Request) {
   try {
-    const { articles, selectedRegions = [] } = await req.json() as { articles: Article[]; selectedRegions?: string[] };
+    const body = await req.json() as { articles: Article[]; selectedRegions?: string[]; excludeTitleKeywords?: string[] };
+    const { articles: rawArticles, selectedRegions = [] } = body;
 
-    if (!Array.isArray(articles) || articles.length === 0) {
+    if (!Array.isArray(rawArticles) || rawArticles.length === 0) {
       return NextResponse.json({ error: 'Non-empty articles array is required' }, { status: 400 });
     }
 
     const MAX_BATCH = 30;
-    if (articles.length > MAX_BATCH) {
+    if (rawArticles.length > MAX_BATCH) {
       return NextResponse.json(
-        { error: `Batch too large: ${articles.length} articles (max ${MAX_BATCH}). Reduce maxArticles in Step 1.` },
+        { error: `Batch too large: ${rawArticles.length} articles (max ${MAX_BATCH}). Reduce maxArticles in Step 1.` },
         { status: 400 },
       );
+    }
+
+    // ── Pre-score filter: exclude articles by title keywords (never proceed to scoring) ───
+    const excludeKeywords = getExcludeTitleKeywords(body);
+    const { included: articles, excluded: excludedArticles } = filterExcludedByTitle(rawArticles, excludeKeywords);
+    if (excludedArticles.length > 0) {
+      console.log(`[/api/score] Pre-score filter: ${excludedArticles.length} articles excluded (title matches exclude list), ${articles.length} to process`);
+      excludedArticles.forEach((a) => console.log(`  excluded: "${a.title.slice(0, 60)}"`));
+    }
+    if (articles.length === 0) {
+      return NextResponse.json({
+        results: [],
+        provider: '',
+        model: '',
+        excludedCount: excludedArticles.length,
+        excludedIds: excludedArticles.map((a) => a.id),
+        message: `All ${rawArticles.length} articles were excluded by title filter. None scored.`,
+      });
+    }
+
+    // ── URL fingerprint + entities dedup: skip scoring if this URL fingerprint already exists in scored_articles ───
+    let dedupKeys = { existingUrlFingerprints: new Set<string>(), existingDedupKeys: new Set<string>() };
+    try {
+      dedupKeys = await loadDedupKeysFromScoredArticles();
+    } catch (urlErr) {
+      console.warn('[/api/score] Dedup keys lookup failed (non-fatal):', urlErr instanceof Error ? urlErr.message : urlErr);
+    }
+    const urlDedup = articles.filter((a) => dedupKeys.existingUrlFingerprints.has(urlFingerprint(a.url)));
+    const articlesForPipeline = articles.filter((a) => !dedupKeys.existingUrlFingerprints.has(urlFingerprint(a.url)));
+    if (urlDedup.length > 0) {
+      console.log(`[/api/score] URL fingerprint dedup: ${urlDedup.length} articles skipped (URL params already in scored_articles), ${articlesForPipeline.length} to process`);
+      urlDedup.forEach((a) => console.log(`  url-dedup: "${a.title.slice(0, 50)}"`));
+    }
+    if (articlesForPipeline.length === 0) {
+      const urlDedupScored: ScoredArticle[] = urlDedup.map((a) => ({
+        id: `scored_${a.id}_${Date.now()}`,
+        article_id: a.id,
+        normalized_url: a.normalized_url,
+        url_fingerprint: urlFingerprint(a.url),
+        relevance_score: 0,
+        company: null,
+        country: null,
+        city: null,
+        use_case: null,
+        signal_type: 'OTHER' as const,
+        summary: null,
+        flytbase_mentioned: false,
+        persons: [],
+        entities: [],
+        drop_reason: 'URL params already scored (dedup)',
+        is_duplicate: true,
+        status: 'new' as const,
+        actions_taken: [],
+        reviewed_at: null,
+        dismissed_at: null,
+        slack_sent_at: null,
+        created_at: new Date().toISOString(),
+      }));
+      try {
+        await insertScoredArticles(urlDedupScored);
+      } catch (e) {
+        console.error('[/api/score] DB write url-dedup failed (non-fatal):', e);
+      }
+      return NextResponse.json({
+        results: urlDedup.map((a) => ({
+          article: a,
+          scored: urlDedupScored.find((s) => s.article_id === a.id)!,
+        })),
+        provider: '',
+        model: '',
+        excludedCount: excludedArticles.length,
+        excludedIds: excludedArticles.map((a) => a.id),
+        message: `All ${articles.length} articles were URL dedup (already scored). None scored.`,
+      });
     }
 
     const { provider, model } = getActiveLLMInfo();
@@ -98,14 +198,14 @@ export async function POST(req: Request) {
     // ── D4: Scoring cache — skip LLM for articles already scored ────────────
     let cachedMap: Map<string, ScoredArticle> = new Map();
     try {
-      cachedMap = await loadScoredByArticleIds(articles.map(a => a.id));
+      cachedMap = await loadScoredByArticleIds(articlesForPipeline.map(a => a.id));
     } catch (cacheErr) {
       // Cache miss is non-fatal — just score everything
       console.warn('[/api/score] Cache lookup failed (non-fatal):', cacheErr instanceof Error ? cacheErr.message : cacheErr);
     }
 
-    const toScore = articles.filter(a => !cachedMap.has(a.id));
-    const cached = articles.filter(a => cachedMap.has(a.id));
+    const toScore = articlesForPipeline.filter(a => !cachedMap.has(a.id));
+    const cached = articlesForPipeline.filter(a => cachedMap.has(a.id));
     if (cached.length > 0) console.log(`[/api/score] D4 cache: ${cached.length} hits, ${toScore.length} to score`);
 
     // Fetch article bodies for uncached articles only (no LLM cost)
@@ -132,18 +232,58 @@ export async function POST(req: Request) {
       });
     }
 
-    // Restore cached results — clear filter fields so they're recalculated below
+    // Restore cached results — set url_fingerprint + normalized_url for persist and dedup
     const cachedResults: ArticleWithScore[] = cached.map(a => ({
       article: a,
-      scored: { ...cachedMap.get(a.id)!, drop_reason: null, is_duplicate: false },
+      scored: {
+        ...cachedMap.get(a.id)!,
+        normalized_url: a.normalized_url,
+        url_fingerprint: urlFingerprint(a.url),
+        drop_reason: null,
+        is_duplicate: false,
+      },
     }));
 
-    const allResults = [...cachedResults, ...llmResults];
+    const llmResultsWithUrl = llmResults.map(r => ({
+      ...r,
+      scored: {
+        ...r.scored,
+        normalized_url: r.article.normalized_url,
+        url_fingerprint: urlFingerprint(r.article.url),
+      },
+    }));
+
+    const allResults = [...cachedResults, ...llmResultsWithUrl];
+
+    // Mark duplicates by URL fingerprint + entities (company, country, city): same story if same URL params and same entities
+    const dedupKeysMutable = new Set(dedupKeys.existingDedupKeys);
+    const allResultsWithDedup = allResults.map((r) => {
+      const key = dedupKey(
+        r.scored.url_fingerprint ?? urlFingerprint(r.article.url),
+        r.scored.company,
+        r.scored.country,
+        r.scored.city,
+      );
+      const alreadySeen = dedupKeysMutable.has(key);
+      if (alreadySeen) {
+        dedupKeysMutable.add(key);
+        return {
+          ...r,
+          scored: {
+            ...r.scored,
+            is_duplicate: true,
+            drop_reason: r.scored.drop_reason ?? 'URL + entities already scored (dedup)',
+          },
+        };
+      }
+      dedupKeysMutable.add(key);
+      return r;
+    });
 
     // Gate 3: Region filter — use LLM-extracted country (authoritative), not RSS edition.
     // Google News RSS gl/ceid are localization params, not geographic filters.
     const regionFiltered = selectedRegions.length > 0
-      ? allResults.map((r) => {
+      ? allResultsWithDedup.map((r) => {
           if (articleMatchesRegions(r.scored.country, selectedRegions)) return r;
           return {
             ...r,
@@ -153,7 +293,7 @@ export async function POST(req: Request) {
             },
           };
         })
-      : allResults;
+      : allResultsWithDedup;
 
     const regionDropped = regionFiltered.filter(r => r.scored.drop_reason?.startsWith('Outside selected regions')).length;
     if (regionDropped > 0) console.log(`[/api/score] Region filter: ${regionDropped} articles dropped (outside selected regions)`);
@@ -170,9 +310,37 @@ export async function POST(req: Request) {
     });
 
     // ── Persist to Supabase ──────────────────────────────────────────────────
+    const urlDedupScored: ScoredArticle[] = urlDedup.map((a) => ({
+      id: `scored_${a.id}_${Date.now()}`,
+      article_id: a.id,
+      normalized_url: a.normalized_url,
+      url_fingerprint: urlFingerprint(a.url),
+      relevance_score: 0,
+      company: null,
+      country: null,
+      city: null,
+      use_case: null,
+      signal_type: 'OTHER' as const,
+      summary: null,
+      flytbase_mentioned: false,
+      persons: [],
+      entities: [],
+      drop_reason: 'URL already scored (dedup)',
+      is_duplicate: true,
+      status: 'new' as const,
+      actions_taken: [],
+      reviewed_at: null,
+      dismissed_at: null,
+      slack_sent_at: null,
+      created_at: new Date().toISOString(),
+    }));
+
     try {
-      // Upsert all results — updates drop_reason/is_duplicate for cached articles
-      await insertScoredArticles(dedupedResults.map(r => r.scored));
+      // Upsert all results — pipeline results have normalized_url set; url-dedup rows marked as duplicate
+      await insertScoredArticles([
+        ...dedupedResults.map(r => r.scored),
+        ...urlDedupScored,
+      ]);
 
       // Update resolved URLs for newly scored articles only
       const urlUpdates = llmResults
@@ -180,13 +348,24 @@ export async function POST(req: Request) {
         .map(r => updateArticleResolvedUrl(r.article.id, r.article.resolved_url!));
       if (urlUpdates.length > 0) await Promise.all(urlUpdates);
 
-      console.log(`[/api/score] DB: ${dedupedResults.length} scored articles persisted (${cached.length} from cache)`);
+      console.log(`[/api/score] DB: ${dedupedResults.length} scored + ${urlDedupScored.length} url-dedup persisted (${cached.length} from cache)`);
     } catch (dbErr) {
       // DB write failure is non-fatal — data still returned to client
       console.error('[/api/score] DB write failed (non-fatal):', dbErr instanceof Error ? dbErr.message : dbErr);
     }
 
-    return NextResponse.json({ results: dedupedResults, provider, model });
+    const urlDedupResults: ArticleWithScore[] = urlDedup.map((a) => ({
+      article: a,
+      scored: urlDedupScored.find((s) => s.article_id === a.id)!,
+    }));
+
+    return NextResponse.json({
+      results: [...dedupedResults, ...urlDedupResults],
+      provider,
+      model,
+      excludedCount: excludedArticles.length,
+      excludedIds: excludedArticles.map((a) => a.id),
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Scoring error';
     console.error('[/api/score]', message);

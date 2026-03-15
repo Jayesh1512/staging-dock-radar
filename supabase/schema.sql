@@ -46,6 +46,8 @@ CREATE INDEX IF NOT EXISTS idx_articles_run_id ON articles(run_id);
 CREATE TABLE IF NOT EXISTS scored_articles (
   id                TEXT PRIMARY KEY,
   article_id        TEXT NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+  normalized_url    TEXT,
+  url_fingerprint   TEXT,
   relevance_score   INTEGER NOT NULL DEFAULT 0,
   company           TEXT,
   country           TEXT,
@@ -68,6 +70,12 @@ CREATE TABLE IF NOT EXISTS scored_articles (
 
 -- One score per article
 CREATE UNIQUE INDEX IF NOT EXISTS idx_scored_article_id ON scored_articles(article_id);
+
+-- URL dedup: skip scoring when URL already in scored_articles
+CREATE INDEX IF NOT EXISTS idx_scored_normalized_url ON scored_articles(normalized_url) WHERE normalized_url IS NOT NULL;
+
+-- URL fingerprint + entities dedup
+CREATE INDEX IF NOT EXISTS idx_scored_url_fingerprint ON scored_articles(url_fingerprint) WHERE url_fingerprint IS NOT NULL;
 
 -- Queue queries: status + score
 CREATE INDEX IF NOT EXISTS idx_scored_status ON scored_articles(status, relevance_score DESC);

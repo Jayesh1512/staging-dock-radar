@@ -6,6 +6,7 @@
  */
 
 import { requireSupabase } from './supabase';
+import { dedupKey } from './url-fingerprint';
 import type { Run, Article, ScoredArticle, ArticleWithScore } from './types';
 
 // ─── Supabase Client ─────────────────────────────────────────────────────────
@@ -133,6 +134,35 @@ export async function loadScoredByArticleIds(articleIds: string[]): Promise<Map<
   );
 }
 
+export interface DedupKeys {
+  /** URL fingerprints already in scored_articles (for pre-score skip) */
+  existingUrlFingerprints: Set<string>;
+  /** Keys "url_fingerprint|company|country|city" for duplicate detection (post-score) */
+  existingDedupKeys: Set<string>;
+}
+
+/**
+ * Load URL fingerprints and (url_fingerprint + entities) keys from scored_articles.
+ * Used to skip scoring when URL params already seen, and to mark duplicates when URL + company/country/city match.
+ */
+export async function loadDedupKeysFromScoredArticles(): Promise<DedupKeys> {
+  const db = requireSupabase();
+  const { data, error } = await db.from('scored_articles')
+    .select('url_fingerprint, company, country, city');
+  if (error) throw new Error(`[db] loadDedupKeysFromScoredArticles failed: ${error.message}`);
+  const rows = (data ?? []) as { url_fingerprint?: string | null; company?: string | null; country?: string | null; city?: string | null }[];
+  const existingUrlFingerprints = new Set<string>();
+  const existingDedupKeys = new Set<string>();
+  for (const r of rows) {
+    const fp = r.url_fingerprint;
+    if (typeof fp === 'string' && fp.length > 0) {
+      existingUrlFingerprints.add(fp);
+      existingDedupKeys.add(dedupKey(fp, r.company ?? null, r.country ?? null, r.city ?? null));
+    }
+  }
+  return { existingUrlFingerprints, existingDedupKeys };
+}
+
 export async function insertScoredArticles(scored: ScoredArticle[]): Promise<void> {
   if (scored.length === 0) return;
   const db = requireSupabase();
@@ -140,6 +170,8 @@ export async function insertScoredArticles(scored: ScoredArticle[]): Promise<voi
   const rows = scored.map((s) => ({
     id: s.id,
     article_id: s.article_id,
+    normalized_url: s.normalized_url ?? null,
+    url_fingerprint: s.url_fingerprint ?? null,
     relevance_score: s.relevance_score,
     company: s.company,
     country: s.country,
@@ -280,6 +312,8 @@ function mapScoredArticle(row: Record<string, unknown>): ScoredArticle {
   return {
     id: row.id as string,
     article_id: row.article_id as string,
+    normalized_url: (row.normalized_url as string) ?? undefined,
+    url_fingerprint: (row.url_fingerprint as string) ?? undefined,
     relevance_score: row.relevance_score as number,
     company: (row.company as string) ?? null,
     country: (row.country as string) ?? null,

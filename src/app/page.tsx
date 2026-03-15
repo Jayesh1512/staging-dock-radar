@@ -77,6 +77,10 @@ export default function Dashboard() {
           setSelectedRunId(data.runs[0].id);
         }
 
+        if (data.runArticleMap) {
+          setRunArticleMap(data.runArticleMap);
+        }
+
         if (data.scoredArticles.length > 0) {
           // Restore the global queue from DB — only articles eligible for queue.
           // Use the lowest min_score across all runs so no qualifying articles are hidden.
@@ -84,17 +88,19 @@ export default function Dashboard() {
           const lowestMinScore = data.runs.length > 0
             ? Math.min(...data.runs.map(r => r.min_score))
             : DEFAULTS.minScore;
-          const queueArticles = data.scoredArticles.filter(a =>
+          let queueArticles = data.scoredArticles.filter(a =>
             a.scored.relevance_score >= lowestMinScore &&
             !a.scored.drop_reason &&
             !a.scored.is_duplicate,
           );
+          // Exclude articles that don't appear in any run (cross-run dedup omits duplicates)
+          if (data.runArticleMap && Object.keys(data.runArticleMap).length > 0) {
+            const inAnyRun = (articleId: string) =>
+              Object.values(data.runArticleMap).some(ids => ids.includes(articleId));
+            queueArticles = queueArticles.filter(a => inAnyRun(a.article.id));
+          }
           setArticles(queueArticles);
           setStep3Enabled(true);
-        }
-
-        if (data.runArticleMap) {
-          setRunArticleMap(data.runArticleMap);
         }
 
         console.log(`[page] DB loaded: ${data.runs.length} runs, ${data.scoredArticles.length} scored articles`);
