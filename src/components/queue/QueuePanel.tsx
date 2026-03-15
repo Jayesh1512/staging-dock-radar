@@ -65,7 +65,7 @@ export function QueuePanel({ articles, runs, runArticleMap, getActions, onSlack,
               onClick={() => setActiveTab(tab)}
               className="cursor-pointer"
               style={{
-                padding: '8px 16px', fontSize: 13, fontFamily: 'Inter, sans-serif',
+                padding: '8px 16px', fontSize: 13,
                 fontWeight: activeTab === tab ? 600 : 500,
                 color: activeTab === tab ? 'var(--dr-blue)' : 'var(--dr-text-muted)',
                 borderBottom: activeTab === tab ? '2px solid var(--dr-blue)' : '2px solid transparent',
@@ -113,6 +113,10 @@ export function QueuePanel({ articles, runs, runArticleMap, getActions, onSlack,
                       allSelected={allSelected}
                       onSelectAll={() => toggleSelectAll(run.id, batchArticles.map(a => a.article.id))}
                       onBulkDismiss={() => handleBulkDismiss(run.id)}
+                      onMarkAllReviewed={() => {
+                        batchArticles.forEach(a => onMarkReviewed(a.article.id));
+                        toast.success(`${batchArticles.length} articles marked as reviewed`);
+                      }}
                     />
                     <div style={{ border: '1px solid var(--dr-border)', borderRadius: 8, overflow: 'hidden', marginBottom: 8 }}>
                       {batchArticles.map((a) => (
@@ -123,12 +127,14 @@ export function QueuePanel({ articles, runs, runArticleMap, getActions, onSlack,
                             isSelected={batchSelectedIds.has(a.article.id)}
                             onToggleExpand={() => setExpandedId(expandedId === a.article.id ? null : a.article.id)}
                             onToggleSelect={() => toggleSelect(run.id, a.article.id)}
+                            onMarkReviewed={() => { onMarkReviewed(a.article.id); setExpandedId(null); }}
+                            onDismiss={() => { onDismiss(a.article.id); setExpandedId(null); }}
                           />
                           {expandedId === a.article.id && (
                             <ArticleDrawer
                               article={a}
                               actions={getActions(a.article.id)}
-                              onSlack={() => { onSlack(a.article.id); toast.success('Sent to #dock-radar'); }}
+                              onSlack={() => { onSlack(a.article.id); }}
                               onBookmark={() => onBookmark(a.article.id)}
                               onMarkReviewed={() => { onMarkReviewed(a.article.id); setExpandedId(null); }}
                               onDismiss={() => { onDismiss(a.article.id); setExpandedId(null); }}

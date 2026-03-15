@@ -1,27 +1,51 @@
 "use client";
 import { useState, useCallback } from 'react';
-import type { PipelineStats } from '@/lib/types';
-import { MOCK_PIPELINE_STATS } from '@/data/mock-data';
+import type { CollectResult, PipelineStats } from '@/lib/types';
 
 export function useCollect() {
   const [isCollecting, setIsCollecting] = useState(false);
   const [stats, setStats] = useState<PipelineStats | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const startCollect = useCallback(() => {
+  const startCollect = useCallback(async (
+    keywords: string[],
+    regions: string[],
+    filterDays: number,
+    maxArticles: number,
+  ): Promise<CollectResult> => {
     setIsCollecting(true);
     setStats(null);
-    return new Promise<PipelineStats>((resolve) => {
-      setTimeout(() => {
-        setIsCollecting(false);
-        setStats(MOCK_PIPELINE_STATS);
-        resolve(MOCK_PIPELINE_STATS);
-      }, 2000);
-    });
+    setError(null);
+
+    try {
+      const res = await fetch('/api/collect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keywords, regions, filterDays, maxArticles }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error ?? `Server error ${res.status}`);
+      }
+
+      const result = data as CollectResult;
+      setStats(result.stats);
+      return result;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Collection failed';
+      setError(message);
+      throw err;
+    } finally {
+      setIsCollecting(false);
+    }
   }, []);
 
   const reset = useCallback(() => {
     setStats(null);
+    setError(null);
   }, []);
 
-  return { isCollecting, stats, startCollect, reset };
+  return { isCollecting, stats, error, startCollect, reset };
 }

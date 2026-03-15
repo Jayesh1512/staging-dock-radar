@@ -17,7 +17,7 @@ export function SlackCompose({ message, onChange }: SlackComposeProps) {
         className="focus:outline-none"
         style={{
           width: '100%', padding: '12px 14px', border: 'none', resize: 'vertical',
-          minHeight: 100, fontFamily: 'Inter, sans-serif', fontSize: 12.5,
+          minHeight: 100, fontSize: 12.5,
           color: 'var(--dr-text)', lineHeight: 1.6,
         }}
       />

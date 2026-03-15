@@ -36,7 +36,7 @@ export function ConfigBar({ items }: ConfigBarProps) {
                 width: 56, padding: '4px 8px',
                 border: '1px solid var(--dr-border)', borderRadius: 6,
                 fontSize: 13, fontWeight: 600, color: 'var(--dr-text)',
-                fontFamily: 'Inter, sans-serif', background: '#fff',
+                background: '#fff',
               }}
             />
           ) : item.editable && item.type === 'select' && item.options ? (
@@ -48,7 +48,7 @@ export function ConfigBar({ items }: ConfigBarProps) {
                 padding: '4px 8px',
                 border: '1px solid var(--dr-border)', borderRadius: 6,
                 fontSize: 13, fontWeight: 500, color: 'var(--dr-text)',
-                fontFamily: 'Inter, sans-serif', background: '#fff',
+                background: '#fff',
                 maxWidth: 260,
               }}
             >

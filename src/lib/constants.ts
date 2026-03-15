@@ -54,10 +54,33 @@ export const REGION_GROUPS = [
 export const ALL_COUNTRIES = REGION_GROUPS.flatMap((g) => [...g.countries]);
 
 export const DEFAULTS = {
-  maxArticles: 50,
+  maxArticles: 20,
   filterDays: 30,
   minScore: 50,
   titleSimilarity: 0.80,
 } as const;
 
 export const DATE_PRESETS = [7, 14, 30, 60, 90] as const;
+
+/**
+ * Maps LLM-returned country name variants → canonical region key used in REGION_GROUPS.
+ * Keeps filtering robust when the LLM uses shorthand ("US", "UK") or full names.
+ */
+export const COUNTRY_NAME_TO_REGION_KEY: Record<string, string> = {
+  'united states': 'US', 'usa': 'US', 'u.s.': 'US', 'us': 'US', 'america': 'US',
+  'canada': 'Canada',
+  'brazil': 'Brazil', 'brasil': 'Brazil',
+  'mexico': 'Mexico',
+  'united kingdom': 'UK', 'uk': 'UK', 'england': 'UK', 'britain': 'UK', 'great britain': 'UK',
+  'germany': 'Germany', 'deutschland': 'Germany',
+  'france': 'France',
+  'italy': 'Italy',
+  'india': 'India',
+  'singapore': 'Singapore',
+  'japan': 'Japan',
+  'australia': 'Australia',
+  'south korea': 'South Korea', 'korea': 'South Korea',
+  'united arab emirates': 'UAE', 'uae': 'UAE', 'emirates': 'UAE',
+  'saudi arabia': 'Saudi Arabia', 'ksa': 'Saudi Arabia',
+  'south africa': 'South Africa',
+};

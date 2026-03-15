@@ -68,7 +68,7 @@ export function KeywordInput({ keywords, onAdd, onRemove }: KeywordInputProps) {
           onKeyDown={handleKeyDown}
           placeholder={keywords.length === 0 ? "Add a keyword..." : ""}
           className="flex-1 outline-none min-w-[120px]"
-          style={{ fontSize: 13, color: 'var(--dr-text)', fontFamily: 'Inter, sans-serif', border: 'none', background: 'transparent' }}
+          style={{ fontSize: 13, color: 'var(--dr-text)', border: 'none', background: 'transparent' }}
         />
       </div>
       <p style={{ fontSize: 11, color: 'var(--dr-text-muted)', marginTop: 5 }}>

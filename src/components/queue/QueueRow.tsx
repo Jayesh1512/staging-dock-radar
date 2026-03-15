@@ -10,46 +10,106 @@ interface QueueRowProps {
   isSelected: boolean;
   onToggleExpand: () => void;
   onToggleSelect: () => void;
+  onMarkReviewed: () => void;
+  onDismiss: () => void;
 }
 
-export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onToggleSelect }: QueueRowProps) {
+export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onToggleSelect, onMarkReviewed, onDismiss }: QueueRowProps) {
   const { article: art, scored } = article;
   return (
     <div
-      className="grid items-center transition-colors"
+      className="grid items-center"
       style={{
-        gridTemplateColumns: '28px 24px 1fr 130px 80px 180px',
-        gap: 12, padding: '12px 16px',
+        gridTemplateColumns: '28px 20px 1fr 120px 68px 148px 56px',
+        gap: 12, padding: '11px 16px',
         borderBottom: '1px solid #F3F4F6',
-        background: isExpanded ? 'var(--dr-surface)' : '#fff',
+        background: isExpanded ? '#EBF2FE' : '#fff',
+        transition: 'background 0.15s ease',
+        cursor: 'default',
       }}
-      onMouseEnter={(e) => { if (!isExpanded) e.currentTarget.style.background = '#FAFAFA'; }}
-      onMouseLeave={(e) => { if (!isExpanded) e.currentTarget.style.background = '#fff'; }}
+      onMouseEnter={(e) => { if (!isExpanded) e.currentTarget.style.background = '#F5F8FF'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = isExpanded ? '#EBF2FE' : '#fff'; }}
     >
+      {/* Checkbox */}
       <input
         type="checkbox"
         checked={isSelected}
         onChange={onToggleSelect}
         onClick={(e) => e.stopPropagation()}
         className="cursor-pointer accent-[var(--dr-blue)]"
-        style={{ width: 16, height: 16, borderRadius: 4 }}
+        style={{ width: 15, height: 15 }}
       />
-      <button onClick={onToggleExpand} className="cursor-pointer" style={{ background: 'none', border: 'none', color: 'var(--dr-text-muted)', fontSize: 12, padding: 0, display: 'flex', alignItems: 'center' }}>
-        {isExpanded ? '▼' : '▶'}
+
+      {/* Expand arrow — rotates on expand */}
+      <button
+        onClick={onToggleExpand}
+        className="cursor-pointer"
+        style={{
+          background: 'none', border: 'none', padding: 0,
+          color: isExpanded ? 'var(--dr-blue)' : 'var(--dr-text-muted)',
+          fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+          transition: 'transform 0.18s ease, color 0.15s ease',
+        }}
+      >
+        ▶
       </button>
-      <div className="min-w-0">
-        <div className="truncate font-semibold" style={{ fontSize: 13, color: 'var(--dr-text)' }}>{art.title}</div>
-        <div className="truncate" style={{ fontSize: 11, color: '#9CA3AF', marginTop: 1 }}>
-          {art.publisher} &nbsp;·&nbsp; {art.published_at ? formatTimeAgo(art.published_at) : '—'}
+
+      {/* Title + publisher */}
+      <div className="min-w-0" onClick={onToggleExpand} style={{ cursor: 'pointer' }}>
+        <div
+          className="truncate font-semibold"
+          style={{ fontSize: 13, color: isExpanded ? 'var(--dr-blue)' : 'var(--dr-text)', transition: 'color 0.15s' }}
+        >
+          {art.title}
+        </div>
+        <div className="truncate" style={{ fontSize: 11, color: 'var(--dr-text-disabled)', marginTop: 1 }}>
+          {art.publisher}&nbsp;·&nbsp;{art.published_at ? formatTimeAgo(art.published_at) : '—'}
         </div>
       </div>
-      <div className="font-medium" style={{ fontSize: 12.5, color: scored.company ? 'var(--dr-text-secondary)' : 'var(--dr-text-muted)' }}>
+
+      {/* Company */}
+      <div className="truncate font-medium" style={{ fontSize: 12.5, color: scored.company ? 'var(--dr-text-secondary)' : 'var(--dr-text-muted)' }}>
         {scored.company ?? '—'}
       </div>
-      <div style={{ fontSize: 12.5, color: 'var(--dr-text-muted)' }}>{scored.country ?? '—'}</div>
-      <div className="flex items-center gap-1.5">
+
+      {/* Country */}
+      <div className="truncate" style={{ fontSize: 12.5, color: 'var(--dr-text-muted)' }}>
+        {scored.country ?? '—'}
+      </div>
+
+      {/* Signal + Score */}
+      <div className="flex items-center gap-1.5 flex-wrap">
         <SignalBadge signal={scored.signal_type} />
         <ScoreBadge score={scored.relevance_score} size="sm" />
+      </div>
+
+      {/* Inline quick-actions */}
+      <div className="flex items-center gap-1 justify-end">
+        <button
+          onClick={(e) => { e.stopPropagation(); onMarkReviewed(); }}
+          title="Mark as Reviewed"
+          className="cursor-pointer transition-colors hover:bg-green-50"
+          style={{
+            background: 'none', border: '1px solid #86EFAC', borderRadius: 5,
+            padding: '4px 7px', color: '#16A34A', fontSize: 12, lineHeight: 1,
+            display: 'flex', alignItems: 'center',
+          }}
+        >
+          ✓
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+          title="Dismiss"
+          className="cursor-pointer transition-colors hover:bg-red-50"
+          style={{
+            background: 'none', border: '1px solid #FECACA', borderRadius: 5,
+            padding: '4px 7px', color: '#EF4444', fontSize: 12, lineHeight: 1,
+            display: 'flex', alignItems: 'center',
+          }}
+        >
+          ✕
+        </button>
       </div>
     </div>
   );

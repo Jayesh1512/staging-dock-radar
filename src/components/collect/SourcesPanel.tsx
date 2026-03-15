@@ -22,14 +22,14 @@ export function SourcesPanel() {
       {/* LinkedIn - disabled */}
       <div className="flex items-center gap-1.5">
         <div className="flex-shrink-0" style={{ width: 16, height: 16, borderRadius: 4, border: '2px solid #D1D5DB', background: '#fff' }} />
-        <span className="font-medium" style={{ fontSize: 13, color: '#9CA3AF' }}>LinkedIn</span>
-        <span className="font-semibold" style={{ fontSize: 10, color: '#9CA3AF', background: '#F3F4F6', border: '1px solid #E5E7EB', padding: '1px 7px', borderRadius: 20 }}>coming soon</span>
+        <span className="font-medium" style={{ fontSize: 13, color: 'var(--dr-text-disabled)' }}>LinkedIn</span>
+        <span className="font-semibold" style={{ fontSize: 10, color: 'var(--dr-text-disabled)', background: '#F3F4F6', border: '1px solid #E5E7EB', padding: '1px 7px', borderRadius: 20 }}>coming soon</span>
       </div>
       {/* Facebook - disabled */}
       <div className="flex items-center gap-1.5">
         <div className="flex-shrink-0" style={{ width: 16, height: 16, borderRadius: 4, border: '2px solid #D1D5DB', background: '#fff' }} />
-        <span className="font-medium" style={{ fontSize: 13, color: '#9CA3AF' }}>Facebook</span>
-        <span className="font-semibold" style={{ fontSize: 10, color: '#9CA3AF', background: '#F3F4F6', border: '1px solid #E5E7EB', padding: '1px 7px', borderRadius: 20 }}>coming soon</span>
+        <span className="font-medium" style={{ fontSize: 13, color: 'var(--dr-text-disabled)' }}>Facebook</span>
+        <span className="font-semibold" style={{ fontSize: 10, color: 'var(--dr-text-disabled)', background: '#F3F4F6', border: '1px solid #E5E7EB', padding: '1px 7px', borderRadius: 20 }}>coming soon</span>
       </div>
     </div>
   );

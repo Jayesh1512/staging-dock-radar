@@ -10,12 +10,12 @@ export function Navbar() {
           </div>
           <div className="flex flex-col">
             <span className="font-bold leading-tight" style={{ fontSize: 15, color: 'var(--dr-blue)' }}>Dock Radar</span>
-            <span className="leading-tight" style={{ fontSize: 11, color: '#9CA3AF' }}>Social Listening & BD Intelligence</span>
+            <span className="leading-tight" style={{ fontSize: 11, color: 'var(--dr-text-disabled)' }}>Social Listening & BD Intelligence</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <span className="font-semibold rounded-full" style={{ fontSize: 11, padding: '3px 10px', background: 'var(--dr-blue-light)', color: 'var(--dr-blue)' }}>Phase 1</span>
-          <span className="font-medium" style={{ fontSize: 13, color: '#9CA3AF' }}>FlytBase</span>
+          <span className="font-medium" style={{ fontSize: 13, color: 'var(--dr-text-disabled)' }}>FlytBase</span>
         </div>
       </div>
     </header>

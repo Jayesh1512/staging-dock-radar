@@ -16,7 +16,7 @@ export function DateFilter({ days, onChange }: DateFilterProps) {
           value={days}
           onChange={(e) => onChange(Number(e.target.value))}
           className="text-center font-semibold focus:outline-2 focus:outline-[var(--dr-blue)]"
-          style={{ width: 52, padding: '6px 10px', border: '1px solid var(--dr-border)', borderRadius: 6, fontSize: 13, fontFamily: 'Inter, sans-serif', color: 'var(--dr-text)' }}
+          style={{ width: 52, padding: '6px 10px', border: '1px solid var(--dr-border)', borderRadius: 6, fontSize: 13, color: 'var(--dr-text)' }}
         />
         <span style={{ fontSize: 13, color: 'var(--dr-text-muted)' }}>days</span>
         <div className="flex gap-1">
@@ -27,7 +27,6 @@ export function DateFilter({ days, onChange }: DateFilterProps) {
               className="cursor-pointer transition-all"
               style={{
                 padding: '5px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600,
-                fontFamily: 'Inter, sans-serif',
                 border: `1px solid ${days === preset ? '#BFDBFE' : 'var(--dr-border)'}`,
                 background: days === preset ? 'var(--dr-blue-light)' : '#fff',
                 color: days === preset ? 'var(--dr-blue)' : 'var(--dr-text-muted)',

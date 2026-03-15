@@ -39,6 +39,7 @@ export const MOCK_RUNS: Run[] = [
 const articles: Article[] = [
   {
     id: 'art_001',
+    run_id: 'run_20260315_143000',
     source: 'google_news',
     title: 'Port of Santos deploys autonomous drone fleet for cargo inspection',
     url: 'https://example.com/port-santos-drones',
@@ -50,6 +51,7 @@ const articles: Article[] = [
   },
   {
     id: 'art_002',
+    run_id: 'run_20260315_143000',
     source: 'linkedin',
     title: 'Enel Green Power signs $12M drone inspection contract for wind farms',
     url: 'https://example.com/enel-drone-contract',
@@ -61,6 +63,7 @@ const articles: Article[] = [
   },
   {
     id: 'art_003',
+    run_id: 'run_20260315_143000',
     source: 'google_news',
     title: 'MPA Singapore issues tender for port surveillance drone system',
     url: 'https://example.com/mpa-singapore-tender',
@@ -72,6 +75,7 @@ const articles: Article[] = [
   },
   {
     id: 'art_004',
+    run_id: 'run_20260314_101500',
     source: 'google_news',
     title: 'Indian Railways to deploy DJI Dock 2 for track inspection across 5,000km network',
     url: 'https://example.com/indian-railways-dji',
@@ -83,6 +87,7 @@ const articles: Article[] = [
   },
   {
     id: 'art_005',
+    run_id: 'run_20260314_101500',
     source: 'google_news',
     title: 'Votorantim Cimentos uses drone-in-a-box for quarry monitoring in Minas Gerais',
     url: 'https://example.com/votorantim-drones',
@@ -94,6 +99,7 @@ const articles: Article[] = [
   },
   {
     id: 'art_006',
+    run_id: 'run_20260314_101500',
     source: 'google_news',
     title: 'DGCA India releases draft regulation for BVLOS commercial drone operations',
     url: 'https://example.com/dgca-bvlos-regulation',
@@ -105,6 +111,7 @@ const articles: Article[] = [
   },
   {
     id: 'art_007',
+    run_id: 'run_20260315_143000',
     source: 'linkedin',
     title: 'Major SE Asian port operator evaluates drone dock expansion across 8 terminals',
     url: 'https://example.com/se-asian-port-expansion',
@@ -116,6 +123,7 @@ const articles: Article[] = [
   },
   {
     id: 'art_008',
+    run_id: 'run_20260314_101500',
     source: 'google_news',
     title: 'Seoul Metro awards $8M contract for autonomous tunnel inspection drones',
     url: 'https://example.com/seoul-metro-contract',
@@ -127,6 +135,7 @@ const articles: Article[] = [
   },
   {
     id: 'art_009',
+    run_id: 'run_20260314_101500',
     source: 'google_news',
     title: 'Abu Dhabi Ports expands drone operations to Khalifa Port and KIZAD',
     url: 'https://example.com/abu-dhabi-ports-expansion',
@@ -139,6 +148,7 @@ const articles: Article[] = [
   // Dropped articles
   {
     id: 'art_010',
+    run_id: 'run_20260314_101500',
     source: 'google_news',
     title: 'DJI Mini 4 Pro review: best consumer drone of 2026',
     url: 'https://example.com/dji-mini-review',
@@ -150,6 +160,7 @@ const articles: Article[] = [
   },
   {
     id: 'art_011',
+    run_id: 'run_20260314_101500',
     source: 'google_news',
     title: 'Votorantim Cimentos uses drones for quarry monitoring',
     url: 'https://example.com/votorantim-drones-duplicate',
@@ -450,10 +461,12 @@ export const MOCK_ARTICLES_WITH_SCORES: ArticleWithScore[] = articles.map((artic
 
 export const MOCK_PIPELINE_STATS: PipelineStats = {
   totalFetched: 127,
-  afterDedup: 89,
-  afterDateFilter: 52,
+  afterDateFilter: 89,
+  afterDedup: 52,
+  afterScoreFilter: 25,
   stored: 25,
   dedupRemoved: 38,
+  scoreFilterRemoved: 0,
 };
 
 // ─── Run → Article mapping ───────────────────────

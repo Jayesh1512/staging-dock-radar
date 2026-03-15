@@ -1,44 +1,130 @@
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Navbar } from '@/components/shared/Navbar';
 import { StepTabs } from '@/components/shared/StepTabs';
 import { ConfigBar } from '@/components/shared/ConfigBar';
 import { CollectPanel } from '@/components/collect/CollectPanel';
 import { ScorePanel } from '@/components/score/ScorePanel';
 import { QueuePanel } from '@/components/queue/QueuePanel';
-import { MOCK_RUNS, MOCK_ARTICLES_WITH_SCORES, RUN_ARTICLE_MAP } from '@/data/mock-data';
 import { DEFAULTS } from '@/lib/constants';
-import type { ArticleWithScore, ArticleAction, ConfigItem, PipelineStats, Run } from '@/lib/types';
+import { useScore } from '@/hooks/use-score';
+import type { Article, ArticleWithScore, ArticleAction, ConfigItem, CollectResult, Run } from '@/lib/types';
 import { toast } from 'sonner';
+import { formatDateTimeIST } from '@/lib/utils';
+
+/** Async DB action persistence — non-blocking, warns user on failure so they can retry */
+function persistAction(articleId: string, action: string, actionsTaken?: ArticleAction[]) {
+  fetch('/api/articles/action', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ articleId, action, actions_taken: actionsTaken }),
+  }).then((res) => {
+    if (!res.ok) console.warn(`[persistAction] DB write failed for ${action} on ${articleId} (HTTP ${res.status})`);
+  }).catch((err) => {
+    console.error('[persistAction] Network error:', err);
+  });
+}
 
 export default function Dashboard() {
-  // ─── Core State ────────────────────────────────────
+  // ─── Core State ────────────────────────────────────────
   const [activeStep, setActiveStep] = useState(1);
   const [currentRun, setCurrentRun] = useState<Run | null>(null);
-  const [allRuns] = useState<Run[]>(MOCK_RUNS);
-  const [selectedRunId, setSelectedRunId] = useState(MOCK_RUNS[0].id);
+  const [allRuns, setAllRuns] = useState<Run[]>([]);
+  const [collectedArticles, setCollectedArticles] = useState<Article[]>([]);
+  const [collectedRegions, setCollectedRegions] = useState<string[]>([]);
+  const [selectedRunId, setSelectedRunId] = useState('');
   const [hasScored, setHasScored] = useState(false);
-  const [step3Enabled, setStep3Enabled] = useState(true);
+  const [step3Enabled, setStep3Enabled] = useState(false);
+  const [collectionComplete, setCollectionComplete] = useState(false);
+  const [scoringStarted, setScoringStarted] = useState(false);
+  const [dbLoaded, setDbLoaded] = useState(false);
 
-  // ─── Article State (overlay on mock data) ──────────
-  const [articles, setArticles] = useState<ArticleWithScore[]>(MOCK_ARTICLES_WITH_SCORES);
+  // ─── Article State ──────────────────────────────────────
+  const [currentRunScored, setCurrentRunScored] = useState<ArticleWithScore[]>([]);
+  const [articles, setArticles] = useState<ArticleWithScore[]>([]);
+  const [runArticleMap, setRunArticleMap] = useState<Record<string, string[]>>({});
 
-  // ─── Collect Config ────────────────────────────────
+  // ─── Scoring State (lifted so it survives tab navigation) ──
+  const { isScoring, progress, total, error: scoringError, partialResults, startScoring } = useScore();
+  const hasStartedRef = useRef(false);
+  const currentRunRef = useRef<Run | null>(null);
+  currentRunRef.current = currentRun;
+
+  // ─── Collect Config ────────────────────────────────────
   const [keywords, setKeywords] = useState<string[]>(['DJI Dock', 'Drone Deployment']);
   const [maxArticles, setMaxArticles] = useState<number>(DEFAULTS.maxArticles);
   const [minScore, setMinScore] = useState<number>(DEFAULTS.minScore);
   const [filterDays, setFilterDays] = useState<number>(DEFAULTS.filterDays);
 
-  // ─── Derived State ─────────────────────────────────
+  // ─── Load persisted data from DB on mount ──────────────
+  useEffect(() => {
+    async function loadFromDb() {
+      try {
+        const res = await fetch('/api/runs');
+        if (!res.ok) {
+          console.warn('[page] /api/runs returned', res.status);
+          return;
+        }
+        const data = await res.json() as {
+          runs: Run[];
+          scoredArticles: ArticleWithScore[];
+          runArticleMap: Record<string, string[]>;
+        };
+
+        if (data.runs.length > 0) {
+          setAllRuns(data.runs);
+          setSelectedRunId(data.runs[0].id);
+        }
+
+        if (data.scoredArticles.length > 0) {
+          // Restore the global queue from DB — only articles eligible for queue.
+          // Use the lowest min_score across all runs so no qualifying articles are hidden.
+          // If user changes minScore later, the live filter in Step 2/3 handles it.
+          const lowestMinScore = data.runs.length > 0
+            ? Math.min(...data.runs.map(r => r.min_score))
+            : DEFAULTS.minScore;
+          const queueArticles = data.scoredArticles.filter(a =>
+            a.scored.relevance_score >= lowestMinScore &&
+            !a.scored.drop_reason &&
+            !a.scored.is_duplicate,
+          );
+          setArticles(queueArticles);
+          setStep3Enabled(true);
+        }
+
+        if (data.runArticleMap) {
+          setRunArticleMap(data.runArticleMap);
+        }
+
+        console.log(`[page] DB loaded: ${data.runs.length} runs, ${data.scoredArticles.length} scored articles`);
+      } catch (err) {
+        // DB load failure is non-fatal — app works with empty state
+        console.warn('[page] Failed to load from DB:', err);
+      } finally {
+        setDbLoaded(true);
+      }
+    }
+    loadFromDb();
+  }, []);
+
+  // ─── Derived State ─────────────────────────────────────
   const queueCount = articles.filter(a => a.scored.status === 'new').length;
 
-  const scoredArticles = articles.filter(a => {
-    const runIds = RUN_ARTICLE_MAP[selectedRunId] ?? [];
-    return runIds.includes(a.article.id);
-  });
+  const scoredArticles = currentRunScored.length > 0
+    ? currentRunScored
+    : articles.filter(a => (runArticleMap[selectedRunId] ?? []).includes(a.article.id));
 
-  // ─── Action Helpers ────────────────────────────────
+  // ─── Scoring Trigger (lifted from ScorePanel) ────────────────────────────
+  useEffect(() => {
+    if (scoringStarted && !hasScored && !hasStartedRef.current && collectedArticles.length > 0) {
+      hasStartedRef.current = true;
+      startScoring(collectedArticles, handleScoringComplete, collectedRegions);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scoringStarted, hasScored, collectedArticles, startScoring]);
+
+  // ─── Action Helpers ────────────────────────────────────
   const getActions = useCallback((articleId: string): ArticleAction[] => {
     const article = articles.find(a => a.article.id === articleId);
     return article?.scored.actions_taken ?? [];
@@ -51,42 +137,94 @@ export default function Dashboard() {
     }));
   }, []);
 
-  // ─── Callbacks ─────────────────────────────────────
-  const handleCollectComplete = useCallback((_stats: PipelineStats) => {
-    const run = MOCK_RUNS[0];
+  // ─── Callbacks ─────────────────────────────────────────
+  const handleCollectComplete = useCallback((result: CollectResult) => {
+    const run: Run = {
+      id: result.runId,
+      keywords: result.keywords,
+      sources: ['google_news'],
+      regions: result.regions,
+      filter_days: result.filterDays,
+      min_score: minScore,
+      max_articles: maxArticles,
+      status: 'completed',
+      articles_fetched: result.stats.totalFetched,
+      articles_stored: result.stats.stored,
+      dedup_removed: result.stats.dedupRemoved,
+      created_at: new Date().toISOString(),
+      completed_at: new Date().toISOString(),
+    };
+    setAllRuns((prev) => [run, ...prev]);
     setCurrentRun(run);
     setSelectedRunId(run.id);
+    setCollectedArticles(result.articles);
+    setCollectedRegions(result.regions ?? []);
+    setCollectionComplete(true);
     setHasScored(false);
-    setActiveStep(2);
-  }, []);
+    hasStartedRef.current = false;
+    setScoringStarted(false);
+  }, [minScore, maxArticles]);
 
-  const handleScoringComplete = useCallback(() => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const handleScoringComplete = useCallback((results: ArticleWithScore[]) => {
+    // Gate 2 dedup already applied server-side in /api/score — results have correct is_duplicate flags
+    setCurrentRunScored(results);
+
+    setArticles(prev => {
+      const existingIds = new Set(prev.map(a => a.article.id));
+      const newOnes = results.filter(r =>
+        !existingIds.has(r.article.id) &&
+        r.scored.relevance_score >= minScore &&
+        !r.scored.drop_reason &&
+        !r.scored.is_duplicate,
+      );
+      return [...prev, ...newOnes];
+    });
+
+    const runId = currentRunRef.current?.id;
+    if (runId) {
+      setRunArticleMap(prev => ({
+        ...prev,
+        [runId]: results.map(r => r.article.id),
+      }));
+    }
+
     setHasScored(true);
     setStep3Enabled(true);
-    toast.success(`Queue ready — ${queueCount} articles`);
-  }, [queueCount]);
+    const queueable = results.filter(r => r.scored.status === 'new' && !r.scored.drop_reason && !r.scored.is_duplicate && r.scored.relevance_score >= minScore).length;
+    toast.success(`Queue ready — ${queueable} articles`);
+  }, [minScore]);
 
   const handleDismiss = useCallback((articleId: string) => {
-    updateArticle(articleId, (s) => ({ ...s, status: 'dismissed', dismissed_at: new Date().toISOString() }));
+    const dismissedAt = new Date().toISOString();
+    updateArticle(articleId, (s) => ({ ...s, status: 'dismissed', dismissed_at: dismissedAt }));
+    setCurrentRunScored(prev => prev.map(a =>
+      a.article.id === articleId
+        ? { ...a, scored: { ...a.scored, status: 'dismissed', dismissed_at: dismissedAt } }
+        : a
+    ));
+    persistAction(articleId, 'dismiss');
   }, [updateArticle]);
 
   const handleSlack = useCallback((articleId: string) => {
-    updateArticle(articleId, (s) => ({
-      ...s,
-      actions_taken: s.actions_taken.includes('slack') ? s.actions_taken : [...s.actions_taken, 'slack'],
-      slack_sent_at: new Date().toISOString(),
-    }));
+    updateArticle(articleId, (s) => {
+      const newActions = s.actions_taken.includes('slack') ? s.actions_taken : [...s.actions_taken, 'slack' as ArticleAction];
+      persistAction(articleId, 'slack', newActions);
+      return { ...s, actions_taken: newActions, slack_sent_at: new Date().toISOString() };
+    });
   }, [updateArticle]);
 
   const handleBookmark = useCallback((articleId: string) => {
-    updateArticle(articleId, (s) => ({
-      ...s,
-      actions_taken: s.actions_taken.includes('bookmarked') ? s.actions_taken : [...s.actions_taken, 'bookmarked'],
-    }));
+    updateArticle(articleId, (s) => {
+      const newActions = s.actions_taken.includes('bookmarked') ? s.actions_taken : [...s.actions_taken, 'bookmarked' as ArticleAction];
+      persistAction(articleId, 'bookmark', newActions);
+      return { ...s, actions_taken: newActions };
+    });
   }, [updateArticle]);
 
   const handleMarkReviewed = useCallback((articleId: string) => {
     updateArticle(articleId, (s) => ({ ...s, status: 'reviewed', reviewed_at: new Date().toISOString() }));
+    persistAction(articleId, 'review');
   }, [updateArticle]);
 
   const handleBulkDismiss = useCallback((articleIds: string[]) => {
@@ -94,13 +232,15 @@ export default function Dashboard() {
       if (!articleIds.includes(a.article.id)) return a;
       return { ...a, scored: { ...a.scored, status: 'dismissed', dismissed_at: new Date().toISOString() } };
     }));
+    // Persist each dismiss
+    articleIds.forEach(id => persistAction(id, 'dismiss'));
   }, []);
 
-  // ─── Config Bars ───────────────────────────────────
+  // ─── Config Bars ───────────────────────────────────────
   const step1Config: ConfigItem[] = [
-    { label: 'Max Articles', value: maxArticles, editable: true, type: 'number', onChange: (v) => setMaxArticles(v as number) },
+    { label: 'Max Articles from Initial Fetch', value: maxArticles, editable: true, type: 'number', onChange: (v) => setMaxArticles(v as number) },
     { label: 'Title Similarity', value: DEFAULTS.titleSimilarity, editable: false, type: 'number' },
-    { label: 'Min Score', value: minScore, editable: true, type: 'number', onChange: (v) => setMinScore(v as number) },
+    { label: 'Min AI Score', value: minScore, editable: true, type: 'number', onChange: (v) => setMinScore(v as number) },
   ];
 
   const step2Config: ConfigItem[] = [
@@ -113,7 +253,7 @@ export default function Dashboard() {
       editable: true,
       type: 'select',
       options: allRuns.map(r => ({
-        label: `${new Date(r.created_at).toLocaleDateString()} — ${r.keywords.join(', ')}`,
+        label: `${formatDateTimeIST(r.created_at)} — ${r.keywords.join(', ')}`,
         value: r.id,
       })),
       onChange: (v) => setSelectedRunId(v as string),
@@ -135,11 +275,14 @@ export default function Dashboard() {
             <ConfigBar items={step1Config} />
             <CollectPanel
               keywords={keywords}
+              maxArticles={maxArticles}
               onAddKeyword={(kw) => setKeywords(prev => [...prev, kw])}
               onRemoveKeyword={(i) => setKeywords(prev => prev.filter((_, idx) => idx !== i))}
               filterDays={filterDays}
               onFilterDaysChange={setFilterDays}
               onCollectComplete={handleCollectComplete}
+              collectionComplete={collectionComplete}
+              onProceedToScoring={() => { setActiveStep(2); setScoringStarted(true); }}
             />
           </>
         )}
@@ -150,9 +293,12 @@ export default function Dashboard() {
               currentRun={currentRun}
               scoredArticles={scoredArticles}
               minScore={minScore}
-              onScoringComplete={handleScoringComplete}
               onDismiss={handleDismiss}
-              hasScored={hasScored}
+              isScoring={isScoring}
+              progress={progress}
+              total={total}
+              scoringError={scoringError}
+              partialResults={partialResults}
             />
           </>
         )}
@@ -160,7 +306,7 @@ export default function Dashboard() {
           <QueuePanel
             articles={articles}
             runs={allRuns}
-            runArticleMap={RUN_ARTICLE_MAP}
+            runArticleMap={runArticleMap}
             getActions={getActions}
             onSlack={handleSlack}
             onBookmark={handleBookmark}

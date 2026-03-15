@@ -39,9 +39,20 @@ export function ScoredTable({ articles, onDismiss }: ScoredTableProps) {
             <tr key={a.scored.id} className="hover:bg-[#FAFAFA]" style={{ borderBottom: i < articles.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
               <td style={{ padding: '11px 12px' }}><ScoreBadge score={a.scored.relevance_score} /></td>
               <td style={{ padding: '11px 12px' }}>
-                <span className="block font-semibold truncate" style={{ fontSize: 13, color: 'var(--dr-text)', maxWidth: 320 }}>
+                <a
+                  href={a.article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block font-semibold truncate hover:underline"
+                  style={{ fontSize: 13, color: 'var(--dr-blue)', maxWidth: 320 }}
+                >
                   {a.article.title}
-                </span>
+                </a>
+                {a.article.publisher && (
+                  <span style={{ fontSize: 11, color: 'var(--dr-text-muted)', marginTop: 2, display: 'block' }}>
+                    {a.article.publisher} · {a.article.published_at ? formatTimeAgo(a.article.published_at) : ''}
+                  </span>
+                )}
               </td>
               <td style={{ padding: '11px 12px', fontSize: 12.5, fontWeight: 500, color: a.scored.company ? 'var(--dr-text-secondary)' : 'var(--dr-text-muted)' }}>
                 {a.scored.company ?? '—'}
@@ -49,14 +60,14 @@ export function ScoredTable({ articles, onDismiss }: ScoredTableProps) {
               <td style={{ padding: '11px 12px', fontSize: 12.5, color: 'var(--dr-text-muted)' }}>{a.scored.country ?? '—'}</td>
               <td style={{ padding: '11px 12px' }}><SignalBadge signal={a.scored.signal_type} /></td>
               <td style={{ padding: '11px 12px', fontSize: 12.5, color: 'var(--dr-text-muted)' }}>{a.scored.use_case ?? '—'}</td>
-              <td style={{ padding: '11px 12px', textAlign: 'center', fontSize: 11, fontWeight: a.scored.flytbase_mentioned ? 600 : 400, color: a.scored.flytbase_mentioned ? '#16A34A' : '#9CA3AF' }}>
+              <td style={{ padding: '11px 12px', textAlign: 'center', fontSize: 11, fontWeight: a.scored.flytbase_mentioned ? 600 : 400, color: a.scored.flytbase_mentioned ? '#16A34A' : 'var(--dr-text-disabled)' }}>
                 {a.scored.flytbase_mentioned ? 'Yes' : 'No'}
               </td>
               <td style={{ padding: '11px 12px', textAlign: 'center' }}>
                 <button
                   onClick={() => onDismiss(a.article.id)}
                   className="cursor-pointer transition-colors hover:text-red-500"
-                  style={{ background: 'none', border: 'none', color: '#D1D5DB', fontSize: 16, padding: '2px 6px', borderRadius: 4, fontFamily: 'Inter, sans-serif' }}
+                  style={{ background: 'none', border: 'none', color: '#D1D5DB', fontSize: 16, padding: '2px 6px', borderRadius: 4 }}
                 >
                   ×
                 </button>

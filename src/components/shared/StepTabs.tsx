@@ -28,10 +28,10 @@ export function StepTabs({ activeStep, onStepChange, queueCount, step3Enabled }:
               disabled={isDisabled}
               className={cn(
                 "relative flex items-center gap-2 whitespace-nowrap border-b-2 -mb-px transition-colors",
-                isActive ? "border-[var(--dr-blue)] text-[var(--dr-blue)]" : "border-transparent text-[#9CA3AF] hover:text-[var(--dr-text-muted)]",
+                isActive ? "border-[var(--dr-blue)] text-[var(--dr-blue)]" : "border-transparent text-[var(--dr-text-disabled)] hover:text-[var(--dr-text-muted)]",
                 isDisabled && "opacity-40 cursor-not-allowed"
               )}
-              style={{ padding: '14px 20px', fontSize: 13.5, fontWeight: 500, fontFamily: 'Inter, sans-serif' }}
+              style={{ padding: '14px 20px', fontSize: 13.5, fontWeight: 500 }}
             >
               <span
                 className="rounded-full"

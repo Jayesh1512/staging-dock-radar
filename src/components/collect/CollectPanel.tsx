@@ -1,4 +1,5 @@
 "use client";
+import { useState } from 'react';
 import { KeywordInput } from './KeywordInput';
 import { SourcesPanel } from './SourcesPanel';
 import { DateFilter } from './DateFilter';
@@ -6,26 +7,42 @@ import { RegionSelector } from './RegionSelector';
 import { PipelineStats } from './PipelineStats';
 import { useCollect } from '@/hooks/use-collect';
 import { ALL_COUNTRIES } from '@/lib/constants';
-import type { PipelineStats as PipelineStatsType } from '@/lib/types';
-import { useState } from 'react';
+import type { CollectResult } from '@/lib/types';
 
 interface CollectPanelProps {
   keywords: string[];
+  maxArticles: number;
   onAddKeyword: (kw: string) => void;
   onRemoveKeyword: (i: number) => void;
   filterDays: number;
   onFilterDaysChange: (days: number) => void;
-  onCollectComplete: (stats: PipelineStatsType) => void;
+  onCollectComplete: (result: CollectResult) => void;
+  collectionComplete: boolean;
+  onProceedToScoring: () => void;
 }
 
-export function CollectPanel({ keywords, onAddKeyword, onRemoveKeyword, filterDays, onFilterDaysChange, onCollectComplete }: CollectPanelProps) {
-  const { isCollecting, stats, startCollect } = useCollect();
+export function CollectPanel({
+  keywords,
+  maxArticles,
+  onAddKeyword,
+  onRemoveKeyword,
+  filterDays,
+  onFilterDaysChange,
+  onCollectComplete,
+  collectionComplete,
+  onProceedToScoring,
+}: CollectPanelProps) {
+  const { isCollecting, stats, error, startCollect } = useCollect();
   const [regions, setRegions] = useState<string[]>([...ALL_COUNTRIES]);
 
   const handleCollect = async () => {
     if (keywords.length === 0) return;
-    const result = await startCollect();
-    onCollectComplete(result);
+    try {
+      const result = await startCollect(keywords, regions, filterDays, maxArticles);
+      onCollectComplete(result);
+    } catch {
+      // error is already set in hook state — displayed below
+    }
   };
 
   return (
@@ -33,10 +50,12 @@ export function CollectPanel({ keywords, onAddKeyword, onRemoveKeyword, filterDa
       <div style={{ padding: 20 }}>
         <SourcesPanel />
         <KeywordInput keywords={keywords} onAdd={onAddKeyword} onRemove={onRemoveKeyword} />
-        <div className="grid grid-cols-2 gap-4" style={{ marginBottom: 20 }}>
+
+        <div className="flex flex-col gap-4" style={{ marginBottom: 20 }}>
           <DateFilter days={filterDays} onChange={onFilterDaysChange} />
           <RegionSelector selected={regions} onChange={setRegions} />
         </div>
+
         <div className="flex justify-center" style={{ marginBottom: 20 }}>
           <button
             onClick={handleCollect}
@@ -45,17 +64,46 @@ export function CollectPanel({ keywords, onAddKeyword, onRemoveKeyword, filterDa
             style={{
               background: 'var(--dr-blue)', color: '#fff',
               padding: '10px 28px', borderRadius: 'var(--dr-radius-btn)',
-              border: 'none', fontSize: 14, fontWeight: 600, fontFamily: 'Inter, sans-serif',
+              border: 'none', fontSize: 14, fontWeight: 600,
             }}
           >
-            {isCollecting ? (
-              <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Collecting...</>
-            ) : (
-              <>🔍&nbsp;&nbsp;Collect News</>
-            )}
+            {isCollecting
+              ? <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Collecting...</>
+              : <>🔍&nbsp;&nbsp;Collect News</>
+            }
           </button>
         </div>
+
+        {/* Error state */}
+        {error && (
+          <div
+            style={{
+              background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8,
+              padding: '10px 14px', marginBottom: 12,
+              fontSize: 13, color: '#991B1B',
+            }}
+          >
+            <strong>Collection failed:</strong> {error}
+          </div>
+        )}
+
         {stats && <PipelineStats stats={stats} />}
+
+        {collectionComplete && (
+          <div className="flex justify-center" style={{ marginTop: 20 }}>
+            <button
+              onClick={onProceedToScoring}
+              className="flex items-center gap-2 cursor-pointer transition-colors"
+              style={{
+                background: 'var(--dr-blue)', color: '#fff',
+                padding: '10px 28px', borderRadius: 'var(--dr-radius-btn)',
+                border: 'none', fontSize: 14, fontWeight: 600,
+              }}
+            >
+              Start Scoring
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

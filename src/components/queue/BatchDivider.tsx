@@ -1,5 +1,6 @@
 "use client";
 import type { Run } from '@/lib/types';
+import { formatDateTimeIST } from '@/lib/utils';
 
 interface BatchDividerProps {
   run: Run;
@@ -7,11 +8,11 @@ interface BatchDividerProps {
   allSelected: boolean;
   onSelectAll: () => void;
   onBulkDismiss: () => void;
+  onMarkAllReviewed: () => void;
 }
 
-export function BatchDivider({ run, signalCount, allSelected, onSelectAll, onBulkDismiss }: BatchDividerProps) {
-  const dateStr = new Date(run.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const timeStr = new Date(run.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+export function BatchDivider({ run, signalCount, allSelected, onSelectAll, onBulkDismiss, onMarkAllReviewed }: BatchDividerProps) {
+  const [dateStr, timeStr] = formatDateTimeIST(run.created_at).split(', ');
 
   return (
     <div className="flex items-center" style={{ margin: '24px 0 12px' }}>
@@ -23,11 +24,29 @@ export function BatchDivider({ run, signalCount, allSelected, onSelectAll, onBul
         <span style={{ color: 'var(--dr-border)', fontSize: 12 }}>•</span>
         <span style={{ fontSize: 11.5, color: 'var(--dr-text-muted)' }}>{signalCount} signals</span>
       </div>
-      <div className="flex items-center gap-2 ml-2">
-        <button onClick={onSelectAll} className="flex items-center gap-1.5 cursor-pointer" style={{ padding: '4px 10px', border: '1px solid var(--dr-border)', borderRadius: 6, background: '#fff', fontSize: 11.5, fontWeight: 600, color: 'var(--dr-text-muted)', fontFamily: 'Inter, sans-serif' }}>
+      <div className="flex items-center gap-1.5 ml-2">
+        <button
+          onClick={onSelectAll}
+          title={allSelected ? 'Deselect all' : 'Select all articles in this batch'}
+          className="flex items-center gap-1.5 cursor-pointer"
+          style={{ padding: '4px 10px', border: '1px solid var(--dr-border)', borderRadius: 6, background: '#fff', fontSize: 11.5, fontWeight: 600, color: 'var(--dr-text-muted)' }}
+        >
           {allSelected ? '☑' : '☐'} Select All
         </button>
-        <button onClick={onBulkDismiss} className="flex items-center gap-1.5 cursor-pointer" style={{ padding: '4px 10px', border: '1px solid #FECACA', borderRadius: 6, background: '#FFF5F5', fontSize: 11.5, fontWeight: 600, color: '#EF4444', fontFamily: 'Inter, sans-serif' }}>
+        <button
+          onClick={onMarkAllReviewed}
+          title="Mark all articles in this batch as reviewed"
+          className="flex items-center gap-1.5 cursor-pointer"
+          style={{ padding: '4px 10px', border: '1.5px solid #86EFAC', borderRadius: 6, background: '#F0FDF4', fontSize: 11.5, fontWeight: 600, color: '#16A34A' }}
+        >
+          ✓ Mark All Reviewed
+        </button>
+        <button
+          onClick={onBulkDismiss}
+          title="Dismiss all selected articles in this batch"
+          className="flex items-center gap-1.5 cursor-pointer"
+          style={{ padding: '4px 10px', border: '1px solid #FECACA', borderRadius: 6, background: '#FFF5F5', fontSize: 11.5, fontWeight: 600, color: '#EF4444' }}
+        >
           ⊗ Bulk Dismiss
         </button>
       </div>

@@ -15,12 +15,13 @@ export function PipelineStats({ stats }: PipelineStatsProps) {
       <div className="flex items-center flex-wrap gap-1" style={{ marginBottom: 12 }}>
         {[
           { label: 'Fetched', num: stats.totalFetched, green: false },
-          { label: 'After Dedup', num: stats.afterDedup, green: false },
           { label: 'Date Filtered', num: stats.afterDateFilter, green: false },
+          { label: 'After Dedup', num: stats.afterDedup, green: false },
+          { label: 'Score Filtered', num: stats.afterScoreFilter, green: false },
           { label: 'Stored', num: stats.stored, green: true },
         ].map((step, i) => (
           <div key={step.label} className="flex items-center gap-1">
-            {i > 0 && <span style={{ color: '#9CA3AF', fontSize: 14, margin: '0 2px' }}>→</span>}
+            {i > 0 && <span style={{ color: 'var(--dr-text-disabled)', fontSize: 14, margin: '0 2px' }}>→</span>}
             <div
               className="flex items-center gap-1.5"
               style={{
@@ -39,7 +40,7 @@ export function PipelineStats({ stats }: PipelineStatsProps) {
         <div style={{ height: '100%', borderRadius: 4, background: 'var(--dr-blue)', width: `${pct}%` }} />
       </div>
       <div style={{ fontSize: 12, color: 'var(--dr-text-muted)' }}>
-        <strong style={{ color: '#16A34A' }}>{stats.stored} articles</strong> ready for scoring &nbsp;·&nbsp; {stats.dedupRemoved} duplicates removed
+        <strong style={{ color: '#16A34A' }}>{stats.stored} articles</strong> ready for scoring &nbsp;·&nbsp; {stats.dedupRemoved} duplicates removed &nbsp;·&nbsp; {stats.scoreFilterRemoved} already scored filtered
       </div>
     </div>
   );

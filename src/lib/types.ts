@@ -21,6 +21,7 @@ export interface Run {
 
 export interface Article {
   id: string;
+  run_id: string;
   source: ArticleSource;
   title: string;
   url: string;
@@ -29,6 +30,10 @@ export interface Article {
   publisher: string | null;
   published_at: string | null;
   created_at: string;
+  /** Real article URL after following redirects, captured during scoring body fetch.
+   *  Undefined at collection time; set by /api/score once article body is fetched.
+   *  Used by Slack for unfurl so og:image shows instead of the Google News page. */
+  resolved_url?: string;
 }
 
 export interface Person {
@@ -74,8 +79,19 @@ export interface PipelineStats {
   totalFetched: number;
   afterDedup: number;
   afterDateFilter: number;
+  afterScoreFilter: number;
   stored: number;
   dedupRemoved: number;
+  scoreFilterRemoved: number;
+}
+
+export interface CollectResult {
+  articles: Article[];
+  stats: PipelineStats;
+  runId: string;
+  keywords: string[];
+  regions: string[];
+  filterDays: number;
 }
 
 export interface ConfigItem {

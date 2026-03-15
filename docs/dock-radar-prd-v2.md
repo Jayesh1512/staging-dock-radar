@@ -56,7 +56,7 @@ User inputs keywords + filters + sources
     |
     v
 Step 1: COLLECT (no LLM)
-  Google News RSS -> Date filter -> Dedup Gate 1 (URL + title) -> Store (Shuffled the logic to optimize filter by using date earlier to dedup. Consider this approach for rest of the relevant places as applicable) 
+  Google News RSS -> Date filter -> Dedup Gate 1 (URL + title) -> Store (I shuffled the logic at 1246 IST on 15 Mar to optimize filter by using date earlier to dedup. Consider this approach for rest of the relevant places as applicable) 
     |
     v
 Step 2: SCORE (GPT-4o, auto-triggered)
@@ -251,7 +251,7 @@ Grouped hierarchical selector. **Default: all countries selected (Global checked
 
 **Scoring Timing**: ~3 seconds simulation, increments every 200ms.
 
-**Scoring via GPT-4o**:
+**Scoring via GPT-4o / Other specied Models like Gemini and OpenAI**:
 1. Check cache: skip articles already scored (from previous runs)
 2. Send uncached articles to GPT-4o in batch
 3. Extract per article: relevanceScore, company, country, city, useCase, signalType, summary, flytbaseMentioned, persons[], entities[], dropReason
@@ -262,16 +262,15 @@ Grouped hierarchical selector. **Default: all countries selected (Global checked
 **Scoring Criteria**:
 | Band | Score | Label | Criteria |
 |------|-------|-------|----------|
-| Hot Lead | 90-100 | Hot Lead | Named buyer + named person quoted + specific deployment + active signal |
-| Strong | 70-89 | Strong Signal | Company identified, deployment happening or planned |
+| Hot Lead | 70-100 | Hot Lead | Named buyer + named person quoted + specific deployment + active signal + Strong buying or implementation intent + Company / operator / enterprise / government identified, deployment happening or planned, Strong buying or implementation intent | 
 | Moderate | 50-69 | Moderate Signal | Interest shown, details fuzzy, pilot program |
-| Background | 30-49 | Background Intel | Industry trend, regulation, no specific buyer |
+| Background | 30-49 | Background Intel | Industry trend, regulation news, no specific buyer, marketing, promotion |
 | Noise | 0-29 | Noise | Opinion, review, OEM marketing, consumer |
 
 **Special Rules**:
-- DJI, Skydio, Autel, Parrot, senseFly = OEMs, NOT signals. Extract the BUYER organization.
+- DJI, Skydio, Autel, Parrot, senseFly = OEMs, NOT signals. Extract the BUYER organization and not OEMs.
 - `country` = where event happens, NOT where published
-- If city mentioned, always infer country
+- If city mentioned, always infer city-country
 - All output in English regardless of article language
 - `flytbaseMentioned` = true if FlytBase appears in article
 
