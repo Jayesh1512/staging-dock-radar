@@ -292,7 +292,7 @@ Grouped hierarchical selector. **Default: all countries selected (Global checked
 | Country | 100px | Where event happens |
 | Signal | 110px | Signal type badge (color-coded) |
 | Use Case | 80px | Short label |
-| FlytBase | 40px | FlytBase mentioned flag |
+| FlytBase | 56px | "Yes" (green) or "No" (gray) — self-explanatory text, no color dot |
 | Dismiss | 40px | X icon button |
 
 **Dropped Articles Panel**:

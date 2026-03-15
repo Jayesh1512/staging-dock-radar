@@ -473,7 +473,7 @@
     }
     .queue-row {
       display: grid;
-      grid-template-columns: 28px 24px 1fr 130px 80px 130px 52px;
+      grid-template-columns: 28px 24px 1fr 130px 80px 180px;
       align-items: center; gap: 12px;
       padding: 12px 16px;
       border-bottom: 1px solid #F3F4F6;
@@ -497,7 +497,7 @@
     .queue-article-meta { font-size: 11px; color: #9CA3AF; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .queue-company { font-size: 12.5px; color: #374151; font-weight: 500; }
     .queue-country { font-size: 12.5px; color: var(--muted); }
-    .queue-signal-score { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+    .queue-signal-score { display: flex; flex-direction: row; gap: 6px; align-items: center; }
 
     /* ─── ARTICLE DRAWER ───────────────────────────────────────── */
     .drawer-wrap {
@@ -994,8 +994,8 @@
                 <th style="width:72px;">Country</th>
                 <th>Signal</th>
                 <th>Use Case</th>
-                <th style="width:40px;">FlytBase</th>
-                <th style="width:36px;"></th>
+                <th style="width:56px;text-align:center;">FlytBase</th>
+                <th style="width:56px;text-align:center;">Dismiss</th>
               </tr>
             </thead>
             <tbody>
@@ -1007,8 +1007,8 @@
                 <td style="font-size:12.5px;color:var(--muted);">Brazil</td>
                 <td><span class="signal-badge sig-deployment">DEPLOYMENT</span></td>
                 <td style="font-size:12.5px;color:var(--muted);">Port Security</td>
-                <td></td>
-                <td><button class="dismiss-btn">×</button></td>
+                <td style="font-size:11px;color:#9CA3AF;text-align:center;">No</td>
+                <td style="text-align:center;"><button class="dismiss-btn">×</button></td>
               </tr>
               <!-- Row 2 — 90 green -->
               <tr>
@@ -1018,8 +1018,8 @@
                 <td style="font-size:12.5px;color:var(--muted);">Italy</td>
                 <td><span class="signal-badge sig-contract">CONTRACT</span></td>
                 <td style="font-size:12.5px;color:var(--muted);">Power Line Inspection</td>
-                <td></td>
-                <td><button class="dismiss-btn">×</button></td>
+                <td style="font-size:11px;color:#9CA3AF;text-align:center;">No</td>
+                <td style="text-align:center;"><button class="dismiss-btn">×</button></td>
               </tr>
               <!-- Row 3 — 85 blue -->
               <tr>
@@ -1029,8 +1029,8 @@
                 <td style="font-size:12.5px;color:var(--muted);">India</td>
                 <td><span class="signal-badge sig-deployment">DEPLOYMENT</span></td>
                 <td style="font-size:12.5px;color:var(--muted);">Rail Survey</td>
-                <td><span class="fb-dot"></span></td>
-                <td><button class="dismiss-btn">×</button></td>
+                <td style="font-size:11px;color:#16A34A;font-weight:600;text-align:center;">Yes</td>
+                <td style="text-align:center;"><button class="dismiss-btn">×</button></td>
               </tr>
               <!-- Row 4 — 78 blue -->
               <tr>
@@ -1040,8 +1040,8 @@
                 <td style="font-size:12.5px;color:var(--muted);">Brazil</td>
                 <td><span class="signal-badge sig-deployment">DEPLOYMENT</span></td>
                 <td style="font-size:12.5px;color:var(--muted);">Mining Survey</td>
-                <td></td>
-                <td><button class="dismiss-btn">×</button></td>
+                <td style="font-size:11px;color:#9CA3AF;text-align:center;">No</td>
+                <td style="text-align:center;"><button class="dismiss-btn">×</button></td>
               </tr>
               <!-- Row 5 — 72 blue -->
               <tr>
@@ -1051,8 +1051,8 @@
                 <td style="font-size:12.5px;color:var(--muted);">Singapore</td>
                 <td><span class="signal-badge sig-tender">TENDER</span></td>
                 <td style="font-size:12.5px;color:var(--muted);">Maritime Surveillance</td>
-                <td></td>
-                <td><button class="dismiss-btn">×</button></td>
+                <td style="font-size:11px;color:#9CA3AF;text-align:center;">No</td>
+                <td style="text-align:center;"><button class="dismiss-btn">×</button></td>
               </tr>
               <!-- Row 6 — 61 yellow -->
               <tr>
@@ -1062,8 +1062,8 @@
                 <td style="font-size:12.5px;color:var(--muted);">Indonesia</td>
                 <td><span class="signal-badge sig-expansion">EXPANSION</span></td>
                 <td style="font-size:12.5px;color:var(--muted);">Port Security</td>
-                <td></td>
-                <td><button class="dismiss-btn">×</button></td>
+                <td style="font-size:11px;color:#9CA3AF;text-align:center;">No</td>
+                <td style="text-align:center;"><button class="dismiss-btn">×</button></td>
               </tr>
             </tbody>
           </table>
@@ -1152,7 +1152,6 @@
                 <span class="signal-badge sig-deployment">DEPLOYMENT</span>
                 <span class="score-badge score-green" style="font-size:11px;height:20px;width:32px;">92</span>
               </div>
-              <div></div>
             </div>
           </div>
           <!-- Row B -->
@@ -1170,7 +1169,6 @@
                 <span class="signal-badge sig-contract">CONTRACT</span>
                 <span class="score-badge score-green" style="font-size:11px;height:20px;width:32px;">90</span>
               </div>
-              <div></div>
             </div>
           </div>
           <!-- Row C -->
@@ -1188,7 +1186,6 @@
                 <span class="signal-badge sig-tender">TENDER</span>
                 <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">72</span>
               </div>
-              <div></div>
             </div>
           </div>
         </div>
@@ -1226,7 +1223,6 @@
                 <span class="signal-badge sig-deployment">DEPLOYMENT</span>
                 <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">85</span>
               </div>
-              <div class="fb-mention"><span class="fb-dot" title="FlytBase mentioned"></span></div>
             </div>
 
             <!-- ─── ARTICLE DRAWER ─────────────────────────── -->
@@ -1355,7 +1351,6 @@ https://timesofindia.com/article/indian-railways-200-drones-flytbase-2026...</te
                 <span class="signal-badge sig-deployment">DEPLOYMENT</span>
                 <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">78</span>
               </div>
-              <div></div>
             </div>
           </div>
 
@@ -1374,7 +1369,6 @@ https://timesofindia.com/article/indian-railways-200-drones-flytbase-2026...</te
                 <span class="signal-badge sig-regulation">REGULATION</span>
                 <span class="score-badge score-yellow" style="font-size:11px;height:20px;width:32px;">55</span>
               </div>
-              <div></div>
             </div>
           </div>
         </div>
