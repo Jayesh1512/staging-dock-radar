@@ -2,6 +2,7 @@
 
 > Pre-build analysis covering state architecture, UX flow, type interfaces, component design, and behavior edge cases.
 > Each gap includes the problem, recommended solution, and reasoning.
+> Last updated: March 15, 2026 — includes all design decisions from extended review sessions.
 
 ---
 
@@ -215,6 +216,19 @@ Only two actual code changes emerge from this entire analysis. Everything else i
 ```typescript
 // types.ts — add to ConfigItem interface:
 options?: { label: string; value: string }[];
+// Also add 'toggle' type for Review Gate:
+type: 'number' | 'text' | 'select' | 'toggle';
+
+// Also add SlackMessage interface:
+export interface SlackMessage {
+  id: string;
+  article_id: string;
+  scored_id: string;
+  channel_id: string;
+  message_ts: string;
+  message_text: string;
+  sent_at: string;
+}
 
 // constants.ts — add:
 export const SOURCE_BADGE_COLORS: Record<ArticleSource, { bg: string; text: string }> = {
@@ -223,3 +237,161 @@ export const SOURCE_BADGE_COLORS: Record<ArticleSource, { bg: string; text: stri
   facebook:    { bg: '#EEF2FF', text: '#4338CA' },
 };
 ```
+
+---
+
+## Extended Decisions — Round 2 Review
+
+The following decisions were made in a second design review session and supersede or extend the above.
+
+---
+
+### DECISION 1 — LLM Model parameter removed entirely
+
+**Decision:** Remove "LLM Model" from both Step 1 and Step 2 config bars. GPT-4o is baked in for Phase 1. No user-facing display.
+
+**Reasoning:** Adds no value to the user in Phase 1. Will be re-introduced as a selector in Phase 2 when multi-provider support is built.
+
+---
+
+### DECISION 2 — Min Score moved to Step 1, display-only in Step 2
+
+**Decision:** Min Score is now captured in Step 1 config bar (editable). It appears as a read-only display token in Step 2. It cannot be changed after collection starts.
+
+**Design principle confirmed:** All collection parameters are immutable after Step 1 completes. Changing any parameter requires starting a new collection.
+
+**Full Step 1 config bar:** `Max Articles [editable] | Title Similarity: 0.80 [readonly] | Min Score [editable] | Review Gate [toggle]`
+
+**Full Step 2 config bar:** `Max Articles [readonly] | Min Score [readonly] | Title Similarity: 0.80 [readonly] | Run: [dropdown — only interactive element]`
+
+---
+
+### DECISION 3 — Review Gate toggle in Step 1 config bar
+
+**Decision:** Add a `Review Gate` toggle switch to Step 1 config bar.
+
+- **ON:** After scoring completes, Step 2 shows a "Proceed to Queue (N articles) →" button. User must click it to advance to Step 3. Allows inspection and dismissal of scored articles before they enter the queue.
+- **OFF (default):** After scoring completes, Step 3 tab unlocks + toast "Queue ready — N articles". Step 2 is display-only. User navigates manually.
+
+**ConfigItem type change:** Add `'toggle'` to the `type` union.
+
+---
+
+### DECISION 4 — Sources panel in Step 1 CollectPanel
+
+**Decision:** Add a Sources panel to `CollectPanel`, positioned below `KeywordInput` and above the DateFilter/RegionSelector form grid.
+
+**Layout:** Horizontal row. Label "Sources to scan:" on left. Three source pills on right:
+- `[✓] Google News` — enabled, checked by default
+- `[○] LinkedIn (coming soon)` — disabled, unchecked, grayed, "coming soon" pill
+- `[○] Facebook (coming soon)` — disabled, unchecked, grayed, "coming soon" pill
+
+**Default selection:** Google News only.
+
+---
+
+### DECISION 5 — Queue redesigned as batch sections
+
+**Decision:** Queue is no longer a flat single table. Articles are grouped by the run that discovered them, with a visual divider for each batch.
+
+**Batch divider format:**
+```
+━━━  [Run keywords]  •  [Date, Time]  •  [N signals]  ━━━━━━━━━━━━━  [□ Select All]  [⊗ Bulk Dismiss]
+```
+
+**Rules:**
+- Latest run batch appears first
+- Within a batch, articles sorted by score descending
+- Each batch has its own Select All + Bulk Dismiss
+- Global Select All removed from QueuePanel header
+- Cross-batch dismissal is done batch by batch (each batch's Bulk Dismiss only affects its own rows)
+
+---
+
+### DECISION 6 — Multi-run article batch ownership
+
+**Decision:** An article lives in the **earliest run** that discovered it. If the same normalized URL is found in Run 2 that already existed from Run 1, it remains in Run 1's batch (UPSERT with ON CONFLICT DO NOTHING). If already acted on in Run 1, it does not resurface in Run 2's batch.
+
+---
+
+### DECISION 7 — Queue is a global backlog, not per-run
+
+**Decision:** The Queue is a persistent global inbox. New collections ADD to the backlog — they do not replace it. Unprocessed articles from Run 1 remain visible alongside new articles from Run 2.
+
+**Queue logic:**
+- `Queue` = all `ScoredArticles` WHERE `status='new'` (any run)
+- `Sent` = all `ScoredArticles` WHERE `slack_sent_at IS NOT NULL`
+- `Bookmarked` = all `ScoredArticles` WHERE `status='bookmarked'`
+- `Dismissed` = hidden permanently, never displayed
+
+---
+
+### DECISION 8 — Dismiss is permanent, multiple soft actions allowed
+
+**Decision:**
+- `Dismiss` sets `status='dismissed'` immediately. Row vanishes. No undo. No confirmation. Toast: "Dismissed".
+- `Slack Internally` sets `slack_sent_at` timestamp. Status may remain `new` or `bookmarked`. Toast: "Sent to #dock-radar".
+- `Bookmark` sets `status='bookmarked'`. Row moves to Bookmarked section.
+- A user can both Slack AND Bookmark the same article. Dismiss overrides all — once dismissed, always gone.
+
+---
+
+### DECISION 9 — Sent/Bookmarked sections are read-only
+
+**Decision:** Sent and Bookmarked sections below the queue table contain read-only rows. No checkbox, no expand trigger, no article drawer.
+
+**Columns:** Title (link) | Company | Country | Signal badge | Score badge | Timestamp ("Sent 2h ago" / "Bookmarked 1d ago")
+
+---
+
+### DECISION 10 — Dismissed articles never expire
+
+**Decision:** Dismissed articles are permanently suppressed. No expiry date. If the same article resurfaces in a future run, it stays dismissed.
+
+**Rationale:** Simplicity and consistency. If a user needs to reconsider, this is a manual override use case for Phase 2.
+
+---
+
+### DECISION 11 — Scoring shows cached article count
+
+**Decision:** The scoring progress bar in Step 2 shows a secondary line: "X already cached from previous runs". This makes the "smart memory" system visible and builds user trust.
+
+---
+
+### DECISION 12 — ArticleDetail.tsx is left-column content of ArticleDrawer
+
+**Decision:** `ArticleDetail.tsx` renders: summary text, metadata grid, People Mentioned section. `ArticleDrawer.tsx` owns the 2-column shell, right column (entities, source), and bottom action strip (SlackCompose, ArticleActions).
+
+**Phase 2 extensibility:** Each PersonCard includes an empty `DetailLine` slot below the role line, reserved for email/LinkedIn data in Phase 2/3.
+
+---
+
+### DECISION 13 — Slack message pre-fill format
+
+**Decision:** Textarea pre-fills with structured content:
+```
+*[Company]* — [Signal Type] | [Country]
+Score: [X]/100 | Use Case: [value]
+
+[Summary text]
+
+[Article URL]
+```
+
+---
+
+### DECISION 14 — Step navigation: new collection clears downstream state
+
+**Decision:** Navigating back to Step 1 does NOT clear Step 2/3 data. But clicking "Collect News" with new parameters triggers a new run — this clears `currentRun` and `scoredArticles` state in Dashboard, resetting Step 2 to empty. The Queue (Step 3) retains all previous articles (global backlog — they're not cleared).
+
+---
+
+### DECISION 15 — Remaining gap resolutions (config and layout)
+
+| Gap | Resolution |
+|-----|------------|
+| Review Gate OFF behavior | Step 3 tab unlocks + toast "Queue ready — N articles". No auto-navigation. |
+| Sources panel position | Below KeywordInput, above DateFilter/RegionSelector grid in CollectPanel. |
+| Cross-batch bulk dismiss | Each batch's Bulk Dismiss only affects its own selected rows. |
+| Step 1 form state after collection | Stays filled. User reuses parameters for next run. |
+| Step 2 dismissal with Review Gate OFF | Dismissal sets status='dismissed' immediately. Article won't appear in queue regardless of Review Gate. |

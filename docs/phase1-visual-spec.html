@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dock Radar Phase 1 — Visual Spec</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── RESET & BASE ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 14px; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #F3F4F6;
+      color: #111827;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── TOKENS ───────────────────────────────────────────────── */
+    :root {
+      --blue: #2C7BF2;
+      --blue-hover: #1B6AE0;
+      --blue-light: #EBF2FE;
+      --gold: #FFAB49;
+      --bg: #FFFFFF;
+      --surface: #F9FAFB;
+      --border: #E5E7EB;
+      --text: #111827;
+      --muted: #6B7280;
+      --radius-card: 12px;
+      --radius-btn: 7px;
+      --max-w: 1280px;
+    }
+
+    /* ─── NAVBAR ───────────────────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      height: 53px;
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      justify-content: space-between;
+    }
+    .navbar-left { display: flex; align-items: center; gap: 12px; }
+    .logo-mark {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+      flex-shrink: 0;
+    }
+    .navbar-brand { display: flex; flex-direction: column; }
+    .brand-name { font-size: 15px; font-weight: 700; color: var(--blue); line-height: 1.1; }
+    .brand-sub { font-size: 11px; color: #9CA3AF; line-height: 1.2; }
+    .navbar-right { display: flex; align-items: center; gap: 12px; }
+    .phase-pill {
+      background: var(--blue-light); color: var(--blue);
+      font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+    }
+    .navbar-brand-right { font-size: 13px; color: #9CA3AF; font-weight: 500; }
+
+    /* ─── STEP TABS ────────────────────────────────────────────── */
+    .tabs-bar {
+      position: sticky;
+      top: 53px;
+      z-index: 90;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      gap: 0;
+    }
+    .tab-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 20px;
+      background: none; border: none; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px; font-weight: 500;
+      color: #9CA3AF;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+      position: relative; top: 1px;
+      white-space: nowrap;
+    }
+    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+    .tab-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: 2px solid #D1D5DB; background: transparent;
+    }
+    .tab-btn.active .tab-dot { background: var(--blue); border-color: var(--blue); }
+    .tab-count {
+      background: var(--blue); color: #fff;
+      font-size: 10px; font-weight: 700;
+      padding: 1px 7px; border-radius: 20px; line-height: 1.6;
+    }
+
+    /* ─── PAGE LAYOUT ──────────────────────────────────────────── */
+    .page-content {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 24px 32px 64px;
+    }
+
+    /* ─── CONFIG BAR ───────────────────────────────────────────── */
+    .config-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      height: 52px;
+      gap: 0;
+      margin-bottom: 20px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+    .config-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 20px;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .config-item:not(:first-child)::before {
+      content: '';
+      position: absolute; left: 0;
+      top: 8px; bottom: 8px;
+      width: 1px; background: var(--border);
+    }
+    .config-item:first-child { padding-left: 0; }
+    .config-label {
+      font-size: 11.5px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.4px;
+      white-space: nowrap;
+    }
+    .config-input {
+      width: 56px; padding: 4px 8px;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--text); text-align: center; background: #fff;
+    }
+    .config-input:focus { outline: 2px solid var(--blue); border-color: transparent; }
+    .config-readonly {
+      background: #F3F4F6; color: var(--muted);
+      font-size: 12.5px; font-weight: 600;
+      padding: 3px 10px; border-radius: 6px; border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    /* Toggle */
+    .toggle-wrap { display: flex; align-items: center; gap: 8px; }
+    .toggle {
+      width: 36px; height: 20px; border-radius: 10px;
+      background: #D1D5DB; border: none; cursor: pointer;
+      position: relative; transition: background 0.2s; flex-shrink: 0;
+    }
+    .toggle.on { background: var(--blue); }
+    .toggle::after {
+      content: '';
+      position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; border-radius: 50%; background: #fff;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle.on::after { transform: translateX(16px); }
+    .toggle-hint { font-size: 10.5px; color: #9CA3AF; white-space: nowrap; }
+
+    /* ─── CHANGE BADGES ────────────────────────────────────────── */
+    .badge-new {
+      display: inline-flex; align-items: center;
+      background: #DCFCE7; color: #16A34A;
+      font-size: 9.5px; font-weight: 700; letter-spacing: 0.3px;
+      padding: 2px 6px; border-radius: 4px; text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .badge-changed {
+      display: inline-flex; align-items: center;
+      background: #FEF9C3; color: #A16207;
+      font-size: 9.5px; font-weight: 700; letter-spacing: 0.3px;
+      padding: 2px 6px; border-radius: 4px; text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .badge-removed {
+      display: inline-flex; align-items: center;
+      background: #FEE2E2; color: #991B1B;
+      font-size: 9.5px; font-weight: 700; letter-spacing: 0.3px;
+      padding: 2px 6px; border-radius: 4px; text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    /* ─── CARDS ────────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+    .card-body { padding: 20px; }
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .card-subtitle { font-size: 13px; color: var(--muted); margin-left: 6px; }
+
+    /* ─── SOURCES PANEL ────────────────────────────────────────── */
+    .sources-panel {
+      background: #F9FAFB;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 20px;
+      margin-bottom: 14px;
+    }
+    .sources-label { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+    .source-item { display: flex; align-items: center; gap: 6px; }
+    .source-check {
+      width: 16px; height: 16px; border-radius: 4px;
+      border: 2px solid var(--blue); background: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .source-check-disabled {
+      width: 16px; height: 16px; border-radius: 4px;
+      border: 2px solid #D1D5DB; background: #fff;
+      flex-shrink: 0;
+    }
+    .source-name { font-size: 13px; font-weight: 600; color: #374151; }
+    .source-name-faded { font-size: 13px; font-weight: 500; color: #9CA3AF; }
+    .coming-soon-pill {
+      font-size: 10px; font-weight: 600; color: #9CA3AF;
+      background: #F3F4F6; border: 1px solid #E5E7EB;
+      padding: 1px 7px; border-radius: 20px;
+    }
+    .check-icon { color: #fff; font-size: 10px; font-weight: 700; }
+
+    /* ─── KEYWORD INPUT ────────────────────────────────────────── */
+    .keyword-section { margin-bottom: 18px; }
+    .field-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; }
+    .keyword-input-box {
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 12px; background: #fff;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      min-height: 42px;
+    }
+    .keyword-pill {
+      background: var(--blue-light); color: var(--blue);
+      font-size: 12.5px; font-weight: 600;
+      padding: 3px 10px; border-radius: 20px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .keyword-pill span { cursor: pointer; font-size: 14px; line-height: 1; color: #93C5FD; }
+    .keyword-hint { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+    /* ─── FORM GRID ────────────────────────────────────────────── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .form-field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    .date-range-row { display: flex; align-items: center; gap: 8px; }
+    .small-input {
+      width: 52px; padding: 6px 10px; text-align: center;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    }
+    .preset-btns { display: flex; gap: 4px; }
+    .preset-btn {
+      padding: 5px 10px; border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #fff; color: var(--muted);
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.12s;
+    }
+    .preset-btn.active {
+      background: var(--blue-light); color: var(--blue);
+      border-color: #BFDBFE;
+    }
+    .select-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 12px; border: 1px solid var(--border);
+      border-radius: 6px; background: #fff; cursor: pointer;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--text);
+    }
+
+    /* ─── COLLECT BUTTON ───────────────────────────────────────── */
+    .collect-wrap { display: flex; justify-content: center; margin-bottom: 20px; }
+    .btn-primary {
+      background: var(--blue); color: #fff;
+      padding: 10px 28px; border-radius: var(--radius-btn);
+      border: none; cursor: pointer;
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+      transition: background 0.15s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover { background: var(--blue-hover); }
+    .btn-secondary {
+      background: #fff; color: var(--muted);
+      padding: 7px 14px; border-radius: var(--radius-btn);
+      border: 1px solid var(--border); cursor: pointer;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+    }
+
+    /* ─── COLLECTION STATS ─────────────────────────────────────── */
+    .stats-panel {
+      background: #F9FAFB; border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 20px;
+    }
+    .stats-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 12px; }
+    .funnel-row { display: flex; align-items: center; gap: 0; margin-bottom: 12px; flex-wrap: wrap; gap: 4px; }
+    .funnel-step {
+      display: flex; align-items: center; gap: 6px;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 6px; padding: 5px 10px;
+    }
+    .funnel-step.green { border-color: #BBF7D0; background: #F0FDF4; }
+    .funnel-label { font-size: 11px; color: var(--muted); font-weight: 500; }
+    .funnel-num { font-size: 14px; font-weight: 700; color: var(--text); }
+    .funnel-step.green .funnel-num { color: #16A34A; }
+    .funnel-arrow { color: #9CA3AF; font-size: 14px; }
+    .progress-bar-wrap { background: #E5E7EB; border-radius: 4px; height: 6px; margin-bottom: 10px; }
+    .progress-bar-fill { height: 100%; border-radius: 4px; background: var(--blue); }
+    .stats-summary { font-size: 12px; color: var(--muted); }
+    .stats-summary strong { color: #16A34A; }
+
+    /* ─── SCORING PROGRESS ─────────────────────────────────────── */
+    .scoring-progress {
+      background: #F9FAFB; border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 20px; margin-bottom: 20px;
+    }
+    .scoring-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+    .spinner {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2.5px solid #BFDBFE; border-top-color: var(--blue);
+      animation: spin 0.8s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .scoring-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .scoring-sub { font-size: 11px; color: #9CA3AF; font-style: italic; margin-top: 4px; }
+    .scoring-pb { flex: 1; background: #E5E7EB; border-radius: 4px; height: 8px; }
+    .scoring-pb-fill { height: 100%; border-radius: 4px; background: var(--blue); width: 72%; }
+
+    /* ─── TABLE HEADER ─────────────────────────────────────────── */
+    .table-header-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .table-title-group { display: flex; align-items: center; gap: 8px; }
+    .table-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .table-sub { font-size: 13px; color: var(--muted); }
+    .filter-group { display: flex; gap: 8px; }
+    .filter-dropdown {
+      padding: 5px 12px; border: 1px solid var(--border);
+      border-radius: 6px; background: #fff;
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+      color: var(--text); cursor: pointer;
+    }
+
+    /* ─── SCORED TABLE ─────────────────────────────────────────── */
+    .scored-table { width: 100%; border-collapse: collapse; }
+    .scored-table th {
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.4px;
+      padding: 8px 12px; text-align: left;
+      background: #F9FAFB; border-bottom: 1px solid var(--border);
+    }
+    .scored-table td {
+      padding: 11px 12px; border-bottom: 1px solid #F3F4F6;
+      font-size: 13px; vertical-align: middle;
+    }
+    .scored-table tr:last-child td { border-bottom: none; }
+    .scored-table tr:hover td { background: #FAFAFA; }
+
+    /* Score badge */
+    .score-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 38px; height: 26px; border-radius: 6px;
+      font-size: 13px; font-weight: 700;
+    }
+    .score-green { background: #F0FDF4; color: #16A34A; }
+    .score-blue { background: #DBEAFE; color: #2563EB; }
+    .score-yellow { background: #FEFCE8; color: #CA8A04; }
+    .score-gray { background: #F3F4F6; color: #6B7280; }
+
+    /* Signal badge */
+    .signal-badge {
+      display: inline-flex; align-items: center;
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.3px;
+      padding: 3px 8px; border-radius: 4px; text-transform: uppercase;
+    }
+    .sig-deployment { background: #DCFCE7; color: #16A34A; }
+    .sig-contract { background: #DBEAFE; color: #2563EB; }
+    .sig-tender { background: #F3E8FF; color: #6B21A8; }
+    .sig-expansion { background: #FEF9C3; color: #A16207; }
+    .sig-regulation { background: #FEE2E2; color: #991B1B; }
+
+    /* FB mention dot */
+    .fb-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--blue); display: inline-block;
+    }
+
+    /* Article cell */
+    .article-title-text {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      display: block; max-width: 320px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .dismiss-btn {
+      background: none; border: none; cursor: pointer;
+      color: #D1D5DB; font-size: 16px; padding: 2px 6px;
+      border-radius: 4px; transition: color 0.12s;
+    }
+    .dismiss-btn:hover { color: #EF4444; }
+
+    /* ─── DROPPED ARTICLES ─────────────────────────────────────── */
+    .dropped-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px;
+      background: #F9FAFB; border: 1px solid var(--border);
+      border-radius: 8px; cursor: pointer; margin-top: 16px;
+    }
+    .dropped-title { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .dropped-hint { font-size: 11.5px; color: #9CA3AF; }
+
+    /* ─── PROCEED BUTTON ───────────────────────────────────────── */
+    .proceed-wrap {
+      display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+      margin-top: 16px;
+    }
+    .proceed-note { font-size: 11.5px; color: var(--muted); font-style: italic; }
+
+    /* ─── QUEUE SECTION ────────────────────────────────────────── */
+    .batch-divider {
+      display: flex; align-items: center; gap: 0;
+      margin: 24px 0 12px;
+    }
+    .batch-line { flex: 1; height: 1px; background: var(--border); }
+    .batch-info {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 16px; flex-shrink: 0;
+    }
+    .batch-run-name { font-size: 12px; font-weight: 700; color: #374151; }
+    .batch-meta { font-size: 11.5px; color: var(--muted); }
+    .batch-sep { color: var(--border); font-size: 12px; }
+    .batch-actions { display: flex; gap: 8px; align-items: center; margin-left: 8px; }
+    .btn-batch-select {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border: 1px solid var(--border);
+      border-radius: 6px; background: #fff;
+      font-family: 'Inter', sans-serif; font-size: 11.5px; font-weight: 600;
+      color: var(--muted); cursor: pointer;
+    }
+    .btn-batch-dismiss {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border: 1px solid #FECACA;
+      border-radius: 6px; background: #FFF5F5;
+      font-family: 'Inter', sans-serif; font-size: 11.5px; font-weight: 600;
+      color: #EF4444; cursor: pointer;
+    }
+
+    /* Queue table */
+    .queue-table-wrap {
+      border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .queue-row {
+      display: grid;
+      grid-template-columns: 28px 24px 1fr 130px 80px 130px 52px;
+      align-items: center; gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #F3F4F6;
+      background: #fff;
+      transition: background 0.1s;
+    }
+    .queue-row:last-child { border-bottom: none; }
+    .queue-row:hover { background: #FAFAFA; }
+    .queue-row.expanded { background: #F9FAFB; }
+    .queue-checkbox {
+      width: 16px; height: 16px; border-radius: 4px;
+      border: 2px solid #D1D5DB; cursor: pointer;
+      flex-shrink: 0;
+    }
+    .expand-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 12px; padding: 0;
+      display: flex; align-items: center;
+    }
+    .queue-article-main { font-size: 13px; font-weight: 600; color: var(--text); overflow: hidden; }
+    .queue-article-meta { font-size: 11px; color: #9CA3AF; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .queue-company { font-size: 12.5px; color: #374151; font-weight: 500; }
+    .queue-country { font-size: 12.5px; color: var(--muted); }
+    .queue-signal-score { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+
+    /* ─── ARTICLE DRAWER ───────────────────────────────────────── */
+    .drawer-wrap {
+      border-top: 1px solid var(--border);
+      background: #F9FAFB;
+      padding: 20px;
+      display: none;
+    }
+    .drawer-wrap.open { display: block; }
+    .drawer-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 20px; }
+    .drawer-section-title {
+      font-size: 10.5px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.6px;
+      margin-bottom: 10px; margin-top: 16px;
+    }
+    .drawer-section-title:first-child { margin-top: 0; }
+    .drawer-summary { font-size: 13px; color: #374151; line-height: 1.6; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+    .meta-item label { font-size: 10.5px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 2px; }
+    .meta-item span { font-size: 12.5px; color: var(--text); font-weight: 500; }
+    .meta-score-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #DBEAFE; color: #2563EB;
+      font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 5px;
+    }
+    .meta-score-label { font-size: 11px; color: var(--muted); font-weight: 500; }
+    .person-card {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px; background: #fff;
+      border: 1px solid var(--border); border-radius: 7px; margin-bottom: 6px;
+    }
+    .person-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--blue); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
+    }
+    .person-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+    .person-role { font-size: 11px; color: var(--muted); }
+    .phase2-slot {
+      font-size: 10.5px; color: #D1D5DB; font-style: italic;
+      border-top: 1px dashed #E5E7EB; padding-top: 4px; margin-top: 4px;
+    }
+    .entity-pill {
+      display: inline-flex; align-items: center;
+      font-size: 11px; font-weight: 600; padding: 3px 10px;
+      border-radius: 20px; border: 1px solid var(--border);
+      background: #fff; color: var(--text); margin: 3px 3px 3px 0;
+    }
+    .entity-pill .entity-role {
+      font-size: 10px; color: var(--muted); margin-left: 4px;
+    }
+    .source-badge-google {
+      display: inline-flex; align-items: center;
+      background: #FEF9C3; color: #A16207;
+      font-size: 11px; font-weight: 700;
+      padding: 3px 9px; border-radius: 5px;
+    }
+    .source-info { font-size: 12px; color: var(--text); margin-top: 6px; }
+    .source-date { font-size: 11px; color: var(--muted); }
+
+    /* Slack compose */
+    .slack-compose {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden;
+    }
+    .slack-compose-header {
+      padding: 8px 14px; border-bottom: 1px solid var(--border);
+      font-size: 12px; font-weight: 600; color: var(--muted);
+    }
+    .slack-textarea {
+      width: 100%; padding: 12px 14px;
+      border: none; resize: vertical; min-height: 100px;
+      font-family: 'Inter', sans-serif; font-size: 12.5px;
+      color: var(--text); line-height: 1.6;
+    }
+    .slack-textarea:focus { outline: none; }
+    .action-strip {
+      display: flex; gap: 8px; align-items: center;
+      padding: 12px 14px; border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .btn-slack {
+      background: var(--blue); color: #fff;
+      padding: 7px 16px; border-radius: 6px; border: none;
+      font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+    }
+    .btn-bookmark {
+      background: #fff; color: #6B7280;
+      padding: 7px 14px; border-radius: 6px; border: 1px solid var(--border);
+      font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+    }
+    .btn-dismiss {
+      background: #fff; color: #EF4444;
+      padding: 7px 14px; border-radius: 6px; border: 1px solid #FECACA;
+      font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+    }
+    .btn-open {
+      background: #fff; color: var(--muted);
+      padding: 7px 14px; border-radius: 6px; border: 1px solid var(--border);
+      font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 6px; margin-left: auto;
+    }
+
+    /* ─── COLLAPSIBLE SECTIONS ─────────────────────────────────── */
+    .collapsible-section { margin-top: 20px; }
+    .collapsible-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: #F9FAFB;
+      border: 1px solid var(--border); border-radius: 8px 8px 0 0;
+      cursor: pointer;
+    }
+    .collapsible-header.collapsed { border-radius: 8px; }
+    .collapsible-title { font-size: 13px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .collapsible-arrow { color: var(--muted); font-size: 12px; transition: transform 0.2s; }
+    .collapsible-body {
+      border: 1px solid var(--border); border-top: none;
+      border-radius: 0 0 8px 8px; overflow: hidden;
+    }
+    .readonly-row {
+      display: grid;
+      grid-template-columns: 1fr 130px 80px 110px 60px 100px;
+      gap: 12px; padding: 10px 16px;
+      border-bottom: 1px solid #F3F4F6;
+      background: #fff; align-items: center;
+    }
+    .readonly-row:last-child { border-bottom: none; }
+    .readonly-article-link { font-size: 12.5px; font-weight: 600; color: var(--blue); text-decoration: none; cursor: pointer; }
+    .readonly-meta { font-size: 11px; color: var(--muted); }
+    .sent-time { font-size: 11px; color: var(--muted); font-style: italic; }
+
+    /* ─── STEP PANELS VISIBILITY ───────────────────────────────── */
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+    .config-section { display: none; }
+    .config-section.active { display: block; }
+
+    /* ─── CHANGE LEGEND ────────────────────────────────────────── */
+    .legend-section {
+      margin-top: 48px;
+      border-top: 2px solid var(--border);
+      padding-top: 32px;
+    }
+    .legend-title {
+      font-size: 16px; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .legend-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    .legend-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .legend-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 16px; background: #F9FAFB;
+      border: 1px solid var(--border); border-radius: 8px;
+    }
+    .legend-item-text { font-size: 13px; color: #374151; line-height: 1.5; }
+
+    /* ─── UTILITY ──────────────────────────────────────────────── */
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .text-muted { color: var(--muted); }
+    .text-xs { font-size: 11px; }
+    .fw-600 { font-weight: 600; }
+    .mt-4 { margin-top: 4px; }
+    .mt-8 { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+    .mt-16 { margin-top: 16px; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .gap-8 { gap: 8px; }
+    .gap-6 { gap: 6px; }
+    .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fb-mention { display: flex; align-items: center; gap: 4px; }
+    .fb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+
+    /* Removed notice inline */
+    .removed-notice {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px; background: #FFF5F5;
+      border: 1px solid #FECACA; border-radius: 6px;
+      font-size: 11.5px; color: #991B1B;
+      margin-left: auto;
+    }
+
+    /* Queue header */
+    .queue-main-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .queue-header-note {
+      font-size: 11.5px; color: var(--muted); font-style: italic;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Step section divider label */
+    .step-section-label {
+      font-size: 10.5px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .step-section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ─── REVIEW GATE NOTE (Step 2) ────────────────────────────── */
+    .auto-flow-note {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; background: #F9FAFB;
+      border: 1px dashed #D1D5DB; border-radius: 6px;
+      font-size: 11.5px; color: var(--muted); margin-top: 12px;
+    }
+
+    /* ─── EMPTY STATE ──────────────────────────────────────────── */
+    .empty-state {
+      text-align: center; padding: 40px 20px; color: var(--muted);
+    }
+    .empty-icon { font-size: 32px; margin-bottom: 10px; }
+    .empty-text { font-size: 13px; }
+
+    /* ─── SCROLLBAR ────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     NAVBAR
+════════════════════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <div class="logo-mark">DR</div>
+    <div class="navbar-brand">
+      <span class="brand-name">Dock Radar</span>
+      <span class="brand-sub">Social Listening &amp; BD Intelligence</span>
+    </div>
+  </div>
+  <div class="navbar-right">
+    <span class="phase-pill">Phase 1</span>
+    <span class="navbar-brand-right">FlytBase</span>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STEP TABS
+════════════════════════════════════════════════════════════════ -->
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="switchStep(1)">
+    <div class="tab-dot"></div>
+    1. Collect
+  </button>
+  <button class="tab-btn" onclick="switchStep(2)">
+    <div class="tab-dot"></div>
+    2. Score
+  </button>
+  <button class="tab-btn" onclick="switchStep(3)">
+    <div class="tab-dot"></div>
+    3. Queue
+    <span class="tab-count">7</span>
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE CONTENT
+════════════════════════════════════════════════════════════════ -->
+<div class="page-content">
+
+  <!-- ── CONFIG BARS ─────────────────────────────────────────── -->
+
+  <!-- Step 1 Config Bar -->
+  <div class="config-section active" id="config-1">
+    <div class="config-bar">
+      <!-- Max Articles -->
+      <div class="config-item">
+        <span class="config-label">Max Articles</span>
+        <input type="number" class="config-input" value="50" />
+      </div>
+      <!-- Title Similarity -->
+      <div class="config-item">
+        <span class="config-label">Title Similarity</span>
+        <span class="config-readonly">0.80</span>
+      </div>
+      <!-- Min Score — CHANGED badge -->
+      <div class="config-item">
+        <span class="config-label">Min Score</span>
+        <input type="number" class="config-input" value="50" />
+        <span class="badge-changed">Changed</span>
+      </div>
+      <!-- Review Gate — NEW badge -->
+      <div class="config-item">
+        <span class="config-label">Review Gate</span>
+        <div class="toggle-wrap">
+          <button class="toggle" id="review-gate-toggle" onclick="toggleReviewGate()" title="Toggle Review Gate"></button>
+          <span class="toggle-hint" id="rg-hint">ON = pause at Step 2 &nbsp;|&nbsp; OFF = auto-flow</span>
+        </div>
+        <span class="badge-new">New</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 Config Bar -->
+  <div class="config-section" id="config-2">
+    <div class="config-bar" style="justify-content: space-between;">
+      <div style="display:flex;align-items:center;gap:0;flex:1;">
+        <!-- Max Articles — CHANGED (was editable) -->
+        <div class="config-item" style="padding-left:0;">
+          <span class="config-label">Max Articles</span>
+          <span class="config-readonly">25</span>
+          <span class="badge-changed">Changed</span>
+        </div>
+        <!-- Min Score — CHANGED (moved from Step 1) -->
+        <div class="config-item">
+          <span class="config-label">Min Score</span>
+          <span class="config-readonly">50</span>
+          <span class="badge-changed">Changed</span>
+        </div>
+        <!-- Title Similarity -->
+        <div class="config-item">
+          <span class="config-label">Title Similarity</span>
+          <span class="config-readonly">0.80</span>
+        </div>
+        <!-- Run selector -->
+        <div class="config-item">
+          <span class="config-label">Run</span>
+          <select class="filter-dropdown" style="font-size:12.5px;padding:5px 10px;">
+            <option>Mar 15, 2:30 PM — DJI Dock, Drone...</option>
+            <option>Mar 14, 10:15 AM — Zipline, eVTOL...</option>
+            <option>Mar 13, 9:00 AM — DJI Dock, Deploy...</option>
+          </select>
+        </div>
+      </div>
+      <!-- REMOVED notice -->
+      <div class="removed-notice">
+        <span class="badge-removed">Removed</span>
+        LLM Model parameter removed
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 Config Bar — none -->
+  <div class="config-section" id="config-3"></div>
+
+  <!-- ── STEP PANELS ─────────────────────────────────────────── -->
+
+  <!-- ════════════════════════════════════════════════════════════
+       STEP 1 — COLLECT
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="step-panel active" id="step-1">
+    <div class="card">
+      <div class="card-body">
+
+        <!-- Sources Panel — NEW -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span class="step-section-label" style="margin-bottom:0;">Sources</span>
+          <span class="badge-new">New</span>
+        </div>
+        <div class="sources-panel" style="margin-bottom:18px;">
+          <span class="sources-label">Sources to scan</span>
+          <!-- Google News — active -->
+          <div class="source-item">
+            <div class="source-check">
+              <span class="check-icon">✓</span>
+            </div>
+            <span class="source-name">Google News</span>
+          </div>
+          <!-- LinkedIn — coming soon -->
+          <div class="source-item">
+            <div class="source-check-disabled"></div>
+            <span class="source-name-faded">LinkedIn</span>
+            <span class="coming-soon-pill">coming soon</span>
+          </div>
+          <!-- Facebook — coming soon -->
+          <div class="source-item">
+            <div class="source-check-disabled"></div>
+            <span class="source-name-faded">Facebook</span>
+            <span class="coming-soon-pill">coming soon</span>
+          </div>
+        </div>
+
+        <!-- Keyword Input -->
+        <div class="keyword-section">
+          <label class="field-label">Keywords</label>
+          <div class="keyword-input-box">
+            <div class="keyword-pill">DJI Dock <span>×</span></div>
+            <div class="keyword-pill">Drone Deployment <span>×</span></div>
+            <span style="color:#D1D5DB;font-size:13px;">Add a keyword...</span>
+          </div>
+          <p class="keyword-hint">Each keyword is searched as an exact phrase. Press Enter or comma to add.</p>
+        </div>
+
+        <!-- Form Grid -->
+        <div class="form-grid">
+          <!-- Date Range -->
+          <div class="form-field">
+            <label>Date Range</label>
+            <div class="date-range-row">
+              <input type="number" class="small-input" value="30" />
+              <span style="font-size:13px;color:var(--muted);">days</span>
+              <div class="preset-btns">
+                <button class="preset-btn">7</button>
+                <button class="preset-btn">14</button>
+                <button class="preset-btn active">30</button>
+                <button class="preset-btn">60</button>
+                <button class="preset-btn">90</button>
+              </div>
+            </div>
+          </div>
+          <!-- Regions -->
+          <div class="form-field">
+            <label>Regions</label>
+            <button class="select-btn">
+              ▾ &nbsp;13 countries selected
+            </button>
+          </div>
+        </div>
+
+        <!-- Collect Button -->
+        <div class="collect-wrap">
+          <button class="btn-primary">🔍 &nbsp;Collect News</button>
+        </div>
+
+        <!-- Collection Stats -->
+        <div class="stats-panel">
+          <div class="stats-title">Collection Pipeline</div>
+          <div class="funnel-row">
+            <div class="funnel-step">
+              <span class="funnel-label">Fetched</span>
+              <span class="funnel-num">127</span>
+            </div>
+            <span class="funnel-arrow">→</span>
+            <div class="funnel-step">
+              <span class="funnel-label">After Dedup</span>
+              <span class="funnel-num">89</span>
+            </div>
+            <span class="funnel-arrow">→</span>
+            <div class="funnel-step">
+              <span class="funnel-label">Date Filtered</span>
+              <span class="funnel-num">52</span>
+            </div>
+            <span class="funnel-arrow">→</span>
+            <div class="funnel-step green">
+              <span class="funnel-label">Stored</span>
+              <span class="funnel-num">25</span>
+            </div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" style="width: 19.7%;"></div>
+          </div>
+          <div class="stats-summary">
+            <strong>25 articles</strong> ready for scoring &nbsp;·&nbsp; 38 duplicates removed
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STEP 2 — SCORE
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="step-panel" id="step-2">
+    <div class="card">
+      <div class="card-body">
+
+        <!-- Scoring Progress — CHANGED -->
+        <div class="scoring-progress">
+          <div class="flex items-center gap-8" style="justify-content:space-between;">
+            <span class="step-section-label" style="margin-bottom:0;">Scoring Progress</span>
+            <span class="badge-changed">Changed</span>
+          </div>
+          <div class="scoring-row" style="margin-top:10px;">
+            <div class="spinner"></div>
+            <div class="scoring-pb"><div class="scoring-pb-fill"></div></div>
+            <span class="scoring-label">Scoring... 18/25 articles</span>
+          </div>
+          <div class="scoring-sub">
+            <span class="badge-new" style="vertical-align:middle;">New</span>
+            &nbsp;7 already cached from previous runs
+          </div>
+        </div>
+
+        <!-- Table header -->
+        <div class="table-header-row">
+          <div class="table-title-group">
+            <span class="table-title">Scored Articles</span>
+            <span class="table-sub">(20 relevant)</span>
+          </div>
+          <div class="filter-group">
+            <select class="filter-dropdown"><option>All Signals ▾</option><option>DEPLOYMENT</option><option>CONTRACT</option><option>TENDER</option></select>
+            <select class="filter-dropdown"><option>All Countries ▾</option><option>Brazil</option><option>India</option><option>Singapore</option></select>
+            <select class="filter-dropdown"><option>Sort: Score ▾</option><option>Sort: Date</option><option>Sort: Company</option></select>
+          </div>
+        </div>
+
+        <!-- Scored Articles Table -->
+        <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+          <table class="scored-table" style="width:100%;">
+            <thead>
+              <tr>
+                <th style="width:52px;">Score</th>
+                <th>Article</th>
+                <th>Company</th>
+                <th style="width:72px;">Country</th>
+                <th>Signal</th>
+                <th>Use Case</th>
+                <th style="width:36px;">FB</th>
+                <th style="width:36px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Row 1 — 92 green -->
+              <tr>
+                <td><span class="score-badge score-green">92</span></td>
+                <td><span class="article-title-text">Port of Santos Autonomous Drone Security Deployment</span></td>
+                <td style="font-size:12.5px;font-weight:500;">Port of Santos</td>
+                <td style="font-size:12.5px;color:var(--muted);">Brazil</td>
+                <td><span class="signal-badge sig-deployment">DEPLOYMENT</span></td>
+                <td style="font-size:12.5px;color:var(--muted);">Port Security</td>
+                <td></td>
+                <td><button class="dismiss-btn">×</button></td>
+              </tr>
+              <!-- Row 2 — 90 green -->
+              <tr>
+                <td><span class="score-badge score-green">90</span></td>
+                <td><span class="article-title-text">Enel Green Power Signs Drone Inspection Contract</span></td>
+                <td style="font-size:12.5px;font-weight:500;">Enel Green Power</td>
+                <td style="font-size:12.5px;color:var(--muted);">Italy</td>
+                <td><span class="signal-badge sig-contract">CONTRACT</span></td>
+                <td style="font-size:12.5px;color:var(--muted);">Power Line Inspection</td>
+                <td></td>
+                <td><button class="dismiss-btn">×</button></td>
+              </tr>
+              <!-- Row 3 — 85 blue -->
+              <tr>
+                <td><span class="score-badge score-blue">85</span></td>
+                <td><span class="article-title-text">Indian Railways to Deploy 200 Drones Across 15 Zones</span></td>
+                <td style="font-size:12.5px;font-weight:500;">Indian Railways</td>
+                <td style="font-size:12.5px;color:var(--muted);">India</td>
+                <td><span class="signal-badge sig-deployment">DEPLOYMENT</span></td>
+                <td style="font-size:12.5px;color:var(--muted);">Rail Survey</td>
+                <td><span class="fb-dot"></span></td>
+                <td><button class="dismiss-btn">×</button></td>
+              </tr>
+              <!-- Row 4 — 78 blue -->
+              <tr>
+                <td><span class="score-badge score-blue">78</span></td>
+                <td><span class="article-title-text">Votorantim Mining Expands UAV Fleet for Site Survey</span></td>
+                <td style="font-size:12.5px;font-weight:500;">Votorantim</td>
+                <td style="font-size:12.5px;color:var(--muted);">Brazil</td>
+                <td><span class="signal-badge sig-deployment">DEPLOYMENT</span></td>
+                <td style="font-size:12.5px;color:var(--muted);">Mining Survey</td>
+                <td></td>
+                <td><button class="dismiss-btn">×</button></td>
+              </tr>
+              <!-- Row 5 — 72 blue -->
+              <tr>
+                <td><span class="score-badge score-blue">72</span></td>
+                <td><span class="article-title-text">MPA Singapore Issues Drone Tender for Maritime Surveillance</span></td>
+                <td style="font-size:12.5px;color:var(--muted);">—</td>
+                <td style="font-size:12.5px;color:var(--muted);">Singapore</td>
+                <td><span class="signal-badge sig-tender">TENDER</span></td>
+                <td style="font-size:12.5px;color:var(--muted);">Maritime Surveillance</td>
+                <td></td>
+                <td><button class="dismiss-btn">×</button></td>
+              </tr>
+              <!-- Row 6 — 61 yellow -->
+              <tr>
+                <td><span class="score-badge score-yellow">61</span></td>
+                <td><span class="article-title-text">SE Asian Port Expansion to Feature Autonomous Drone Ops</span></td>
+                <td style="font-size:12.5px;color:var(--muted);">—</td>
+                <td style="font-size:12.5px;color:var(--muted);">Indonesia</td>
+                <td><span class="signal-badge sig-expansion">EXPANSION</span></td>
+                <td style="font-size:12.5px;color:var(--muted);">Port Security</td>
+                <td></td>
+                <td><button class="dismiss-btn">×</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Dropped Articles -->
+        <div class="dropped-header" style="cursor:pointer;" onclick="this.querySelector('.dropped-arrow').style.transform = this.querySelector('.dropped-arrow').style.transform === 'rotate(90deg)' ? '' : 'rotate(90deg)'">
+          <span class="dropped-title">
+            <span class="dropped-arrow" style="display:inline-block;transition:transform 0.2s;margin-right:6px;">▶</span>
+            Dropped by AI (5 articles)
+          </span>
+          <span class="dropped-hint">Click to expand</span>
+        </div>
+
+        <!-- Proceed to Queue Button — NEW, gated by Review Gate -->
+        <div id="proceed-wrap" style="display:none;" class="proceed-wrap">
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="badge-new">New</span>
+              <span style="font-size:11px;color:var(--muted);">Only shown when Review Gate = ON in Step 1</span>
+            </div>
+            <button class="btn-primary" style="padding:9px 22px;font-size:13.5px;">
+              Proceed to Queue (20 articles) &nbsp;→
+            </button>
+          </div>
+        </div>
+
+        <!-- Auto-flow note (when Review Gate is OFF) -->
+        <div class="auto-flow-note" id="auto-flow-note">
+          <span style="font-size:14px;">ℹ</span>
+          Review Gate is currently <strong>OFF</strong> — articles auto-flow to queue when scoring completes.
+          Toggle <em>Review Gate</em> in Step 1 to enable manual review.
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STEP 3 — QUEUE
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="step-panel" id="step-3">
+    <div class="card">
+      <div class="card-body">
+
+        <!-- Queue Header — CHANGED -->
+        <div class="queue-main-header">
+          <div class="table-title-group">
+            <span class="table-title">Signal Queue</span>
+            <span class="table-sub">(7 new articles to review)</span>
+            <span class="badge-changed">Changed</span>
+          </div>
+          <div class="queue-header-note">
+            <span>Per-batch Select All &amp; Bulk Dismiss below</span>
+            <span class="badge-changed" title="Global Select All removed — each batch has its own">Changed</span>
+          </div>
+        </div>
+        <p style="font-size:11px;color:#9CA3AF;margin-top:2px;margin-bottom:0;">Global "Select All" removed — each batch has its own Select All + Bulk Dismiss</p>
+
+        <!-- ─── BATCH 1 ─────────────────────────────────────── -->
+        <div class="batch-divider" style="margin-top:20px;">
+          <div class="batch-line"></div>
+          <div class="batch-info">
+            <span class="batch-run-name">Zipline Deployment</span>
+            <span class="batch-sep">•</span>
+            <span class="batch-meta">Mar 15, 2:30 PM</span>
+            <span class="batch-sep">•</span>
+            <span class="batch-meta">3 signals</span>
+          </div>
+          <div class="batch-actions">
+            <button class="btn-batch-select">☐ Select All</button>
+            <button class="btn-batch-dismiss">⊗ Bulk Dismiss</button>
+          </div>
+          <div class="batch-line"></div>
+          <span class="badge-new" style="margin-left:8px;">New</span>
+        </div>
+
+        <div class="queue-table-wrap">
+          <!-- Row A -->
+          <div>
+            <div class="queue-row">
+              <input type="checkbox" class="queue-checkbox" />
+              <button class="expand-btn">▶</button>
+              <div>
+                <div class="queue-article-main truncate">Port of Santos Autonomous Drone Security Deployment</div>
+                <div class="queue-article-meta">Reuters &nbsp;·&nbsp; 2h ago &nbsp;·&nbsp; Google News</div>
+              </div>
+              <div class="queue-company">Port of Santos</div>
+              <div class="queue-country">Brazil</div>
+              <div class="queue-signal-score">
+                <span class="signal-badge sig-deployment">DEPLOYMENT</span>
+                <span class="score-badge score-green" style="font-size:11px;height:20px;width:32px;">92</span>
+              </div>
+              <div></div>
+            </div>
+          </div>
+          <!-- Row B -->
+          <div>
+            <div class="queue-row">
+              <input type="checkbox" class="queue-checkbox" />
+              <button class="expand-btn">▶</button>
+              <div>
+                <div class="queue-article-main truncate">Enel Green Power Signs Drone Inspection Contract with Skydio</div>
+                <div class="queue-article-meta">AP News &nbsp;·&nbsp; 3h ago</div>
+              </div>
+              <div class="queue-company">Enel Green Power</div>
+              <div class="queue-country">Italy</div>
+              <div class="queue-signal-score">
+                <span class="signal-badge sig-contract">CONTRACT</span>
+                <span class="score-badge score-green" style="font-size:11px;height:20px;width:32px;">90</span>
+              </div>
+              <div></div>
+            </div>
+          </div>
+          <!-- Row C -->
+          <div>
+            <div class="queue-row">
+              <input type="checkbox" class="queue-checkbox" />
+              <button class="expand-btn">▶</button>
+              <div>
+                <div class="queue-article-main truncate">MPA Singapore Maritime Surveillance Drone Tender</div>
+                <div class="queue-article-meta">Straits Times &nbsp;·&nbsp; 4h ago</div>
+              </div>
+              <div class="queue-company" style="color:var(--muted);">—</div>
+              <div class="queue-country">Singapore</div>
+              <div class="queue-signal-score">
+                <span class="signal-badge sig-tender">TENDER</span>
+                <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">72</span>
+              </div>
+              <div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── BATCH 2 ─────────────────────────────────────── -->
+        <div class="batch-divider">
+          <div class="batch-line"></div>
+          <div class="batch-info">
+            <span class="batch-run-name">DJI Dock</span>
+            <span class="batch-sep">•</span>
+            <span class="batch-meta">Mar 14, 10:15 AM</span>
+            <span class="batch-sep">•</span>
+            <span class="batch-meta">4 signals</span>
+          </div>
+          <div class="batch-actions">
+            <button class="btn-batch-select">☐ Select All</button>
+            <button class="btn-batch-dismiss">⊗ Bulk Dismiss</button>
+          </div>
+          <div class="batch-line"></div>
+        </div>
+
+        <div class="queue-table-wrap">
+          <!-- Row D — EXPANDED with drawer -->
+          <div id="row-d-wrap">
+            <div class="queue-row expanded" id="row-d" onclick="toggleDrawer()">
+              <input type="checkbox" class="queue-checkbox" onclick="event.stopPropagation()" />
+              <button class="expand-btn" id="row-d-arrow">▼</button>
+              <div>
+                <div class="queue-article-main truncate">Indian Railways to Deploy 200 Drones Across 15 Zones</div>
+                <div class="queue-article-meta">Times of India &nbsp;·&nbsp; 1d ago</div>
+              </div>
+              <div class="queue-company">Indian Railways</div>
+              <div class="queue-country">India</div>
+              <div class="queue-signal-score">
+                <span class="signal-badge sig-deployment">DEPLOYMENT</span>
+                <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">85</span>
+              </div>
+              <div class="fb-mention"><span class="fb-dot" title="FlytBase mentioned"></span></div>
+            </div>
+
+            <!-- ─── ARTICLE DRAWER ─────────────────────────── -->
+            <div class="drawer-wrap open" id="article-drawer">
+              <div class="drawer-grid">
+                <!-- LEFT COLUMN -->
+                <div>
+                  <div class="drawer-section-title">Summary</div>
+                  <p class="drawer-summary">
+                    Indian Railways has announced a large-scale drone deployment program covering 15 zones across the country. FlytBase has been named as the software platform of choice for fleet management and autonomous mission planning. Director of Technology Rajesh Kumar confirmed deployment begins Q3 2026, with an estimated 200 drones to be integrated in the first phase.
+                  </p>
+
+                  <div class="drawer-section-title">Metadata</div>
+                  <div class="meta-grid">
+                    <div class="meta-item">
+                      <label>Company</label>
+                      <span>Indian Railways</span>
+                    </div>
+                    <div class="meta-item">
+                      <label>Location</label>
+                      <span>Delhi, India</span>
+                    </div>
+                    <div class="meta-item">
+                      <label>Use Case</label>
+                      <span>Rail Survey</span>
+                    </div>
+                    <div class="meta-item">
+                      <label>Signal</label>
+                      <span><span class="signal-badge sig-deployment">DEPLOYMENT</span></span>
+                    </div>
+                    <div class="meta-item">
+                      <label>Score</label>
+                      <span>
+                        <span class="meta-score-badge">85 <span class="meta-score-label">Strong Signal</span></span>
+                      </span>
+                    </div>
+                    <div class="meta-item">
+                      <label>FlytBase</label>
+                      <span style="color:#16A34A;font-weight:600;">✓ Mentioned</span>
+                    </div>
+                  </div>
+
+                  <div class="drawer-section-title" style="display:flex;align-items:center;gap:8px;">
+                    People Mentioned
+                    <span class="badge-new">New</span>
+                  </div>
+                  <!-- Person 1 -->
+                  <div class="person-card">
+                    <div class="person-avatar" style="background:#2C7BF2;">RK</div>
+                    <div style="flex:1;">
+                      <div class="person-name">Rajesh Kumar</div>
+                      <div class="person-role">Director of Technology — Indian Railways</div>
+                      <div class="phase2-slot">Phase 2: email / LinkedIn profile slot</div>
+                    </div>
+                  </div>
+                  <!-- Person 2 -->
+                  <div class="person-card">
+                    <div class="person-avatar" style="background:#7C3AED;">PS</div>
+                    <div style="flex:1;">
+                      <div class="person-name">Priya Sharma</div>
+                      <div class="person-role">Drone Program Lead — Indian Railways</div>
+                      <div class="phase2-slot">Phase 2: email / LinkedIn profile slot</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div>
+                  <div class="drawer-section-title">Organizations</div>
+                  <div>
+                    <span class="entity-pill">Indian Railways <span class="entity-role">buyer</span></span>
+                    <span class="entity-pill">FlytBase <span class="entity-role">partner</span></span>
+                    <span class="entity-pill">DJI <span class="entity-role">oem</span></span>
+                  </div>
+
+                  <div class="drawer-section-title" style="margin-top:20px;">Source</div>
+                  <div>
+                    <span class="source-badge-google">Google News</span>
+                    <div class="source-info" style="margin-top:8px;">
+                      <div style="font-weight:600;font-size:13px;">Times of India</div>
+                      <div class="source-date">Published Mar 14, 2026</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slack Compose — full width -->
+              <div class="slack-compose">
+                <div class="slack-compose-header">💬 &nbsp;Message to #dock-radar</div>
+                <textarea class="slack-textarea">*Indian Railways* — DEPLOYMENT | India
+Score: 85/100 | Use Case: Rail Survey
+
+Indian Railways has announced a large-scale drone deployment with FlytBase as the software platform of choice. Director of Technology Rajesh Kumar confirmed deployment begins Q3 2026.
+
+https://timesofindia.com/article/indian-railways-200-drones-flytbase-2026...</textarea>
+                <div class="action-strip">
+                  <button class="btn-slack">→ &nbsp;Slack Internally</button>
+                  <button class="btn-bookmark">⭐ &nbsp;Bookmark</button>
+                  <button class="btn-dismiss">✕ &nbsp;Dismiss</button>
+                  <button class="btn-open">↗ &nbsp;Open Article</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row E -->
+          <div>
+            <div class="queue-row">
+              <input type="checkbox" class="queue-checkbox" />
+              <button class="expand-btn">▶</button>
+              <div>
+                <div class="queue-article-main truncate">Votorantim Mining Expands UAV Fleet for Remote Site Survey</div>
+                <div class="queue-article-meta">Mining Weekly &nbsp;·&nbsp; 2d ago</div>
+              </div>
+              <div class="queue-company">Votorantim</div>
+              <div class="queue-country">Brazil</div>
+              <div class="queue-signal-score">
+                <span class="signal-badge sig-deployment">DEPLOYMENT</span>
+                <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">78</span>
+              </div>
+              <div></div>
+            </div>
+          </div>
+
+          <!-- Row F -->
+          <div>
+            <div class="queue-row">
+              <input type="checkbox" class="queue-checkbox" />
+              <button class="expand-btn">▶</button>
+              <div>
+                <div class="queue-article-main truncate">DGCA India Issues New Drone Regulations for Commercial Operations</div>
+                <div class="queue-article-meta">Economic Times &nbsp;·&nbsp; 2d ago</div>
+              </div>
+              <div class="queue-company" style="color:var(--muted);">—</div>
+              <div class="queue-country">India</div>
+              <div class="queue-signal-score">
+                <span class="signal-badge sig-regulation">REGULATION</span>
+                <span class="score-badge score-yellow" style="font-size:11px;height:20px;width:32px;">55</span>
+              </div>
+              <div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── SENT TO SLACK ──────────────────────────────── -->
+        <div class="collapsible-section">
+          <div class="collapsible-header collapsed" onclick="toggleSection('sent-body', this)">
+            <span class="collapsible-title">
+              <span class="collapsible-arrow" id="sent-arrow">▶</span>
+              Sent to Slack (5 articles)
+              <span class="badge-changed">Changed</span>
+            </span>
+            <span style="font-size:11px;color:#9CA3AF;">Read-only rows — no expand drawer</span>
+          </div>
+          <div class="collapsible-body" id="sent-body" style="display:none;">
+            <!-- Readonly rows -->
+            <div class="readonly-row">
+              <a class="readonly-article-link truncate">Seoul Metro Drone Security Contract Awarded</a>
+              <span style="font-size:12px;font-weight:500;color:#374151;">Seoul Metro</span>
+              <span style="font-size:12px;color:var(--muted);">South Korea</span>
+              <span class="signal-badge sig-contract">CONTRACT</span>
+              <span class="score-badge score-green" style="font-size:11px;height:20px;width:32px;">91</span>
+              <span class="sent-time">Sent 2h ago</span>
+            </div>
+            <div class="readonly-row">
+              <a class="readonly-article-link truncate">Abu Dhabi Ports Drone Surveillance Expansion</a>
+              <span style="font-size:12px;font-weight:500;color:#374151;">Abu Dhabi Ports</span>
+              <span style="font-size:12px;color:var(--muted);">UAE</span>
+              <span class="signal-badge sig-expansion">EXPANSION</span>
+              <span class="score-badge score-green" style="font-size:11px;height:20px;width:32px;">88</span>
+              <span class="sent-time">Sent 5h ago</span>
+            </div>
+            <div class="readonly-row">
+              <a class="readonly-article-link truncate">Hitachi Energy Awards Drone Inspection Services Tender</a>
+              <span style="font-size:12px;font-weight:500;color:#374151;">Hitachi Energy</span>
+              <span style="font-size:12px;color:var(--muted);">Japan</span>
+              <span class="signal-badge sig-tender">TENDER</span>
+              <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">76</span>
+              <span class="sent-time">Sent 1d ago</span>
+            </div>
+            <div class="readonly-row">
+              <a class="readonly-article-link truncate">Brazil Federal Police Expands Drone Fleet Nationwide</a>
+              <span style="font-size:12px;font-weight:500;color:#374151;">Fed. Police Brazil</span>
+              <span style="font-size:12px;color:var(--muted);">Brazil</span>
+              <span class="signal-badge sig-deployment">DEPLOYMENT</span>
+              <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">74</span>
+              <span class="sent-time">Sent 1d ago</span>
+            </div>
+            <div class="readonly-row">
+              <a class="readonly-article-link truncate">Port of Hamburg Autonomous Inspection UAV Pilot</a>
+              <span style="font-size:12px;font-weight:500;color:#374151;">Port of Hamburg</span>
+              <span style="font-size:12px;color:var(--muted);">Germany</span>
+              <span class="signal-badge sig-deployment">DEPLOYMENT</span>
+              <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">71</span>
+              <span class="sent-time">Sent 2d ago</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── BOOKMARKED ─────────────────────────────────── -->
+        <div class="collapsible-section">
+          <div class="collapsible-header collapsed" onclick="toggleSection('bm-body', this)">
+            <span class="collapsible-title">
+              <span class="collapsible-arrow" id="bm-arrow">▶</span>
+              Bookmarked (3 articles)
+              <span class="badge-changed">Changed</span>
+            </span>
+            <span style="font-size:11px;color:#9CA3AF;">Read-only rows — no expand drawer</span>
+          </div>
+          <div class="collapsible-body" id="bm-body" style="display:none;">
+            <div class="readonly-row">
+              <a class="readonly-article-link truncate">Airbus UTM Division Partners with Drone Software Firm</a>
+              <span style="font-size:12px;font-weight:500;color:#374151;">Airbus</span>
+              <span style="font-size:12px;color:var(--muted);">France</span>
+              <span class="signal-badge sig-contract">CONTRACT</span>
+              <span class="score-badge score-green" style="font-size:11px;height:20px;width:32px;">89</span>
+              <span class="sent-time">Bookmarked 1d ago</span>
+            </div>
+            <div class="readonly-row">
+              <a class="readonly-article-link truncate">DP World Singapore Drone Ops Tender Issued</a>
+              <span style="font-size:12px;font-weight:500;color:#374151;">DP World</span>
+              <span style="font-size:12px;color:var(--muted);">Singapore</span>
+              <span class="signal-badge sig-tender">TENDER</span>
+              <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">80</span>
+              <span class="sent-time">Bookmarked 2d ago</span>
+            </div>
+            <div class="readonly-row">
+              <a class="readonly-article-link truncate">Saudi Aramco Drone Inspection Program Scale-Up</a>
+              <span style="font-size:12px;font-weight:500;color:#374151;">Saudi Aramco</span>
+              <span style="font-size:12px;color:var(--muted);">Saudi Arabia</span>
+              <span class="signal-badge sig-expansion">EXPANSION</span>
+              <span class="score-badge score-blue" style="font-size:11px;height:20px;width:32px;">77</span>
+              <span class="sent-time">Bookmarked 3d ago</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /card-body -->
+    </div><!-- /card -->
+  </div><!-- /step-3 -->
+
+  <!-- ════════════════════════════════════════════════════════════
+       CHANGE LEGEND
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="legend-section">
+    <div class="legend-title">What Changed from Original Spec</div>
+    <p class="legend-sub">Every decision below corresponds to a badge in the UI above. Refer to <code>phase1-gap-analysis.md</code> for full reasoning.</p>
+
+    <ul class="legend-list">
+      <li class="legend-item">
+        <span class="badge-removed" style="flex-shrink:0;">Removed</span>
+        <span class="legend-item-text"><strong>LLM Model parameter removed</strong> from all config bars. Model choice is an infrastructure concern, not a per-run UX decision in Phase 1.</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-changed" style="flex-shrink:0;">Changed</span>
+        <span class="legend-item-text"><strong>Min Score moved from Step 2 → Step 1</strong> config bar. Editable at collection time; read-only display in Step 2. Fixes the state drift problem (GAP 2) where re-filtering after pruning couldn't rehydrate dropped articles.</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-new" style="flex-shrink:0;">New</span>
+        <span class="legend-item-text"><strong>Review Gate toggle</strong> in Step 1 config bar. When ON: Step 2 pauses and shows "Proceed to Queue" button. When OFF: articles auto-flow to Step 3 when scoring completes. Resolves the undefined post-scoring transition (GAP 6).</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-changed" style="flex-shrink:0;">Changed</span>
+        <span class="legend-item-text"><strong>Step 2 config bar: all parameters now read-only</strong>. Configuration is locked at collection time. Step 2 only shows the run selector and locked display values.</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-new" style="flex-shrink:0;">New</span>
+        <span class="legend-item-text"><strong>Sources panel in Step 1</strong> — Google News active; LinkedIn and Facebook shown as "coming soon" disabled checkboxes. Makes the source architecture visible without implying current functionality (GAP 11).</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-new" style="flex-shrink:0;">New</span>
+        <span class="legend-item-text"><strong>Queue redesigned as batch sections per run</strong> — articles are grouped by the collection run that discovered them. Each batch has its own label showing run name, date/time, and signal count.</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-changed" style="flex-shrink:0;">Changed</span>
+        <span class="legend-item-text"><strong>Global "Select All" removed from queue header</strong>. Per-batch Select All + Bulk Dismiss replaces it. Bulk dismiss shows a toast with "X articles dismissed" count (GAP 6).</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-new" style="flex-shrink:0;">New</span>
+        <span class="legend-item-text"><strong>Batch dividers</strong> show run name, date, and signal count in a centered horizontal rule. Visually separates articles from different collection runs.</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-changed" style="flex-shrink:0;">Changed</span>
+        <span class="legend-item-text"><strong>Multiple article actions allowed</strong> — Slack send and Bookmark can coexist. Dismiss is the only terminal action. Row disappears immediately from the new queue when any action is taken (GAP 6).</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-changed" style="flex-shrink:0;">Changed</span>
+        <span class="legend-item-text"><strong>Sent/Bookmarked sections: read-only rows, no article drawer</strong>. These sections are archives — no further action available. Eliminates the re-bookmarking edge case (GAP 18) by architectural separation.</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-new" style="flex-shrink:0;">New</span>
+        <span class="legend-item-text"><strong>Article drawer person cards include empty Phase 2 slot</strong> — each person shows a dashed placeholder for future email / LinkedIn enrichment. No mock data filled in Phase 1 (GAP 12 — forward-compatible).</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-new" style="flex-shrink:0;">New</span>
+        <span class="legend-item-text"><strong>Empty states defined for all steps</strong> — Queue: "All caught up — no new signals to review". Step 2 all-dismissed: table stays with 0 rows + "All articles dismissed". Failures surface as toast only, no retry button in Phase 1 (GAP 8).</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-new" style="flex-shrink:0;">New</span>
+        <span class="legend-item-text"><strong>Scoring progress shows cached article count</strong> — "X already cached from previous runs" shown below progress bar. Transparent smart-memory behaviour (from GAP 5 run-selector design).</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-new" style="flex-shrink:0;">New</span>
+        <span class="legend-item-text"><strong>"Proceed to Queue" button in Step 2</strong> — only visible when Review Gate is ON. Hidden with an explanatory note when OFF. Resolves undefined post-scoring transition (GAP 6).</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-new" style="flex-shrink:0;">New</span>
+        <span class="legend-item-text"><strong>SOURCE_BADGE_COLORS fully defined</strong> — Google News (yellow #FEF9C3 / #A16207), LinkedIn (blue #DBEAFE / #1E40AF), Facebook (indigo #EEF2FF / #4338CA). All three defined in constants, not just Google News (GAP 11).</span>
+      </li>
+      <li class="legend-item">
+        <span class="badge-changed" style="flex-shrink:0;">Changed</span>
+        <span class="legend-item-text"><strong>Dismiss is immediate and permanent</strong> — no undo, no confirmation dialog. Single dismiss: silent. Bulk dismiss: shows toast "X articles dismissed". Low-friction design for fast BD triage (GAP 6).</span>
+      </li>
+    </ul>
+  </div>
+
+</div><!-- /page-content -->
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════════ -->
+<script>
+  /* ── State ──────────────────────────────────────────── */
+  let activeStep = 1;
+  let reviewGateOn = false;
+  let drawerOpen = true; // Indian Railways row starts expanded
+
+  /* ── Tab Switching ──────────────────────────────────── */
+  function switchStep(n) {
+    // Deactivate all
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i === n - 1);
+    });
+    document.querySelectorAll('.step-panel').forEach((panel, i) => {
+      panel.classList.toggle('active', i === n - 1);
+    });
+    document.querySelectorAll('.config-section').forEach((cfg, i) => {
+      cfg.classList.toggle('active', i === n - 1);
+    });
+    activeStep = n;
+  }
+
+  /* ── Review Gate Toggle ─────────────────────────────── */
+  function toggleReviewGate() {
+    reviewGateOn = !reviewGateOn;
+    const toggle = document.getElementById('review-gate-toggle');
+    const hint = document.getElementById('rg-hint');
+    const proceedWrap = document.getElementById('proceed-wrap');
+    const autoFlowNote = document.getElementById('auto-flow-note');
+
+    toggle.classList.toggle('on', reviewGateOn);
+
+    if (reviewGateOn) {
+      hint.textContent = 'ON = pause at Step 2 | OFF = auto-flow';
+      hint.style.color = '#2C7BF2';
+      hint.style.fontWeight = '600';
+      proceedWrap.style.display = 'flex';
+      autoFlowNote.style.display = 'none';
+    } else {
+      hint.textContent = 'ON = pause at Step 2 | OFF = auto-flow';
+      hint.style.color = '';
+      hint.style.fontWeight = '';
+      proceedWrap.style.display = 'none';
+      autoFlowNote.style.display = 'flex';
+    }
+  }
+
+  /* ── Article Drawer ─────────────────────────────────── */
+  function toggleDrawer() {
+    drawerOpen = !drawerOpen;
+    const drawer = document.getElementById('article-drawer');
+    const arrow = document.getElementById('row-d-arrow');
+    const row = document.getElementById('row-d');
+
+    drawer.classList.toggle('open', drawerOpen);
+    arrow.textContent = drawerOpen ? '▼' : '▶';
+    row.classList.toggle('expanded', drawerOpen);
+  }
+
+  /* ── Collapsible Sections ───────────────────────────── */
+  function toggleSection(bodyId, headerEl) {
+    const body = document.getElementById(bodyId);
+    const arrow = headerEl.querySelector('.collapsible-arrow');
+    const isOpen = body.style.display !== 'none';
+
+    body.style.display = isOpen ? 'none' : 'block';
+    arrow.style.transform = isOpen ? '' : 'rotate(90deg)';
+    headerEl.classList.toggle('collapsed', isOpen);
+  }
+
+  /* ── Preset date buttons ─────────────────────────────── */
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.closest('.preset-btns').querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      const input = this.closest('.date-range-row').querySelector('.small-input');
+      input.value = this.textContent.trim();
+    });
+  });
+</script>
+
+</body>
+</html>
