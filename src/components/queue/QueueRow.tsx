@@ -57,11 +57,18 @@ export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onTo
 
       {/* Title + publisher */}
       <div className="min-w-0" onClick={onToggleExpand} style={{ cursor: 'pointer' }}>
-        <div
-          className="truncate font-semibold"
-          style={{ fontSize: 13, color: isExpanded ? 'var(--dr-blue)' : 'var(--dr-text)', transition: 'color 0.15s' }}
-        >
-          {art.title}
+        <div className="flex items-center gap-1.5">
+          <div
+            className="truncate font-semibold"
+            style={{ fontSize: 13, color: isExpanded ? 'var(--dr-blue)' : 'var(--dr-text)', transition: 'color 0.15s' }}
+          >
+            {art.title}
+          </div>
+          {art.published_at && Date.now() - new Date(art.published_at).getTime() < 86_400_000 && (
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 5px', borderRadius: 4, background: '#ECFDF5', color: '#059669', border: '1px solid #6EE7B7', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              ⚡ Fresh
+            </span>
+          )}
         </div>
         <div className="truncate" style={{ fontSize: 11, color: 'var(--dr-text-disabled)', marginTop: 1 }}>
           {art.publisher}&nbsp;·&nbsp;{art.published_at ? formatTimeAgo(art.published_at) : '—'}

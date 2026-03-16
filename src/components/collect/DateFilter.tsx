@@ -1,5 +1,5 @@
 "use client";
-import { DATE_PRESETS } from '@/lib/constants';
+import { DATE_PRESETS, DATE_PRESET_LABELS } from '@/lib/constants';
 
 interface DateFilterProps {
   days: number;
@@ -10,7 +10,7 @@ export function DateFilter({ days, onChange }: DateFilterProps) {
   return (
     <div>
       <label className="block" style={{ fontSize: 12, fontWeight: 600, color: 'var(--dr-text-muted)', marginBottom: 6 }}>Date Range</label>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <input
           type="number"
           value={days}
@@ -19,7 +19,7 @@ export function DateFilter({ days, onChange }: DateFilterProps) {
           style={{ width: 52, padding: '6px 10px', border: '1px solid var(--dr-border)', borderRadius: 6, fontSize: 13, color: 'var(--dr-text)' }}
         />
         <span style={{ fontSize: 13, color: 'var(--dr-text-muted)' }}>days</span>
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
           {DATE_PRESETS.map((preset) => (
             <button
               key={preset}
@@ -32,7 +32,7 @@ export function DateFilter({ days, onChange }: DateFilterProps) {
                 color: days === preset ? 'var(--dr-blue)' : 'var(--dr-text-muted)',
               }}
             >
-              {preset}
+              {DATE_PRESET_LABELS[preset] ?? preset}
             </button>
           ))}
         </div>

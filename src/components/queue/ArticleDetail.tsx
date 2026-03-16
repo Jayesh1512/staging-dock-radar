@@ -1,17 +1,25 @@
 "use client";
 import type { ReactNode } from 'react';
-import type { ArticleWithScore } from '@/lib/types';
+import type { ArticleWithScore, Person, Entity } from '@/lib/types';
 import { PersonCard } from './PersonCard';
 import { SignalBadge } from '@/components/shared/SignalBadge';
 import { getScoreBand } from '@/lib/constants';
 
+export type EnrichmentStatus = 'idle' | 'loading' | 'done' | 'failed';
+
 interface ArticleDetailProps {
   article: ArticleWithScore;
+  enrichmentStatus?: EnrichmentStatus;
+  enrichedPersons?: Person[];
+  enrichedEntities?: Entity[];
 }
 
-export function ArticleDetail({ article }: ArticleDetailProps) {
+export function ArticleDetail({ article, enrichmentStatus = 'idle', enrichedPersons, enrichedEntities: _enrichedEntities }: ArticleDetailProps) {
   const { scored } = article;
   const band = getScoreBand(scored.relevance_score);
+
+  // Use enriched persons if available, fall back to scoring-time persons
+  const displayPersons = enrichedPersons ?? scored.persons;
 
   const metadata = [
     { label: 'Company', value: scored.company ?? '—' },
@@ -80,13 +88,44 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
         </div>
       </div>
 
-      {scored.persons.length > 0 && (
-        <>
-          <SectionLabel>People Mentioned</SectionLabel>
-          {scored.persons.map((person, i) => (
-            <PersonCard key={person.name} person={person} index={i} />
-          ))}
-        </>
+      {/* People section — always rendered regardless of enrichment status */}
+      <SectionLabel>People Mentioned</SectionLabel>
+      {enrichmentStatus === 'loading' ? (
+        <div
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '10px 14px', marginBottom: 10,
+            background: '#F0F9FF', border: '1px solid #BAE6FD',
+            borderRadius: 8, fontSize: 12, color: '#0369A1',
+          }}
+        >
+          <span
+            style={{
+              display: 'inline-block', width: 11, height: 11,
+              border: '2px solid #0369A1', borderTopColor: 'transparent',
+              borderRadius: '50%', animation: 'spin 0.7s linear infinite',
+              flexShrink: 0,
+            }}
+          />
+          Enriching article — fetching full text to identify people…
+        </div>
+      ) : displayPersons.length > 0 ? (
+        displayPersons.map((person, i) => (
+          <PersonCard key={`${person.name}-${i}`} person={person} index={i} />
+        ))
+      ) : (
+        <div
+          style={{
+            padding: '10px 14px', marginBottom: 10,
+            background: '#fff', border: '1px solid var(--dr-border)',
+            borderRadius: 8, fontSize: 12, color: 'var(--dr-text-muted)',
+            fontStyle: 'italic',
+          }}
+        >
+          {enrichmentStatus === 'failed'
+            ? 'Could not fetch full article — names may not be available'
+            : 'No named individuals identified in this article'}
+        </div>
       )}
     </div>
   );

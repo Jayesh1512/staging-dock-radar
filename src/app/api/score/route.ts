@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import { llmComplete, getActiveLLMInfo } from '@/lib/llm';
 import { SCORING_SYSTEM_PROMPT, formatBatchScoringPrompt } from '@/lib/scoring-prompt';
 import { fetchArticleBody } from '@/lib/article-body';
-import { insertScoredArticles, updateArticleResolvedUrl, loadScoredByArticleIds, loadDedupKeysFromScoredArticles } from '@/lib/db';
+import { insertScoredArticles, updateArticleResolvedUrl, loadScoredByArticleIds, loadDedupKeysFromScoredArticles, loadEverQueuedArticleIds, markArticlesAsEverQueued } from '@/lib/db';
 import { gateTwoDedup } from '@/lib/dedup';
-import { articleMatchesRegions } from '@/lib/utils';
 import { urlFingerprint, dedupKey } from '@/lib/url-fingerprint';
 import type { Article, ScoredArticle, ArticleWithScore, SignalType } from '@/lib/types';
 
@@ -104,17 +103,17 @@ function filterExcludedByTitle(articles: Article[], excludeKeywords: string[]): 
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json() as { articles: Article[]; selectedRegions?: string[]; excludeTitleKeywords?: string[] };
-    const { articles: rawArticles, selectedRegions = [] } = body;
+    const body = await req.json() as { articles: Article[]; selectedRegions?: string[]; excludeTitleKeywords?: string[]; minScore?: number };
+    const { articles: rawArticles, selectedRegions = [], minScore = 0 } = body;
 
     if (!Array.isArray(rawArticles) || rawArticles.length === 0) {
       return NextResponse.json({ error: 'Non-empty articles array is required' }, { status: 400 });
     }
 
-    const MAX_BATCH = 30;
+    const MAX_BATCH = 40;
     if (rawArticles.length > MAX_BATCH) {
       return NextResponse.json(
-        { error: `Batch too large: ${rawArticles.length} articles (max ${MAX_BATCH}). Reduce maxArticles in Step 1.` },
+        { error: `Batch too large: ${rawArticles.length} articles sent but the scoring limit is ${MAX_BATCH}. This is a configuration mismatch — MAX_BATCH in score/route.ts must equal DEFAULTS.maxArticles in constants.ts. Update both values together.` },
         { status: 400 },
       );
     }
@@ -137,6 +136,31 @@ export async function POST(req: Request) {
       });
     }
 
+    // ── Ever-queued gate: skip articles already in Step 3 from a previous run ────
+    // Once an article reaches the queue, re-scoring it wastes LLM calls and creates duplicates.
+    let everQueuedIds = new Set<string>();
+    try {
+      everQueuedIds = await loadEverQueuedArticleIds(articles.map(a => a.id));
+    } catch (eqErr) {
+      console.warn('[/api/score] ever_queued lookup failed (non-fatal):', eqErr instanceof Error ? eqErr.message : eqErr);
+    }
+    const everQueuedArticles = articles.filter(a => everQueuedIds.has(a.id));
+    const articlesToProcess = articles.filter(a => !everQueuedIds.has(a.id));
+    if (everQueuedArticles.length > 0) {
+      console.log(`[/api/score] ever_queued gate: ${everQueuedArticles.length} articles skipped (already reached queue in a prior run), ${articlesToProcess.length} to process`);
+      everQueuedArticles.forEach(a => console.log(`  ever-queued skip: "${a.title.slice(0, 60)}"`));
+    }
+    if (articlesToProcess.length === 0 && excludedArticles.length === 0) {
+      return NextResponse.json({
+        results: [],
+        provider: '',
+        model: '',
+        excludedCount: excludedArticles.length,
+        excludedIds: excludedArticles.map(a => a.id),
+        message: `All ${rawArticles.length} articles were already in the queue from a previous run. Nothing to score.`,
+      });
+    }
+
     // ── URL fingerprint + entities dedup: skip scoring if this URL fingerprint already exists in scored_articles ───
     let dedupKeys = { existingUrlFingerprints: new Set<string>(), existingDedupKeys: new Set<string>() };
     try {
@@ -144,8 +168,8 @@ export async function POST(req: Request) {
     } catch (urlErr) {
       console.warn('[/api/score] Dedup keys lookup failed (non-fatal):', urlErr instanceof Error ? urlErr.message : urlErr);
     }
-    const urlDedup = articles.filter((a) => dedupKeys.existingUrlFingerprints.has(urlFingerprint(a.url)));
-    const articlesForPipeline = articles.filter((a) => !dedupKeys.existingUrlFingerprints.has(urlFingerprint(a.url)));
+    const urlDedup = articlesToProcess.filter((a) => dedupKeys.existingUrlFingerprints.has(urlFingerprint(a.url)));
+    const articlesForPipeline = articlesToProcess.filter((a) => !dedupKeys.existingUrlFingerprints.has(urlFingerprint(a.url)));
     if (urlDedup.length > 0) {
       console.log(`[/api/score] URL fingerprint dedup: ${urlDedup.length} articles skipped (URL params already in scored_articles), ${articlesForPipeline.length} to process`);
       urlDedup.forEach((a) => console.log(`  url-dedup: "${a.title.slice(0, 50)}"`));
@@ -166,7 +190,7 @@ export async function POST(req: Request) {
         flytbase_mentioned: false,
         persons: [],
         entities: [],
-        drop_reason: 'URL params already scored (dedup)',
+        drop_reason: 'Already captured in a previous run',
         is_duplicate: true,
         status: 'new' as const,
         actions_taken: [],
@@ -211,7 +235,7 @@ export async function POST(req: Request) {
     // Fetch article bodies for uncached articles only (no LLM cost)
     console.log(`[/api/score] Fetching bodies for ${toScore.length} articles...`);
     const bodyResults = toScore.length > 0
-      ? await Promise.all(toScore.map((a) => fetchArticleBody(a.url)))
+      ? await Promise.all(toScore.map((a) => fetchArticleBody(a.url, a.source)))
       : [];
     const fetchedCount = bodyResults.filter(r => r.text).length;
     const resolvedCount = bodyResults.filter((r, i) => r.resolvedUrl !== toScore[i]?.url).length;
@@ -272,7 +296,7 @@ export async function POST(req: Request) {
           scored: {
             ...r.scored,
             is_duplicate: true,
-            drop_reason: r.scored.drop_reason ?? 'URL + entities already scored (dedup)',
+            drop_reason: r.scored.drop_reason ?? 'Same story already captured from this company',
           },
         };
       }
@@ -280,34 +304,56 @@ export async function POST(req: Request) {
       return r;
     });
 
-    // Gate 3: Region filter — use LLM-extracted country (authoritative), not RSS edition.
-    // Google News RSS gl/ceid are localization params, not geographic filters.
-    const regionFiltered = selectedRegions.length > 0
-      ? allResultsWithDedup.map((r) => {
-          if (articleMatchesRegions(r.scored.country, selectedRegions)) return r;
-          return {
-            ...r,
-            scored: {
-              ...r.scored,
-              drop_reason: `Outside selected regions (${r.scored.country ?? 'unknown country'})`,
-            },
-          };
-        })
-      : allResultsWithDedup;
-
-    const regionDropped = regionFiltered.filter(r => r.scored.drop_reason?.startsWith('Outside selected regions')).length;
-    if (regionDropped > 0) console.log(`[/api/score] Region filter: ${regionDropped} articles dropped (outside selected regions)`);
-
     // Gate 4: Post-scoring semantic dedup — marks lower-scored duplicates.
     // Runs server-side so is_duplicate flags are persisted correctly to DB.
-    const dedupedResults = gateTwoDedup(regionFiltered);
+    const dedupedResults = gateTwoDedup(allResultsWithDedup);
     const dupCount = dedupedResults.filter(r => r.scored.is_duplicate).length;
     if (dupCount > 0) console.log(`[/api/score] Gate 2 dedup: ${dupCount} semantic duplicates marked`);
 
-    dedupedResults.forEach((r) => {
+    // ── R8: Freshness boost — articles published within 24h receive +10 relevance points ─
+    // Applied before ever_queued marking so the boosted score drives queue eligibility.
+    // Only boosts non-dropped, non-duplicate articles with base score >= freshnessBoostMinScore.
+    // Cached articles get the boost too — giving borderline articles a second-chance window.
+    const FRESHNESS_BOOST_POINTS = 10;
+    const FRESHNESS_BOOST_MIN_SCORE = 25;
+    const FRESHNESS_WINDOW_MS = 24 * 60 * 60 * 1000;
+    const runTime = Date.now();
+    const freshnessResults = dedupedResults.map(r => {
+      if (r.scored.drop_reason || r.scored.is_duplicate) return r;
+      if (r.scored.relevance_score < FRESHNESS_BOOST_MIN_SCORE) return r;
+      if (!r.article.published_at) return r;
+      const publishedAt = new Date(r.article.published_at).getTime();
+      if (runTime - publishedAt > FRESHNESS_WINDOW_MS) return r;
+      return {
+        ...r,
+        scored: {
+          ...r.scored,
+          relevance_score: Math.min(100, r.scored.relevance_score + FRESHNESS_BOOST_POINTS),
+        },
+      };
+    });
+    const freshCount = freshnessResults.filter((r, i) => r.scored.relevance_score !== dedupedResults[i].scored.relevance_score).length;
+    if (freshCount > 0) console.log(`[/api/score] Freshness boost: ${freshCount} articles boosted +${FRESHNESS_BOOST_POINTS} points (published within 24h)`);
+
+    freshnessResults.forEach((r) => {
       const cacheTag = cachedMap.has(r.article.id) ? ' [CACHED]' : '';
       console.log(`[/api/score] ${provider}/${model} → "${r.article.title.slice(0, 60)}" score=${r.scored.relevance_score}${r.scored.is_duplicate ? ' [DUP]' : ''}${cacheTag}`);
     });
+
+    // ── Mark newly queue-eligible articles as ever_queued ────────────────────
+    // An article is queue-eligible if: score >= minScore AND no drop_reason AND not a duplicate.
+    // We mark them now so future runs skip them entirely, preventing duplicate queue entries.
+    const newlyEligibleIds = freshnessResults
+      .filter(r => !r.scored.drop_reason && !r.scored.is_duplicate && r.scored.relevance_score >= minScore)
+      .map(r => r.article.id);
+    if (newlyEligibleIds.length > 0) {
+      try {
+        await markArticlesAsEverQueued(newlyEligibleIds);
+        console.log(`[/api/score] Marked ${newlyEligibleIds.length} articles as ever_queued (score >= ${minScore}, no drop)`);
+      } catch (eqErr) {
+        console.error('[/api/score] markArticlesAsEverQueued failed (non-fatal):', eqErr instanceof Error ? eqErr.message : eqErr);
+      }
+    }
 
     // ── Persist to Supabase ──────────────────────────────────────────────────
     const urlDedupScored: ScoredArticle[] = urlDedup.map((a) => ({
@@ -325,7 +371,7 @@ export async function POST(req: Request) {
       flytbase_mentioned: false,
       persons: [],
       entities: [],
-      drop_reason: 'URL already scored (dedup)',
+      drop_reason: 'Already captured in a previous run',
       is_duplicate: true,
       status: 'new' as const,
       actions_taken: [],
@@ -338,7 +384,7 @@ export async function POST(req: Request) {
     try {
       // Upsert all results — pipeline results have normalized_url set; url-dedup rows marked as duplicate
       await insertScoredArticles([
-        ...dedupedResults.map(r => r.scored),
+        ...freshnessResults.map(r => r.scored),
         ...urlDedupScored,
       ]);
 
@@ -348,7 +394,7 @@ export async function POST(req: Request) {
         .map(r => updateArticleResolvedUrl(r.article.id, r.article.resolved_url!));
       if (urlUpdates.length > 0) await Promise.all(urlUpdates);
 
-      console.log(`[/api/score] DB: ${dedupedResults.length} scored + ${urlDedupScored.length} url-dedup persisted (${cached.length} from cache)`);
+      console.log(`[/api/score] DB: ${freshnessResults.length} scored + ${urlDedupScored.length} url-dedup persisted (${cached.length} from cache)`);
     } catch (dbErr) {
       // DB write failure is non-fatal — data still returned to client
       console.error('[/api/score] DB write failed (non-fatal):', dbErr instanceof Error ? dbErr.message : dbErr);
@@ -360,7 +406,7 @@ export async function POST(req: Request) {
     }));
 
     return NextResponse.json({
-      results: [...dedupedResults, ...urlDedupResults],
+      results: [...freshnessResults, ...urlDedupResults],
       provider,
       model,
       excludedCount: excludedArticles.length,

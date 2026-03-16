@@ -8,6 +8,7 @@ import { PipelineStats } from './PipelineStats';
 import { useCollect } from '@/hooks/use-collect';
 import { ALL_COUNTRIES } from '@/lib/constants';
 import type { ArticleSource, CollectResult } from '@/lib/types';
+import { CORE_8_REGIONS } from '@/lib/constants';
 
 interface CollectPanelProps {
   keywords: string[];
@@ -33,8 +34,8 @@ export function CollectPanel({
   onProceedToScoring,
 }: CollectPanelProps) {
   const { isCollecting, stats, error, startCollect } = useCollect();
-  const [regions, setRegions] = useState<string[]>([...ALL_COUNTRIES]);
   const [sources, setSources] = useState<ArticleSource[]>(['google_news', 'linkedin']);
+  const [regions, setRegions] = useState<string[]>([...CORE_8_REGIONS]);
 
   const handleCollect = async () => {
     if (keywords.length === 0) return;
@@ -69,8 +70,8 @@ export function CollectPanel({
             }}
           >
             {isCollecting
-              ? <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Collecting...</>
-              : <>🔍&nbsp;&nbsp;Collect</>
+              ? <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Collecting from {regions.length} region{regions.length !== 1 ? 's' : ''}…</>
+              : <>🔍&nbsp;&nbsp;Collect News</>
             }
           </button>
         </div>

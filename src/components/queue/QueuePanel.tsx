@@ -54,6 +54,12 @@ export function QueuePanel({ articles, runs, runArticleMap, getActions, onSlack,
   // Sort runs newest first
   const sortedRuns = [...runs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+  // Safety net: track which article IDs have already been rendered under a run header.
+  // An article should appear under exactly one run (its first matching run, newest first).
+  // The ever_queued flag + runArticleMap fixes prevent duplicates upstream, but this
+  // guards against any edge-case where the same ID slips into multiple run maps.
+  const renderedArticleIds = new Set<string>();
+
   return (
     <div className="bg-white" style={{ border: '1px solid var(--dr-border)', borderRadius: 'var(--dr-radius-card)', overflow: 'hidden' }}>
       <div style={{ padding: 20 }}>
@@ -97,8 +103,9 @@ export function QueuePanel({ articles, runs, runArticleMap, getActions, onSlack,
               sortedRuns.map((run) => {
                 const runArticleIds = runArticleMap[run.id] ?? [];
                 const batchArticles = queueArticles
-                  .filter(a => runArticleIds.includes(a.article.id))
+                  .filter(a => runArticleIds.includes(a.article.id) && !renderedArticleIds.has(a.article.id))
                   .sort((a, b) => b.scored.relevance_score - a.scored.relevance_score);
+                batchArticles.forEach(a => renderedArticleIds.add(a.article.id));
 
                 if (batchArticles.length === 0) return null;
 

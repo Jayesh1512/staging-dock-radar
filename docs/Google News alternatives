@@ -1,0 +1,142 @@
+Core Problem: Google News RSS Limitations
+Google News RSS returns a limited, relevance-sorted feed (typically ~20-30 top results), not comprehensive search results. The same articles stay at the top because they're ranked highest, regardless of duration or region parameters. This is why you see the same articles repeatedly.
+
+Strategic Options for Better Results
+1. Keyword Expansion & Variations
+Your current approach: Single keyword "DJI Dock"
+
+Better approach:
+
+Semantic variations: "DJI Dock", "DJI dock station", "Dock for DJI", "automated drone dock", "drone charging station"
+Competitor/adjacent keywords: "drone deployment platform", "drone automation", "autonomous drone systems", "aerial logistics"
+Long-tail combinations: "DJI Dock agriculture", "DJI Dock mining", "DJI Dock construction"
+Multi-word operators: Search for ("DJI" OR "Flytbase") AND (dock OR deployment OR automation)
+Expected impact: 3-5x more unique articles per run
+
+2. Source Expansion (Beyond Google News RSS)
+Google News RSS alone won't give you comprehensive coverage. Consider parallel data streams:
+
+Source	Coverage	Latency	Cost	Recommendation
+Google News RSS (current)	Broad, generic	1-3 days	Free	Keep as base
+NewsAPI.org	70K+ sources, searchable	Real-time	Free tier: 100 req/day	Add immediately
+LinkedIn Company Search	Companies, announcements	Real-time	Requires scraping or API	High signal, lower volume
+Industry RSS feeds	Specific verticals (drone, ag-tech)	1 day	Free	Drone News, Geospatial Today
+Twitter/X API	Real-time mentions	Live	$200/month	Add filters for @flytbase, #drones
+Company website monitoring	First-party announcements	Real-time	Custom scraper	Highest quality signal
+Quick win: Add NewsAPI — it has better filtering and more sources than Google News.
+
+3. Filtering & Temporal Strategy
+Current approach: Fixed time window (14/30/60/90 days) — returns same top results
+
+Better approach:
+
+Rolling window collection: Instead of "last 90 days", run queries with overlapping windows:
+
+"Last 7 days" daily (captures new articles before they age out)
+"7-14 days old" weekly (articles that took time to bubble up)
+"30-60 days old" monthly (slow-burn stories)
+Recency boost: When you have duplicate content, score newer articles higher
+
+Semantic deduplication improvements:
+
+Don't just match URL/title similarity
+Cluster articles by topic (use LLM to extract topics, group by topic instead of just title)
+Keep the first published version but reference re-reporting across outlets (shows amplification)
+4. Search Operator Enrichment
+Instead of single keyword, use structured queries:
+
+
+DJI Dock OR (DJI AND dock AND deployment)
+(drone OR unmanned) AND (deployment OR automation) AND NOT toy
+DJI AND (agriculture OR mining OR construction OR logistics)
+Impact: Captures long-tail articles you'd otherwise miss.
+
+5. Regional Search Optimization
+Current limitation: Region parameter (gl/ceid) is edition, not filter
+
+Better approach:
+
+Run separate searches for each language + region:
+
+English (US), English (UK), German, French, Spanish editions
+Japanese edition for Asia coverage
+Portuguese edition for Brazil
+This naturally surfaces region-specific news that doesn't make the global feed
+
+6. Collection Mechanics for Fresh Data
+Current approach: Batch collection on-demand with fixed duration
+
+Better approach:
+
+Daily scheduled collection (e.g., 8 AM IST daily)
+
+Small, frequent pulls catch fresh articles before they age off the feed
+Combine with D4 cache to avoid re-processing
+Incremental collection with state:
+
+Save the timestamp of last collection
+Next run: "published after [last_collected_timestamp]"
+Prevents re-fetching old content
+Trending keyword detection:
+
+Periodically add emerging keywords to the search pool
+E.g., if "crop monitoring" suddenly spikes in search volume, add that keyword
+7. Source Authority & Deduplication
+Once you have more data flowing in:
+
+Weight sources by authority: Reuters > TechCrunch > random blog
+Track article propagation: Same news published in NYT then TechCrunch → note it as "amplified"
+Cluster duplicate stories: Instead of filtering to one, show "Same story reported by 5 outlets" → signal of importance
+Recommended Implementation Roadmap
+Phase 1 (Immediate - 1-2 days):
+
+Add NewsAPI as secondary source (swap Google News RSS into a google_news provider field)
+Implement rolling window collection: 7-day + 14-day staggered runs
+Add 5-10 keyword variations to pool
+Expected result: 2-3x more unique articles
+
+Phase 2 (1-2 weeks):
+
+Add industry-specific RSS feeds (GeoSpatial Today, Drone News, etc.)
+Implement multi-language Google News searches (Japanese, German, Spanish editions)
+Build semantic clustering for deduplication (LLM groups by topic, not just title match)
+Expected result: 5x more unique articles with better quality signal
+
+Phase 3 (Optional - future):
+
+Twitter/X API for real-time mentions
+LinkedIn scraping for company announcements
+Company website monitoring (via RSS or scraping)
+Why You're Seeing Repetition
+Google News RSS feed is small: ~20-30 results, heavily weighted to top ~5
+Articles age out slowly: Takes 1-2 weeks for truly old articles to fall off
+No temporal diversity: Your 90-day query returns same top 20, just older
+Single keyword: "DJI Dock" is quite specific — broader variants would catch adjacent coverage
+No cross-source: Different sources report same events differently
+One Concrete Example
+Instead of:
+
+
+Search: "DJI Dock"
+Region: Global
+Duration: 90 days
+Result: Same 12 articles
+Try:
+
+
+Search 1: "DJI Dock" (Google News RSS) — 12 results
+Search 2: "DJI dock station" (NewsAPI) — 8 new results
+Search 3: "drone deployment" (NewsAPI) — 15 new results
+Search 4: "automated drone" (Japanese Google News) — 6 new results
+Search 5: "DJI Dock" (LinkedIn Company Search) — 3 new results
+Total: ~30 unique articles across sources
+Plus daily scheduled runs catch fresh articles before they age off.
+
+Would you like me to:
+
+Design the schema changes to support multiple sources in the collect step?
+Build a NewsAPI integration alongside Google News RSS?
+Implement the rolling-window + multi-keyword expansion logic?
+Create a semantic clustering function for better deduplication?
+This would be a significant upgrade to data quality without changing the core pipeline architecture.
+

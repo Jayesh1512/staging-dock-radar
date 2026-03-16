@@ -34,6 +34,9 @@ export interface Article {
    *  Undefined at collection time; set by /api/score once article body is fetched.
    *  Used by Slack for unfurl so og:image shows instead of the Google News page. */
   resolved_url?: string;
+  /** True once this article has reached Step 3 (Active Queue) in any run.
+   *  Prevents the same article from re-entering the queue in future runs. */
+  ever_queued?: boolean;
 }
 
 export interface Person {
@@ -71,6 +74,8 @@ export interface ScoredArticle {
   reviewed_at: string | null;
   dismissed_at: string | null;
   slack_sent_at: string | null;
+  /** Set after lazy enrichment completes on drawer open. Null = not yet enriched. */
+  enriched_at: string | null;
   created_at: string;
 }
 

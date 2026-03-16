@@ -52,8 +52,8 @@ export default function Dashboard() {
   currentRunRef.current = currentRun;
 
   // ─── Collect Config ────────────────────────────────────
-  const [keywords, setKeywords] = useState<string[]>(['DJI Dock', 'Drone Deployment']);
-  const [maxArticles, setMaxArticles] = useState<number>(DEFAULTS.maxArticles);
+  const [keywords, setKeywords] = useState<string[]>(['DJI Dock', 'DJI Dock 3', 'Drone in a box', 'Drone-in-a-box', 'Drone Dock']);
+  const [maxArticles] = useState<number>(DEFAULTS.maxArticles);
   const [minScore, setMinScore] = useState<number>(DEFAULTS.minScore);
   const [filterDays, setFilterDays] = useState<number>(DEFAULTS.filterDays);
 
@@ -83,13 +83,10 @@ export default function Dashboard() {
 
         if (data.scoredArticles.length > 0) {
           // Restore the global queue from DB — only articles eligible for queue.
-          // Use the lowest min_score across all runs so no qualifying articles are hidden.
-          // If user changes minScore later, the live filter in Step 2/3 handles it.
-          const lowestMinScore = data.runs.length > 0
-            ? Math.min(...data.runs.map(r => r.min_score))
-            : DEFAULTS.minScore;
+          // Use DEFAULTS.minScore as the fixed threshold so that test runs with a lower
+          // min_score don't permanently lower the bar for all future loads.
           let queueArticles = data.scoredArticles.filter(a =>
-            a.scored.relevance_score >= lowestMinScore &&
+            a.scored.relevance_score >= DEFAULTS.minScore &&
             !a.scored.drop_reason &&
             !a.scored.is_duplicate,
           );
@@ -125,7 +122,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (scoringStarted && !hasScored && !hasStartedRef.current && collectedArticles.length > 0) {
       hasStartedRef.current = true;
-      startScoring(collectedArticles, handleScoringComplete, collectedRegions);
+      startScoring(collectedArticles, handleScoringComplete, collectedRegions, minScore);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scoringStarted, hasScored, collectedArticles, startScoring]);
@@ -182,17 +179,29 @@ export default function Dashboard() {
         !existingIds.has(r.article.id) &&
         r.scored.relevance_score >= minScore &&
         !r.scored.drop_reason &&
-        !r.scored.is_duplicate,
+        !r.scored.is_duplicate &&
+        !r.article.ever_queued,
       );
       return [...prev, ...newOnes];
     });
 
     const runId = currentRunRef.current?.id;
     if (runId) {
-      setRunArticleMap(prev => ({
-        ...prev,
-        [runId]: results.map(r => r.article.id),
-      }));
+      setRunArticleMap(prev => {
+        // Only map articles NOT already attributed to a prior run.
+        // This prevents the same article appearing under multiple run headers in Step 3.
+        const alreadyMapped = new Set(Object.values(prev).flat());
+        const newRunIds = results
+          .filter(r =>
+            !alreadyMapped.has(r.article.id) &&
+            !r.article.ever_queued &&
+            !r.scored.drop_reason &&
+            !r.scored.is_duplicate &&
+            r.scored.relevance_score >= minScore,
+          )
+          .map(r => r.article.id);
+        return { ...prev, [runId]: newRunIds };
+      });
     }
 
     setHasScored(true);
@@ -244,7 +253,7 @@ export default function Dashboard() {
 
   // ─── Config Bars ───────────────────────────────────────
   const step1Config: ConfigItem[] = [
-    { label: 'Max Articles from Initial Fetch', value: maxArticles, editable: true, type: 'number', onChange: (v) => setMaxArticles(v as number) },
+    { label: 'Max Articles per Run', value: maxArticles, editable: false, type: 'number' },
     { label: 'Title Similarity', value: DEFAULTS.titleSimilarity, editable: false, type: 'number' },
     { label: 'Min AI Score', value: minScore, editable: true, type: 'number', onChange: (v) => setMinScore(v as number) },
   ];
