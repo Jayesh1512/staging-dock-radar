@@ -44,11 +44,16 @@ export function RegionSelector({ selected, onChange }: RegionSelectorProps) {
             color: allSelected ? 'var(--dr-blue)' : 'var(--dr-text-muted)',
           }}
         >
-          {allSelected ? '✓ All markets' : 'Select all'}
+          {allSelected ? '✓ Global (all 16 regions)' : 'Global (all 16 regions)'}
         </button>
         <span style={{ fontSize: 11, color: 'var(--dr-text-muted)' }}>
           {selected.length} / {ALL_COUNTRIES.length} selected
         </span>
+        {allSelected && (
+          <span style={{ fontSize: 11, color: '#92400E', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 4, padding: '1px 6px' }}>
+            ⚠ ~75 sec collection time
+          </span>
+        )}
       </div>
 
       {/* Continent groups */}

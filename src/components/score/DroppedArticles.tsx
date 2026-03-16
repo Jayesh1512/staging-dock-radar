@@ -3,7 +3,7 @@ import { useState } from 'react';
 import type { ArticleWithScore } from '@/lib/types';
 import { ScoreBadge } from '@/components/shared/ScoreBadge';
 import { SignalBadge } from '@/components/shared/SignalBadge';
-import { SourceBadge } from '@/components/shared/SourceBadge';
+import { formatTimeAgo } from '@/lib/utils';
 
 interface DroppedArticlesProps {
   articles: ArticleWithScore[];
@@ -11,8 +11,8 @@ interface DroppedArticlesProps {
 }
 
 function dropLabel(a: ArticleWithScore, minScore: number): string {
-  if (a.scored.is_duplicate) return 'Semantic duplicate (Gate 2)';
   if (a.scored.drop_reason) return a.scored.drop_reason;
+  if (a.scored.is_duplicate) return 'Duplicate story';
   if (a.scored.status === 'dismissed') return 'Dismissed by user';
   if (a.scored.relevance_score < minScore) return 'Below relevance threshold';
   return 'Filtered';
@@ -20,9 +20,10 @@ function dropLabel(a: ArticleWithScore, minScore: number): string {
 
 export function DroppedArticles({ articles, minScore }: DroppedArticlesProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (articles.length === 0) return null;
+
+  const headers = ['Score', 'Article', 'Company', 'Country', 'Signal', 'Use Case', 'FlytBase', 'Reason'];
 
   return (
     <div style={{ marginTop: 16 }}>
@@ -31,7 +32,7 @@ export function DroppedArticles({ articles, minScore }: DroppedArticlesProps) {
         className="flex items-center justify-between cursor-pointer"
         style={{
           padding: '12px 16px', background: 'var(--dr-surface)',
-          border: '1px solid var(--dr-border)', borderRadius: 8,
+          border: '1px solid var(--dr-border)', borderRadius: isOpen ? '8px 8px 0 0' : 8,
         }}
       >
         <span className="font-semibold" style={{ fontSize: 13, color: 'var(--dr-text-muted)' }}>
@@ -42,72 +43,79 @@ export function DroppedArticles({ articles, minScore }: DroppedArticlesProps) {
       </div>
 
       {isOpen && (
-        <div style={{ border: '1px solid var(--dr-border)', borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '8px 0' }}>
-          {articles.map((a) => {
-            const isExpanded = expandedId === a.scored.id;
-            const hasDetails = !!(a.scored.company || a.scored.country || a.scored.use_case || a.scored.summary);
-
-            return (
-              <div key={a.scored.id} style={{ borderBottom: '1px solid var(--dr-border)', padding: '8px 16px' }}>
-                {/* Main row */}
-                <div
-                  className="flex items-center gap-3"
-                  onClick={() => hasDetails && setExpandedId(isExpanded ? null : a.scored.id)}
-                  style={{ cursor: hasDetails ? 'pointer' : 'default' }}
-                >
-                  <ScoreBadge score={a.scored.relevance_score} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <a
-                      href={a.article.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="block truncate font-medium hover:underline"
-                      style={{ fontSize: 12.5, color: 'var(--dr-blue)' }}
-                    >{a.article.title}</a>
-                    <div className="flex items-center gap-2 flex-wrap" style={{ marginTop: 2 }}>
-                      <span className="italic" style={{ fontSize: 11, color: 'var(--dr-text-disabled)' }}>
-                        {dropLabel(a, minScore)}
-                      </span>
-                      {a.scored.company && (
-                        <span style={{ fontSize: 11, color: 'var(--dr-text-muted)', background: 'var(--dr-surface)', border: '1px solid var(--dr-border)', borderRadius: 4, padding: '0 5px' }}>
-                          {a.scored.company}
+        <div style={{ border: '1px solid var(--dr-border)', borderTop: 'none', borderRadius: '0 0 8px 8px', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                {headers.map((h) => (
+                  <th
+                    key={h}
+                    className="text-left uppercase"
+                    style={{
+                      fontSize: 11, fontWeight: 700, color: 'var(--dr-text-muted)',
+                      letterSpacing: 0.4, padding: '8px 12px',
+                      background: 'var(--dr-surface)', borderBottom: '1px solid var(--dr-border)',
+                      ...(h === 'Score' ? { width: 52 } : {}),
+                      ...(h === 'Country' ? { width: 72 } : {}),
+                      ...(h === 'FlytBase' ? { width: 56, textAlign: 'center' as const } : {}),
+                      ...(h === 'Reason' ? { minWidth: 160 } : {}),
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {articles.map((a, i) => {
+                const isUrlDedup = a.scored.is_duplicate && a.scored.relevance_score === 0;
+                return (
+                  <tr key={a.scored.id} className="hover:bg-[#FAFAFA]" style={{ borderBottom: i < articles.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+                    <td style={{ padding: '11px 12px' }}>
+                      {isUrlDedup
+                        ? <span style={{ fontSize: 12, color: 'var(--dr-text-disabled)' }}>—</span>
+                        : <ScoreBadge score={a.scored.relevance_score} />
+                      }
+                    </td>
+                    <td style={{ padding: '11px 12px' }}>
+                      <a
+                        href={a.article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block font-semibold truncate hover:underline"
+                        style={{ fontSize: 13, color: 'var(--dr-blue)', maxWidth: 320 }}
+                      >
+                        {a.article.title}
+                      </a>
+                      {a.article.publisher && (
+                        <span style={{ fontSize: 11, color: 'var(--dr-text-muted)', marginTop: 2, display: 'block' }}>
+                          {a.article.publisher} · {a.article.published_at ? formatTimeAgo(a.article.published_at) : ''}
                         </span>
                       )}
-                      {a.scored.country && (
-                        <span style={{ fontSize: 11, color: 'var(--dr-text-muted)' }}>
-                          {a.scored.country}
-                        </span>
-                      )}
-                      {a.scored.signal_type && a.scored.signal_type !== 'OTHER' && (
-                        <SignalBadge signal={a.scored.signal_type} />
-                      )}
-                      {a.scored.use_case && (
-                        <span style={{ fontSize: 11, color: 'var(--dr-text-muted)', fontStyle: 'italic' }}>
-                          {a.scored.use_case}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <SourceBadge source={a.article.source} />
-                    {hasDetails && (
-                      <span style={{ fontSize: 10, color: 'var(--dr-text-disabled)', display: 'inline-block', transition: 'transform 0.15s', transform: isExpanded ? 'rotate(180deg)' : 'none' }}>▼</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Expanded: LLM summary */}
-                {isExpanded && a.scored.summary && (
-                  <div style={{ marginTop: 8, paddingLeft: 40 }}>
-                    <p style={{ fontSize: 12, color: 'var(--dr-text-secondary)', lineHeight: 1.5, background: 'var(--dr-surface)', border: '1px solid var(--dr-border)', borderRadius: 6, padding: '8px 10px', margin: 0 }}>
-                      {a.scored.summary}
-                    </p>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                    </td>
+                    <td style={{ padding: '11px 12px', fontSize: 12.5, fontWeight: 500, color: a.scored.company ? 'var(--dr-text-secondary)' : 'var(--dr-text-muted)' }}>
+                      {a.scored.company ?? '—'}
+                    </td>
+                    <td style={{ padding: '11px 12px', fontSize: 12.5, color: 'var(--dr-text-muted)' }}>
+                      {a.scored.country ?? '—'}
+                    </td>
+                    <td style={{ padding: '11px 12px' }}>
+                      <SignalBadge signal={a.scored.signal_type} />
+                    </td>
+                    <td style={{ padding: '11px 12px', fontSize: 12.5, color: 'var(--dr-text-muted)' }}>
+                      {a.scored.use_case ?? '—'}
+                    </td>
+                    <td style={{ padding: '11px 12px', textAlign: 'center', fontSize: 11, fontWeight: a.scored.flytbase_mentioned ? 600 : 400, color: a.scored.flytbase_mentioned ? '#16A34A' : 'var(--dr-text-disabled)' }}>
+                      {a.scored.flytbase_mentioned ? 'Yes' : 'No'}
+                    </td>
+                    <td style={{ padding: '11px 12px', fontSize: 12, color: 'var(--dr-text-muted)', fontStyle: 'italic' }}>
+                      {dropLabel(a, minScore)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

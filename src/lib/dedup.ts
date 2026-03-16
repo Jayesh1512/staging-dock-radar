@@ -136,7 +136,7 @@ export function gateTwoDedup(articles: ArticleWithScore[]): ArticleWithScore[] {
     });
 
     if (isDup) {
-      result.push({ ...candidate, scored: { ...candidate.scored, is_duplicate: true } });
+      result.push({ ...candidate, scored: { ...candidate.scored, is_duplicate: true, drop_reason: 'Similar story already captured in this run' } });
     } else {
       keepers.push(candidate);
       result.push(candidate);

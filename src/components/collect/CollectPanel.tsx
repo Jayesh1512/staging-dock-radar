@@ -6,7 +6,7 @@ import { DateFilter } from './DateFilter';
 import { RegionSelector } from './RegionSelector';
 import { PipelineStats } from './PipelineStats';
 import { useCollect } from '@/hooks/use-collect';
-import { ALL_COUNTRIES } from '@/lib/constants';
+import { CORE_8_REGIONS } from '@/lib/constants';
 import type { CollectResult } from '@/lib/types';
 
 interface CollectPanelProps {
@@ -33,7 +33,7 @@ export function CollectPanel({
   onProceedToScoring,
 }: CollectPanelProps) {
   const { isCollecting, stats, error, startCollect } = useCollect();
-  const [regions, setRegions] = useState<string[]>([...ALL_COUNTRIES]);
+  const [regions, setRegions] = useState<string[]>([...CORE_8_REGIONS]);
 
   const handleCollect = async () => {
     if (keywords.length === 0) return;
@@ -68,7 +68,7 @@ export function CollectPanel({
             }}
           >
             {isCollecting
-              ? <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Collecting...</>
+              ? <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Collecting from {regions.length} region{regions.length !== 1 ? 's' : ''}…</>
               : <>🔍&nbsp;&nbsp;Collect News</>
             }
           </button>

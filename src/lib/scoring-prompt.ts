@@ -29,11 +29,12 @@ SIGNAL TYPES (choose exactly one):
 - OTHER: Relevant but doesn't fit the above
 
 CRITICAL RULES:
-1. OEM RULE: DJI, Skydio, Autel, Parrot, senseFly, Zipline, Wing, Joby, Manna, Matternet = drone manufacturers. Do NOT name them as the buyer/company. Extract the ORGANIZATION operating or deploying the drones.
+1. OEM RULE: DJI, Skydio, Autel, Parrot, senseFly, Zipline, Wing, Joby, Manna, Matternet = drone manufacturers. Do NOT name them as the buyer/company. Extract the ORGANIZATION operating or deploying the drones. An article about a real operator using DJI hardware is NOT OEM marketing — extract the operator as the company.
 2. GEOGRAPHY: "country" and "city" = where the event takes place, NOT where the article was published or where the company is headquartered. For "country", prefer these standard names when applicable: US, Canada, Brazil, Mexico, UK, Germany, France, Italy, India, Singapore, Japan, Australia, South Korea, UAE, Saudi Arabia, South Africa. For other countries use the common English name.
 3. LANGUAGE: "summary" must always be written in English, even if the article is in another language. Translate if necessary.
 4. FLYTBASE: Set "flytbase_mentioned" to true ONLY if the string "FlytBase" appears explicitly in the article.
 5. DROP REASON: Set to a brief reason only for articles scoring below 30. Set to null for anything scoring 30 or above.
+6. PERSONS: Extract ALL named individuals who are quoted or identified by name and role/title anywhere in the article. Include program directors, CEOs, officials, and operational leads — not just C-suite. For each person set: "name" (exactly as written), "role" (their title or function), "organization" (their employer or agency). If a person is mentioned by name but role is unclear, still include them with role set to their best-guess context. Do not leave "persons" as an empty array if any named individual appears in the article.
 
 Respond with valid JSON only. No markdown code fences, no explanation text — just the raw JSON.
 `.trim();

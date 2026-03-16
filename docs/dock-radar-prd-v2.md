@@ -896,6 +896,32 @@ Top-right nav bar for app-level features (accessible from any step):
 - Dismissed articles audit view (Phase 3)
 - Future: Settings, API keys, team management
 
+### Phase 4 Extension Points
+
+#### Manual URL Injection ("Add Article")
+A persistent `+ Add Article` button in the top-right nav bar, accessible from any step. Allows users to inject any URL from any source (news sites, blogs, press releases, LinkedIn, company pages) directly into the active queue without running a full collection.
+
+**Flow:**
+1. User pastes any article URL into a modal
+2. System fetches the article body and runs a single-article LLM scoring call (not batched — maximum accuracy)
+3. User sees a review card showing all extracted fields: score, company, country, signal type, summary, persons, entities
+4. User optionally adjusts the score, then confirms → article appears in a dedicated "Manual Additions" batch in Step 3
+
+**Duplicate handling:**
+- URL already exists in DB + was scored low/dropped → offer **Re-score** (fresh LLM call) or **Add at current score**
+- URL already in active queue → inform user, no action needed
+- URL was user-dismissed → warn user, offer **Re-score and Add Anyway** (deliberate override of permanent dismiss)
+
+**Queue placement:** All manually injected articles group under a single persistent "Manual Additions" batch in Step 3, newest first.
+
+**Why Phase 4:**
+- Covers external article discovery (links shared via Slack, email, WhatsApp)
+- Also serves as the rescue path for AI-dropped / low-scored articles (re-inject URL → fresh single-article score)
+- Simpler than building a per-row override mechanism in the Dropped panel
+- Dropped panel keeps a "Copy Link" icon per row as the bridge to this flow
+
+**Data model:** No new tables. Injected articles use the existing `articles` + `scored_articles` schema. A synthetic run record with `source = 'manual'` groups them for queue batching. New field `manually_overridden: boolean` on `scored_articles` as audit flag.
+
 ---
 
 ## 17. Non-Functional Requirements

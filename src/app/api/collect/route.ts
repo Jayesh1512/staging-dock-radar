@@ -68,7 +68,8 @@ export async function POST(req: Request) {
     // ── Step 2: Date safety net ──────────────────────────────────────────────
     const cutoff = new Date(Date.now() - filterDays * 86_400_000);
     const dateFiltered = allRaw.filter((a) => {
-      if (!a.published_at) return true;
+      // Reject articles with no publication date — cannot confirm they are within range
+      if (!a.published_at) return false;
       return new Date(a.published_at) >= cutoff;
     });
 

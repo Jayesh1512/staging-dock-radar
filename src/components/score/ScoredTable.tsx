@@ -39,15 +39,22 @@ export function ScoredTable({ articles, onDismiss }: ScoredTableProps) {
             <tr key={a.scored.id} className="hover:bg-[#FAFAFA]" style={{ borderBottom: i < articles.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
               <td style={{ padding: '11px 12px' }}><ScoreBadge score={a.scored.relevance_score} /></td>
               <td style={{ padding: '11px 12px' }}>
-                <a
-                  href={a.article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block font-semibold truncate hover:underline"
-                  style={{ fontSize: 13, color: 'var(--dr-blue)', maxWidth: 320 }}
-                >
-                  {a.article.title}
-                </a>
+                <div className="flex items-center gap-1.5">
+                  <a
+                    href={a.article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block font-semibold truncate hover:underline"
+                    style={{ fontSize: 13, color: 'var(--dr-blue)', maxWidth: 300 }}
+                  >
+                    {a.article.title}
+                  </a>
+                  {a.article.published_at && Date.now() - new Date(a.article.published_at).getTime() < 86_400_000 && (
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 5px', borderRadius: 4, background: '#ECFDF5', color: '#059669', border: '1px solid #6EE7B7', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      ⚡ Fresh
+                    </span>
+                  )}
+                </div>
                 {a.article.publisher && (
                   <span style={{ fontSize: 11, color: 'var(--dr-text-muted)', marginTop: 2, display: 'block' }}>
                     {a.article.publisher} · {a.article.published_at ? formatTimeAgo(a.article.published_at) : ''}

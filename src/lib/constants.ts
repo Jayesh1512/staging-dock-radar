@@ -53,14 +53,34 @@ export const REGION_GROUPS = [
 
 export const ALL_COUNTRIES = REGION_GROUPS.flatMap((g) => [...g.countries]);
 
+/**
+ * Default region selection for new sessions — 8 high-signal markets covering
+ * major drone deployment activity across all continents.
+ * Maps to 8 Google News editions for multi-region collection.
+ */
+export const CORE_8_REGIONS = ['US', 'UK', 'France', 'Australia', 'Italy', 'Singapore', 'UAE', 'Brazil'] as const;
+
 export const DEFAULTS = {
-  maxArticles: 20,
-  filterDays: 30,
+  maxArticles: 40,
+  filterDays: 7,
   minScore: 50,
   titleSimilarity: 0.80,
+  /** Points added to relevance_score for articles published within freshnessWindowHours */
+  freshnessBoostPoints: 10,
+  /** Minimum base score required to receive the freshness boost */
+  freshnessBoostMinScore: 25,
+  /** Hours since publication within which an article receives the freshness boost */
+  freshnessBoostWindowHours: 24,
 } as const;
 
-export const DATE_PRESETS = [7, 14, 30, 60, 90] as const;
+/** Preset day values for the date range filter */
+export const DATE_PRESETS = [1, 3, 7, 14, 30, 60, 90] as const;
+
+/** Human-readable labels for select date presets. Presets not listed show the raw number. */
+export const DATE_PRESET_LABELS: Record<number, string> = {
+  1: 'Today',
+  3: '3 Days',
+};
 
 /**
  * Maps LLM-returned country name variants → canonical region key used in REGION_GROUPS.

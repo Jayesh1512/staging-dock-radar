@@ -108,6 +108,34 @@ export async function insertArticles(articles: Article[]): Promise<{ insertedCou
   return { insertedCount, idMap };
 }
 
+/**
+ * Returns a Set of article IDs (from the provided list) that already have ever_queued = true.
+ * Used by the score route to skip re-scoring articles already in Step 3.
+ */
+export async function loadEverQueuedArticleIds(articleIds: string[]): Promise<Set<string>> {
+  if (articleIds.length === 0) return new Set();
+  const db = requireSupabase();
+  const { data, error } = await db.from('articles')
+    .select('id')
+    .in('id', articleIds)
+    .eq('ever_queued', true);
+  if (error) throw new Error(`[db] loadEverQueuedArticleIds failed: ${error.message}`);
+  return new Set((data ?? []).map((r: { id: string }) => r.id));
+}
+
+/**
+ * Marks articles as ever_queued = true (called after an article first reaches Step 3).
+ * Once set, these articles are skipped in all future scoring runs.
+ */
+export async function markArticlesAsEverQueued(articleIds: string[]): Promise<void> {
+  if (articleIds.length === 0) return;
+  const db = requireSupabase();
+  const { error } = await db.from('articles')
+    .update({ ever_queued: true })
+    .in('id', articleIds);
+  if (error) throw new Error(`[db] markArticlesAsEverQueued failed: ${error.message}`);
+}
+
 /** Update resolved_url on an article (set during scoring body fetch) */
 export async function updateArticleResolvedUrl(articleId: string, resolvedUrl: string): Promise<void> {
   const db = requireSupabase();
@@ -196,6 +224,19 @@ export async function insertScoredArticles(scored: ScoredArticle[]): Promise<voi
   const { error } = await db.from('scored_articles')
     .upsert(rows, { onConflict: 'article_id' });
   if (error) throw new Error(`[db] insertScoredArticles failed: ${error.message}`);
+}
+
+/** Persist enriched persons + entities after the lazy enrichment pass on drawer open */
+export async function updateEnrichedScoredArticle(
+  articleId: string,
+  persons: ScoredArticle['persons'],
+  entities: ScoredArticle['entities'],
+): Promise<void> {
+  const db = requireSupabase();
+  const { error } = await db.from('scored_articles')
+    .update({ persons, entities, enriched_at: new Date().toISOString() })
+    .eq('article_id', articleId);
+  if (error) throw new Error(`[db] updateEnrichedScoredArticle failed: ${error.message}`);
 }
 
 /** Update scored article status and action fields (used by Step 3 actions) */
@@ -304,6 +345,7 @@ function mapArticle(row: Record<string, unknown>): Article {
     publisher: (row.publisher as string) ?? null,
     published_at: (row.published_at as string) ?? null,
     resolved_url: (row.resolved_url as string) ?? undefined,
+    ever_queued: (row.ever_queued as boolean) ?? false,
     created_at: row.created_at as string,
   };
 }
@@ -331,6 +373,7 @@ function mapScoredArticle(row: Record<string, unknown>): ScoredArticle {
     reviewed_at: (row.reviewed_at as string) ?? null,
     dismissed_at: (row.dismissed_at as string) ?? null,
     slack_sent_at: (row.slack_sent_at as string) ?? null,
+    enriched_at: (row.enriched_at as string) ?? null,
     created_at: row.created_at as string,
   };
 }
