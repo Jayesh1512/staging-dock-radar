@@ -268,7 +268,7 @@ export default function Dashboard() {
       editable: true,
       type: 'select',
       options: allRuns.map(r => ({
-        label: `${formatDateTimeIST(r.created_at)} — ${r.keywords.join(', ')}`,
+        label: `${formatDateTimeIST(r.created_at)} — ${(r.keywords || []).join(', ')}`,
         value: r.id,
       })),
       onChange: (v) => setSelectedRunId(v as string),

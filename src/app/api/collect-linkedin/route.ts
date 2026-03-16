@@ -1,241 +1,191 @@
-import { NextResponse } from 'next/server';
-import crypto from 'crypto';
-import { fetchContentSearch } from '@/lib/linkedin/contentClient';
-import type { Article, CollectResult, PipelineStats, Run } from '@/lib/types';
-import { insertArticles, insertRun } from '@/lib/db';
-import { normalizeUrl } from '@/lib/google-news-rss';
+import { NextRequest, NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
+import {
+  withBrowserPage,
+  loadServiceCookies,
+  scrollPage,
+} from "../../../lib/browser/puppeteerClient";
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-function sanitizeText(text: string): string {
-  if (!text) return '';
-  return text
-    .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
-    .replace(/[\u0080-\u009F]/g, '')
-    .replace(/[\u2000-\u200D]/g, '')
-    .replace(/[\uFFF0-\uFFFF]/g, '')
-    .trim();
-}
+type LinkedInPost = {
+  authorName: string | null;
+  postContent: string;
+  publishedAt: string | null;
+  postUrl: string | null;
+};
 
-function createTitle(postContent: string): string {
-  if (!postContent) return '(LinkedIn post)';
-  const sanitized = sanitizeText(postContent);
-  return sanitized.replace(/\s+/g, ' ').trim();
-}
+async function fetchLinkedInPosts(keyword: string): Promise<LinkedInPost[]> {
+  return withBrowserPage(async (page) => {
+    await loadServiceCookies(page, "linkedin");
 
-function parseLinkedInDate(timeStr: string | null): string | null {
-  if (!timeStr) return null;
-  try {
-    const now = new Date();
-    const lowerTime = timeStr.toLowerCase().trim();
+    const searchUrl = `https://www.linkedin.com/search/results/content/?keywords=${encodeURIComponent(
+      `"${keyword}"`
+    )}&origin=GLOBAL_SEARCH_HEADER`;
 
-    const match = lowerTime.match(/^(\d+)\s*([hdwmy])$/);
-    if (match) {
-      const value = parseInt(match[1], 10);
-      const unit = match[2];
-      const date = new Date(now);
+    // Relax navigation timing to reduce flaky timeouts from LinkedIn
+    page.setDefaultNavigationTimeout(60000);
 
-      switch (unit) {
-        case 'h':
-          date.setHours(date.getHours() - value);
-          break;
-        case 'd':
-          date.setDate(date.getDate() - value);
-          break;
-        case 'w':
-          date.setDate(date.getDate() - value * 7);
-          break;
-        case 'm':
-          date.setMonth(date.getMonth() - value);
-          break;
-        case 'y':
-          date.setFullYear(date.getFullYear() - value);
-          break;
-      }
-      return date.toISOString();
+    // 3. let the website load (be less strict than full network idle)
+    try {
+      await page.goto(searchUrl, { waitUntil: "domcontentloaded" });
+    } catch (err) {
+      // If DOMContentLoaded still times out, continue anyway; scrolling + extraction
+      // may still work with partially loaded content.
+      console.warn("[collect-linkedin] page.goto timeout, continuing with best-effort content");
     }
 
-    const parsed = new Date(lowerTime);
-    if (!isNaN(parsed.getTime())) return parsed.toISOString();
-    return null;
-  } catch {
-    return null;
-  }
-}
+    // 4. scroll down for ~10–15 seconds
+    await scrollPage(page, 10, 1000);
 
-function generateStableId(normalizedUrl: string, keyword: string, authorName: string | null): string {
-  const src = `${normalizedUrl}|${authorName ?? ''}|${keyword}`;
-  return crypto.createHash('sha256').update(src).digest('hex').slice(0, 16);
-}
+    // expand all "see more" buttons in posts
+    await page.$$eval("button, span", (elements) => {
+      elements.forEach((el) => {
+        const text = el.textContent?.trim().toLowerCase() || "";
+        if (text === "see more") {
+          (el as HTMLElement).click();
+        }
+      });
+    });
 
-export async function POST(req: Request) {
-  try {
-    const body = (await req.json()) as {
-      keywords: string[];
-      filterDays?: number;
-      maxArticles?: number;
-      minScore?: number;
-    };
+    // 5: download the entire HTML and store it in the data folder
+    const html = await page.content();
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const safeKeyword = keyword.replace(/[^\w-]+/g, "_").slice(0, 50) || "linkedin";
+    const htmlFileName = `linkedin-search-${safeKeyword}-${timestamp}.html`;
+    const dataDir = path.join(process.cwd(), "data");
+    const htmlPath = path.join(dataDir, htmlFileName);
 
-    const {
-      keywords,
-      filterDays = 30,
-      maxArticles = 20,
-      minScore = 40,
-    } = body;
-
-    if (!keywords?.length) {
-      return NextResponse.json({ error: 'At least one keyword is required' }, { status: 400 });
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
     }
 
-    const runId = `run_${new Date().toISOString().replace(/[:.TZ-]/g, '').slice(0, 15)}`;
+    fs.writeFileSync(htmlPath, html, "utf8");
 
-    // ── Step 1: Scrape LinkedIn per keyword (sequential to reduce throttling) ──
-    const allScraped: Array<{
-      keyword: string;
-      postUrl: string | null;
-      postContent: string;
-      authorName: string | null;
-      publishedAt: string | null;
-    }> = [];
+    // 6: work off the loaded HTML (DOM), extract posts into structured JSON
+    const posts: LinkedInPost[] = await page.evaluate(() => {
+      // Use broader selectors for LinkedIn posts
+      const postNodes = document.querySelectorAll<HTMLElement>(
+        "div.feed-shared-update-v2, li.artdeco-card, article"
+      );
+      const extracted: LinkedInPost[] = [];
 
-    for (const keyword of keywords) {
-      console.log(`[/api/collect-linkedin] Scraping keyword: "${keyword}"`);
-      try {
-        const result = await fetchContentSearch(keyword, { maxScrolls: 5, scrollDelay: 2000 });
-        console.log(`[/api/collect-linkedin] "${keyword}": ${result.posts.length} posts`);
+      postNodes.forEach((node) => {
+        // CONTENT
+        const textEl =
+          node.querySelector<HTMLElement>('[data-test-id="feed-update-text"]') ??
+          node.querySelector<HTMLElement>("span.break-words") ??
+          node.querySelector<HTMLElement>("div.break-words") ??
+          node.querySelector<HTMLElement>(".feed-shared-update-v2__commentary");
+        
+        const postContent = (textEl?.innerText || textEl?.textContent || "").trim();
+        if (!postContent) return;
 
-        for (const p of result.posts) {
-          allScraped.push({ ...p, keyword });
+        // AUTHOR
+        const authorEl =
+          node.querySelector<HTMLElement>('a[href*="/in/"][data-field="actor-link"]') ??
+          node.querySelector<HTMLElement>(".update-components-actor__name") ??
+          node.querySelector<HTMLElement>(".feed-shared-actor__name") ??
+          node.querySelector<HTMLElement>('.update-components-actor__title span[dir="ltr"]') ??
+          node.querySelector<HTMLElement>('.app-aware-link > span[dir="ltr"]');
+        
+        const authorName = (authorEl?.innerText || authorEl?.textContent || "").trim().split("\n")[0];
+
+        // TIME
+        const timeEl =
+          node.querySelector<HTMLElement>("time") ??
+          node.querySelector<HTMLElement>(
+            '.update-components-actor__sub-description span[aria-hidden="true"]'
+          ) ??
+          node.querySelector<HTMLElement>(".update-components-actor__sub-description");
+        
+        const publishedAt = (timeEl?.innerText || timeEl?.textContent || "").trim().split("\n")[0];
+
+        // URL
+        let postUrl: string | null = null;
+        const permalink =
+          node.querySelector<HTMLAnchorElement>('a[href*="activity"]') ??
+          node.querySelector<HTMLAnchorElement>('a[href*="/feed/update/"]') ??
+          node.querySelector<HTMLAnchorElement>(".update-components-actor__meta-link");
+        
+        if (permalink?.href) {
+          postUrl = permalink.href.split("?")[0];
+          // If absolute URL is needed and it's relative
+          if (postUrl.startsWith("/")) {
+            postUrl = `https://www.linkedin.com${postUrl}`;
+          }
         }
 
-        if (keywords.length > 1) {
-          await new Promise((r) => setTimeout(r, 3000));
-        }
-      } catch (err) {
-        console.error(`[/api/collect-linkedin] Keyword "${keyword}" failed:`, err instanceof Error ? err.message : err);
-      }
-    }
+        extracted.push({
+          authorName: authorName || null,
+          postContent,
+          publishedAt: publishedAt || null,
+          postUrl,
+        });
+      });
 
-    if (allScraped.length > 0) {
-      const first = allScraped[0];
-      console.log('[/api/collect-linkedin] First scraped post (preview):');
-      console.log(
-        JSON.stringify(
-          {
-            keyword: first.keyword,
-            authorName: first.authorName ?? null,
-            publishedAt: first.publishedAt ?? null,
-            postUrl: first.postUrl ?? null,
-            postContentPreview: sanitizeText(first.postContent).slice(0, 280),
-          },
-          null,
-          2,
-        ),
+      return extracted;
+    });
+
+    // 7. "Delete" the HTML: nothing is persisted; we drop the string and just return JSON
+    return posts;
+  });
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json().catch(() => ({}));
+    const keyword: string | undefined = body.keyword ?? body.keywords?.[0];
+
+    if (!keyword || typeof keyword !== "string" || !keyword.trim()) {
+      return NextResponse.json(
+        { error: "keyword (string) or keywords[0] is required" },
+        { status: 400 }
       );
     }
 
-    const totalFetched = allScraped.length;
+    const k = keyword.trim();
+    const posts = await fetchLinkedInPosts(k);
 
-    // ── Step 2: Dedup by normalized URL (best-effort) ────────────────────────
-    const seen = new Set<string>();
-    const deduped = allScraped.filter((p) => {
-      const url = p.postUrl ? normalizeUrl(p.postUrl) : '';
-      if (!url) return false;
-      if (seen.has(url)) return false;
-      seen.add(url);
-      return true;
-    });
-
-    // ── Step 3: Date filter (best-effort; keep null dates) ───────────────────
-    const cutoff = new Date(Date.now() - filterDays * 86_400_000);
-    const dateFiltered = deduped.filter((p) => {
-      const iso = parseLinkedInDate(p.publishedAt);
-      if (!iso) return true;
-      return new Date(iso) >= cutoff;
-    });
-
-    // ── Step 4: Cap ──────────────────────────────────────────────────────────
-    const capped = dateFiltered.slice(0, maxArticles);
-
-    // ── Map to canonical Article type ─────────────────────────────────────────
-    const articles: Article[] = capped.map((p, i) => {
-      const url = p.postUrl ?? '';
-      const normalized = url ? normalizeUrl(url) : `linkedin_unknown_${Date.now()}_${i}`;
-      const id = `article_${generateStableId(normalized, p.keyword, p.authorName)}`;
-      return {
-        id,
-        run_id: runId,
-        source: 'linkedin',
-        title: createTitle(p.postContent),
-        url,
-        normalized_url: normalized,
-        snippet: sanitizeText(p.postContent).slice(0, 500) || null,
-        publisher: p.authorName ?? null,
-        published_at: parseLinkedInDate(p.publishedAt),
-        created_at: new Date().toISOString(),
-      };
-    });
-
-    const stats: PipelineStats = {
-      totalFetched,
-      afterDateFilter: dateFiltered.length,
-      afterDedup: deduped.length,
-      afterScoreFilter: articles.length,
-      stored: articles.length,
-      dedupRemoved: totalFetched - deduped.length,
-      scoreFilterRemoved: 0,
+    const stats = {
+      totalFetched: posts.length,
     };
 
-    const run: Run = {
-      id: runId,
-      keywords,
-      sources: ['linkedin'],
-      regions: [],
-      filter_days: filterDays,
-      min_score: minScore,
-      max_articles: maxArticles,
-      status: 'completed',
-      articles_fetched: totalFetched,
-      articles_stored: articles.length,
-      dedup_removed: stats.dedupRemoved,
-      created_at: new Date().toISOString(),
-      completed_at: new Date().toISOString(),
-    };
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const fileName = `linkedin-collect-${timestamp}.json`;
+    const outDir = path.join(process.cwd(), "data");
+    const outPath = path.join(outDir, fileName);
 
-    // ── Persist (same pattern as /api/collect; non-fatal on DB failure) ──────
-    try {
-      await insertRun(run);
-      const { insertedCount, idMap } = await insertArticles(articles);
-
-      if (idMap.size > 0) {
-        for (const a of articles) {
-          const dbId = idMap.get(a.id);
-          if (dbId) a.id = dbId;
-        }
-        console.log(`[/api/collect-linkedin] DB: ${idMap.size} articles remapped to existing DB IDs (cross-run dedup)`);
-      }
-
-      console.log(`[/api/collect-linkedin] DB: run ${runId}, ${insertedCount} new articles persisted`);
-    } catch (dbErr) {
-      console.error('[/api/collect-linkedin] DB write failed (non-fatal):', dbErr instanceof Error ? dbErr.message : dbErr);
+    if (!fs.existsSync(outDir)) {
+      fs.mkdirSync(outDir, { recursive: true });
     }
 
-    const result: CollectResult = {
-      articles,
+    const filePayload = {
+      keyword: k,
       stats,
-      runId,
-      keywords,
-      regions: [],
-      filterDays,
+      posts,
+      createdAt: new Date().toISOString(),
     };
 
-    return NextResponse.json(result);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unexpected error';
-    console.error('[/api/collect-linkedin]', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    fs.writeFileSync(outPath, JSON.stringify(filePayload, null, 2), "utf8");
+
+    return NextResponse.json(
+      {
+        keyword: k,
+        count: posts.length,
+        posts,
+        stats,
+      },
+      { status: 200 }
+    );
+  } catch (err: any) {
+    console.error("LinkedIn collect-linkedin error:", err);
+    return NextResponse.json(
+      { error: err?.message || "LinkedIn collection failed" },
+      { status: 500 }
+    );
   }
 }
 

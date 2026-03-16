@@ -318,7 +318,7 @@ export async function loadAllScoredArticles(): Promise<ArticleWithScore[]> {
 function mapRun(row: Record<string, unknown>): Run {
   return {
     id: row.id as string,
-    keywords: row.keywords as string[],
+    keywords: (row.keywords as string[]) ?? [],
     sources: row.sources as Run['sources'],
     regions: row.regions as string[],
     filter_days: row.filter_days as number,
