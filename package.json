@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "linkedin:login": "tsx server/linkedin-login.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -33,6 +34,11 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "tsx": "^4.19.0"
+  },
+  "optionalDependencies": {
+    "puppeteer": "^23.9.0",
+    "dotenv": "^16.4.7"
   }
 }

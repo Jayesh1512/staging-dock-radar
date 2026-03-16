@@ -7,7 +7,7 @@ import { RegionSelector } from './RegionSelector';
 import { PipelineStats } from './PipelineStats';
 import { useCollect } from '@/hooks/use-collect';
 import { ALL_COUNTRIES } from '@/lib/constants';
-import type { CollectResult } from '@/lib/types';
+import type { ArticleSource, CollectResult } from '@/lib/types';
 
 interface CollectPanelProps {
   keywords: string[];
@@ -34,11 +34,12 @@ export function CollectPanel({
 }: CollectPanelProps) {
   const { isCollecting, stats, error, startCollect } = useCollect();
   const [regions, setRegions] = useState<string[]>([...ALL_COUNTRIES]);
+  const [sources, setSources] = useState<ArticleSource[]>(['google_news', 'linkedin']);
 
   const handleCollect = async () => {
     if (keywords.length === 0) return;
     try {
-      const result = await startCollect(keywords, regions, filterDays, maxArticles);
+      const result = await startCollect(keywords, regions, filterDays, maxArticles, sources);
       onCollectComplete(result);
     } catch {
       // error is already set in hook state — displayed below
@@ -48,7 +49,7 @@ export function CollectPanel({
   return (
     <div className="bg-white" style={{ border: '1px solid var(--dr-border)', borderRadius: 'var(--dr-radius-card)', overflow: 'hidden' }}>
       <div style={{ padding: 20 }}>
-        <SourcesPanel />
+        <SourcesPanel selected={sources} onChange={setSources} />
         <KeywordInput keywords={keywords} onAdd={onAddKeyword} onRemove={onRemoveKeyword} />
 
         <div className="flex flex-col gap-4" style={{ marginBottom: 20 }}>
@@ -69,7 +70,7 @@ export function CollectPanel({
           >
             {isCollecting
               ? <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Collecting...</>
-              : <>🔍&nbsp;&nbsp;Collect News</>
+              : <>🔍&nbsp;&nbsp;Collect</>
             }
           </button>
         </div>
