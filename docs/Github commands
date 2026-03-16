@@ -2,3 +2,6 @@
 git add .
 git commit -m "Changes in DB"
 git push
+
+
+git pull

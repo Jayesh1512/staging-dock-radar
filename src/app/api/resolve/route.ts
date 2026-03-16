@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { resolveUrl, extractOgImage } from '@/lib/article-body';
+import { updateArticleResolvedUrl } from '@/lib/db';
 import type { ArticleSource } from '@/lib/types';
 
 /**
@@ -20,6 +21,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const url = searchParams.get('url');
     const source = (searchParams.get('source') ?? undefined) as ArticleSource | undefined;
+    const articleId = searchParams.get('articleId') ?? undefined;
 
     if (!url) {
       return NextResponse.json({ error: 'url query param is required' }, { status: 400 });
@@ -52,6 +54,13 @@ export async function GET(req: Request) {
       } catch {
         // og:image extraction is non-fatal
       }
+    }
+
+    // ── Persist resolved URL to DB so future drawer opens skip re-resolution ──
+    if (articleId && resolvedUrl !== url) {
+      updateArticleResolvedUrl(articleId, resolvedUrl).catch(() => {
+        // Non-fatal — Slack message still works even if DB write fails
+      });
     }
 
     return NextResponse.json({ resolvedUrl, ogImage });

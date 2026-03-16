@@ -19,18 +19,27 @@ interface ArticleDrawerProps {
 }
 
 export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkReviewed, onDismiss }: ArticleDrawerProps) {
-  const [slackMessage, setSlackMessage] = useState(() => generateSlackMessage(article.article, article.scored));
-  const [isSending, setIsSending] = useState(false);
-  const [sendError, setSendError] = useState<string | null>(null);
-
   // ── URL resolution state ──────────────────────────────────────────────────
-  const [resolveStatus, setResolveStatus] = useState<'idle' | 'resolving' | 'resolved' | 'failed'>('idle');
-  const [ogImage, setOgImage] = useState<string | null>(null);
-  // Store the resolved URL so enrichment can use it without re-resolving
-  const [resolvedUrl, setResolvedUrl] = useState<string | null>(() => {
+  // Pre-initialize from DB if resolved_url was already persisted
+  const preResolved = (() => {
     const r = article.article.resolved_url;
     return r && !r.includes('news.google.com') ? r : null;
+  })();
+
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(preResolved);
+  const [resolveStatus, setResolveStatus] = useState<'idle' | 'resolving' | 'resolved' | 'failed'>(
+    preResolved ? 'resolved' : 'idle',
+  );
+  const [ogImage, setOgImage] = useState<string | null>(null);
+
+  // Slack message: use the real URL immediately if already resolved, so
+  // the message is correct even when Effect 1 skips (resolvedUrl pre-initialized).
+  const [slackMessage, setSlackMessage] = useState(() => {
+    const msg = generateSlackMessage(article.article, article.scored);
+    return preResolved ? msg.replace(article.article.url, preResolved) : msg;
   });
+  const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   // ── Enrichment state ──────────────────────────────────────────────────────
   const [enrichmentStatus, setEnrichmentStatus] = useState<EnrichmentStatus>(
@@ -56,7 +65,7 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
     setResolveStatus('resolving');
     const controller = new AbortController();
 
-    fetch(`/api/resolve?url=${encodeURIComponent(rawUrl)}`, { signal: controller.signal })
+    fetch(`/api/resolve?url=${encodeURIComponent(rawUrl)}&articleId=${article.article.id}`, { signal: controller.signal })
       .then(res => res.json())
       .then((data: { resolvedUrl?: string; ogImage?: string | null }) => {
         if (data.resolvedUrl && !data.resolvedUrl.includes('news.google.com')) {
@@ -112,6 +121,26 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolveStatus, resolvedUrl]);
+
+  // ── Manual URL resolve (triggered by user button when auto-resolve fails) ──
+  async function handleManualResolve() {
+    const rawUrl = article.article.url;
+    setResolveStatus('resolving');
+    try {
+      const res = await fetch(`/api/resolve?url=${encodeURIComponent(rawUrl)}&articleId=${article.article.id}`);
+      const data = await res.json() as { resolvedUrl?: string; ogImage?: string | null };
+      if (data.resolvedUrl && !data.resolvedUrl.includes('news.google.com')) {
+        setResolveStatus('resolved');
+        setResolvedUrl(data.resolvedUrl);
+        if (data.ogImage) setOgImage(data.ogImage);
+        setSlackMessage(prev => prev.replace(rawUrl, data.resolvedUrl!));
+      } else {
+        setResolveStatus('failed');
+      }
+    } catch {
+      setResolveStatus('failed');
+    }
+  }
 
   // ── Slack send ────────────────────────────────────────────────────────────
   async function handleSlackClick() {
@@ -242,8 +271,14 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
           </div>
         )}
         {resolveStatus === 'failed' && (
-          <div style={{ marginBottom: 8, padding: '5px 10px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 6, fontSize: 11.5, color: '#92400E' }}>
-            ⚠ Could not resolve article link — Slack may show a Google News card instead
+          <div style={{ marginBottom: 8, padding: '5px 10px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 6, fontSize: 11.5, color: '#92400E', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>⚠ Could not auto-resolve link —</span>
+            <button
+              onClick={handleManualResolve}
+              style={{ fontSize: 11.5, fontWeight: 600, color: '#92400E', background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: 5, padding: '2px 10px', cursor: 'pointer' }}
+            >
+              ↺ Resolve now
+            </button>
           </div>
         )}
         <SlackCompose message={slackMessage} onChange={setSlackMessage} />

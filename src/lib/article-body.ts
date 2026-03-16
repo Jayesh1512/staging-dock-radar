@@ -150,7 +150,19 @@ export async function resolveUrl(url: string, source?: ArticleSource): Promise<s
     );
     if (hrefMatch?.[1] && !isWrapperUrl(hrefMatch[1])) return hrefMatch[1];
   } catch {
-    // Timeout or network error — return original
+    // Timeout or network error — fall through to Strategy D
+  }
+
+  // Strategy D: Puppeteer headless browser (last resort — google_news binary protobuf only)
+  // Only fires when A/B/C all failed and the URL is still a Google News wrapper.
+  if (source === 'google_news' || url.includes('news.google.com')) {
+    try {
+      const { resolveWithBrowser } = await import('./browser/googleNewsResolver');
+      const browserUrl = await resolveWithBrowser(url);
+      if (browserUrl && !isWrapperUrl(browserUrl)) return browserUrl;
+    } catch {
+      // Headless browser failed — return original URL
+    }
   }
 
   return url;

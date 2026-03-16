@@ -1,4 +1,5 @@
 "use client";
+import { EnrichmentTestAgent } from './EnrichmentTestAgent';
 
 export function Navbar() {
   return (
@@ -14,6 +15,7 @@ export function Navbar() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <EnrichmentTestAgent />
           <span className="font-semibold rounded-full" style={{ fontSize: 11, padding: '3px 10px', background: 'var(--dr-blue-light)', color: 'var(--dr-blue)' }}>Phase 1</span>
           <span className="font-medium" style={{ fontSize: 13, color: 'var(--dr-text-disabled)' }}>FlytBase</span>
         </div>
