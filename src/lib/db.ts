@@ -31,6 +31,7 @@ export async function insertRun(run: Run): Promise<void> {
     dedup_removed: run.dedup_removed,
     created_at: run.created_at,
     completed_at: run.completed_at,
+    campaign: run.campaign ?? null,
   });
   if (error) throw new Error(`[db] insertRun failed: ${error.message}`);
 }
@@ -245,6 +246,7 @@ export async function insertScoredArticles(scored: ScoredArticle[]): Promise<voi
     reviewed_at: s.reviewed_at,
     dismissed_at: s.dismissed_at,
     slack_sent_at: s.slack_sent_at,
+    industry: s.industry ?? null,
     created_at: s.created_at,
   }));
 
@@ -358,6 +360,7 @@ function mapRun(row: Record<string, unknown>): Run {
     dedup_removed: row.dedup_removed as number,
     created_at: row.created_at as string,
     completed_at: (row.completed_at as string) ?? null,
+    campaign: (row.campaign as string) ?? null,
   };
 }
 
@@ -402,6 +405,7 @@ function mapScoredArticle(row: Record<string, unknown>): ScoredArticle {
     dismissed_at: (row.dismissed_at as string) ?? null,
     slack_sent_at: (row.slack_sent_at as string) ?? null,
     enriched_at: (row.enriched_at as string) ?? null,
+    industry: (row.industry as string) ?? null,
     created_at: row.created_at as string,
   };
 }

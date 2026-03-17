@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { searchGoogleNewsRss, mapToArticle, COUNTRY_TO_EDITION } from '@/lib/google-news-rss';
+import { searchGoogleNewsRss, mapToArticle as mapGoogleArticle, COUNTRY_TO_EDITION, type DateRange } from '@/lib/google-news-rss';
+import { searchNewsAPI, mapToArticle as mapNewsAPIArticle } from '@/lib/newsapi';
 import { deduplicateWithinRun } from '@/lib/dedup';
 import { insertRun, insertArticles } from '@/lib/db';
 import { requireSupabase } from '@/lib/supabase';
-import type { PipelineStats, Run } from '@/lib/types';
+import type { ArticleSource, PipelineStats, Run } from '@/lib/types';
 
 /**
  * Limits concurrent async tasks to `limit` at a time.
@@ -30,12 +31,21 @@ export async function POST(req: Request) {
     const body = await req.json() as {
       keywords: string[];
       regions: string[];
+      sources?: ArticleSource[];
       filterDays: number;
       maxArticles: number;
       minScore: number;
+      start_date?: string;
+      end_date?: string;
+      campaign?: string;
     };
 
-    const { keywords, regions, filterDays, maxArticles, minScore } = body;
+    const { keywords, regions, sources = ['google_news'], filterDays, maxArticles, minScore, start_date, end_date, campaign } = body;
+
+    // Build optional date range for campaign historical searches
+    const dateRange: DateRange | undefined = (start_date && end_date)
+      ? { start_date, end_date }
+      : undefined;
 
     if (!keywords?.length) {
       return NextResponse.json({ error: 'At least one keyword is required' }, { status: 400 });
@@ -57,20 +67,47 @@ export async function POST(req: Request) {
       ? [...editionMap.values()]
       : [{ gl: 'US', ceid: 'US:en' }];
 
-    // ── Step 1: Fetch from Google News RSS ───────────────────────────────────
-    const calls = keywords.flatMap((keyword) =>
-      targetEditions.map((edition) => () => searchGoogleNewsRss(keyword, edition, filterDays)),
-    );
-    const rawResults = await runWithConcurrency(calls, 5);
-    const allRaw = rawResults.flat();
+    // ── Step 1: Fetch from selected data sources ─────────────────────────────
+    const allRaw: any[] = [];
+    const tasksList: Array<() => Promise<any[]>> = [];
+
+    // Google News RSS tasks
+    if (sources.includes('google_news')) {
+      const googleTasks = keywords.flatMap((keyword) =>
+        targetEditions.map((edition) => () => searchGoogleNewsRss(keyword, edition, filterDays, dateRange)),
+      );
+      tasksList.push(...googleTasks.map(task => async () => {
+        const results = await task();
+        return results;
+      }));
+    }
+
+    // NewsAPI tasks
+    if (sources.includes('newsapi')) {
+      const newstapiTasks = keywords.map((keyword) => async () => {
+        return await searchNewsAPI(keyword, filterDays, 'en', dateRange);
+      });
+      tasksList.push(...newstapiTasks);
+    }
+
+    // Run all tasks with concurrency limit
+    const rawResults = await runWithConcurrency(tasksList, 5);
+    allRaw.push(...rawResults.flat());
+
     const totalFetched = allRaw.length;
 
     // ── Step 2: Date safety net ──────────────────────────────────────────────
-    const cutoff = new Date(Date.now() - filterDays * 86_400_000);
+    // Campaign mode: use explicit date window; Regular mode: relative days from now
+    const cutoffStart = dateRange
+      ? new Date(dateRange.start_date)
+      : new Date(Date.now() - filterDays * 86_400_000);
+    const cutoffEnd = dateRange
+      ? new Date(new Date(dateRange.end_date).getTime() + 86_400_000) // end_date is inclusive
+      : new Date(Date.now() + 86_400_000); // allow 1 day ahead for timezone drift
     const dateFiltered = allRaw.filter((a) => {
-      // Reject articles with no publication date — cannot confirm they are within range
       if (!a.published_at) return false;
-      return new Date(a.published_at) >= cutoff;
+      const pub = new Date(a.published_at);
+      return pub >= cutoffStart && pub <= cutoffEnd;
     });
 
     // ── Step 3: Cross-keyword dedup (within this run only) ──────────────────
@@ -82,7 +119,14 @@ export async function POST(req: Request) {
     // ── Map to canonical Article type with generated IDs ────────────────────
     // D4 scoring cache (skip LLM for already-scored articles) runs in /api/score
     const ts = Date.now();
-    const articles = capped.map((raw, i) => mapToArticle(raw, `article_${ts}_${i}`, runId));
+    const articles = capped.map((raw, i) => {
+      // Use appropriate mapper based on source
+      if (raw.source === 'newsapi') {
+        return mapNewsAPIArticle(raw, `article_${ts}_${i}`, runId);
+      } else {
+        return mapGoogleArticle(raw, `article_${ts}_${i}`, runId);
+      }
+    });
 
     const stats: PipelineStats = {
       totalFetched,
@@ -98,7 +142,7 @@ export async function POST(req: Request) {
     const run: Run = {
       id: runId,
       keywords,
-      sources: ['google_news'],
+      sources: sources as ArticleSource[],
       regions: regions ?? [],
       filter_days: filterDays,
       min_score: minScore ?? 40,
@@ -109,6 +153,7 @@ export async function POST(req: Request) {
       dedup_removed: removedCount,
       created_at: new Date().toISOString(),
       completed_at: new Date().toISOString(),
+      campaign: campaign ?? null,
     };
 
     try {
@@ -139,6 +184,8 @@ export async function POST(req: Request) {
       keywords,
       regions: regions ?? [],
       filterDays,
+      sources,
+      campaign: campaign ?? null,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unexpected error';

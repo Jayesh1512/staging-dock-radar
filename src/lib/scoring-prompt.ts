@@ -40,10 +40,48 @@ Respond with valid JSON only. No markdown code fences, no explanation text — j
 `.trim();
 
 /**
+ * Campaign-specific system prompt for DSP/SI 6-month sweep.
+ * 4 scoring bands at 25-point intervals, 5 signal types, industry taxonomy.
+ */
+export const CAMPAIGN_SCORING_SYSTEM_PROMPT = `
+You are a DSP/SI intelligence analyst running a 6-month global sweep for FlytBase, a B2B software company that provides drone fleet management and drone-in-a-box (DIAB) operating software.
+
+Your job: Score news articles to identify Drone Service Providers (DSPs), Systems Integrators (SIs), and commercial drone operators that FlytBase should partner with.
+
+SCORING BANDS:
+- 75-100 (High Value): Named DSP/SI + confirmed active deployment or signed contract + clear use case + named end-client / buyer / company / entity
+- 50-74 (Strong Signal): Named DSP/SI + confirmed deployment or contract + clear use case; end-client may be unnamed
+- 25-49 (Weak Signal): DSP/SI mentioned briefly; or internal corporate drone team; or regulatory news
+- 0-24 (Noise): OEM product marketing, consumer/hobbyist, academic, opinion pieces
+
+SIGNAL TYPES (choose exactly one):
+- DEPLOYMENT: Active drone operations underway, fleet going live, operational expansion
+- CONTRACT: Signed contracts, purchase orders, procurement announcements
+- PARTNERSHIP: Technology integrations, distribution partnerships, channel deals
+- EXPANSION: New markets, geographies, or verticals added to existing drone operations; growth of existing DSP/SI business
+- OTHER: Relevant but doesn't fit the above
+
+INDUSTRY (choose one, or "Other: [describe]"):
+Energy & Utilities | Public Safety & Emergency Response | Oil & Gas / Industrial Assets | Mining & Natural Resources | Construction & Infrastructure | Ports, Maritime & Logistics Hubs | Agriculture & Forestry | Perimeter Security & Smart Facilities | Water & Environmental Utilities
+
+CRITICAL RULES:
+1. OEM RULE: DJI, Skydio, Autel, Parrot, senseFly, Zipline, Wing, Joby, Manna, Matternet = OEMs. They must NEVER appear as "company". They must NEVER appear in entities[] except as type "oem".
+2. COMPANY FIELD: Primary DSP/SI/operator. Null if none identifiable.
+3. BUYER: Named end-client goes in entities[] as type "buyer". The company field is always the DSP/SI, never the buyer.
+4. GEOGRAPHY: "country" and "city" = where the operations happen, NOT where the article was published or where the company is headquartered. If operations are offshore or without a specific city, set city to null. Never use a company HQ city unless operations explicitly happen there.
+5. LANGUAGE: All output fields must be in English. Translate if necessary.
+6. FLYTBASE: Set "flytbase_mentioned" to true ONLY if the string "FlytBase" appears explicitly in the article.
+7. DROP REASON: Set to a brief self-explanatory reason only for articles scoring below 25. Set to null for score >= 25.
+8. PERSONS: Extract ALL named individuals who are quoted or identified by name and role/title anywhere in the article.
+
+Respond with valid JSON only. No markdown code fences, no explanation text — just the raw JSON.
+`.trim();
+
+/**
  * Formats a batch of articles into a single user-turn prompt for scoring.
  * Includes the first 500 words of body content for each article.
  */
-export function formatBatchScoringPrompt(articles: Article[], bodies: string[]): string {
+export function formatBatchScoringPrompt(articles: Article[], bodies: string[], campaignMode?: boolean): string {
   const articleBlocks = articles.map((article, i) => {
     const published = article.published_at
       ? new Date(article.published_at).toDateString()
@@ -61,8 +99,17 @@ export function formatBatchScoringPrompt(articles: Article[], bodies: string[]):
     ].filter(Boolean).join('\n');
   }).join('\n\n');
 
+  const context = campaignMode ? 'DSP/SI partner relevance' : 'FlytBase BD relevance';
+  const signalTypes = campaignMode
+    ? '"DEPLOYMENT"|"CONTRACT"|"PARTNERSHIP"|"EXPANSION"|"OTHER"'
+    : '"DEPLOYMENT"|"CONTRACT"|"TENDER"|"PARTNERSHIP"|"EXPANSION"|"FUNDING"|"REGULATION"|"OTHER"';
+  const dropThreshold = campaignMode ? 25 : 30;
+  const industryField = campaignMode
+    ? `\n    "industry": <string: from taxonomy or "Other: description", or null>,`
+    : '';
+
   return `
-Score the following ${articles.length} articles for FlytBase BD relevance.
+Score the following ${articles.length} articles for ${context}.
 Return a JSON array with exactly ${articles.length} objects in the same order as the articles below.
 Each object must include the "id" field matching the article ID exactly.
 
@@ -73,16 +120,16 @@ Return exactly this JSON array (no extra text, no code fences):
   {
     "id": "<article ID>",
     "relevance_score": <integer 0-100>,
-    "company": <string: primary buyer/operator organization, or null>,
+    "company": <string: primary ${campaignMode ? 'DSP/SI/operator' : 'buyer/operator organization'}, or null>,
     "country": <string: country where the event happens, or null>,
-    "city": <string: city if mentioned, or null>,
+    "city": <string: city if mentioned, or null>,${industryField}
     "use_case": <string: e.g. "Power Line Inspection", or null>,
-    "signal_type": <"DEPLOYMENT"|"CONTRACT"|"TENDER"|"PARTNERSHIP"|"EXPANSION"|"FUNDING"|"REGULATION"|"OTHER">,
+    "signal_type": <${signalTypes}>,
     "summary": <string: 1-2 sentences in English summarizing the commercial signal, or null>,
     "flytbase_mentioned": <boolean>,
     "persons": [{"name": "string", "role": "string", "organization": "string"}],
     "entities": [{"name": "string", "type": "buyer"|"operator"|"regulator"|"partner"|"si"|"oem"}],
-    "drop_reason": <string: brief reason if score < 30, or null>
+    "drop_reason": <string: brief reason if score < ${dropThreshold}, or null>
   }
 ]
 `.trim();

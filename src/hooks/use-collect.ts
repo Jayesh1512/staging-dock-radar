@@ -13,6 +13,7 @@ export function useCollect() {
     filterDays: number,
     maxArticles: number,
     sources: ArticleSource[],
+    options?: { start_date?: string; end_date?: string; campaign?: string },
   ): Promise<CollectResult> => {
     setIsCollecting(true);
     setStats(null);
@@ -21,14 +22,41 @@ export function useCollect() {
     try {
       const tasks: Promise<Response>[] = [];
       const hasNews = sources.includes('google_news');
+      const hasNewsAPI = sources.includes('newsapi');
       const hasLinkedIn = sources.includes('linkedin');
 
-      if (hasNews) {
+      // Route to dedicated endpoint if ONLY newsapi is selected
+      if (hasNewsAPI && !hasNews && !hasLinkedIn) {
+        tasks.push(
+          fetch('/api/collect-newsapi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              keywords,
+              filterDays,
+              maxArticles,
+              ...options,
+            }),
+          }),
+        );
+      } else if (hasNews || hasNewsAPI) {
+        // Combine google_news + newsapi into single /api/collect call
+        const newsApiaSources: ArticleSource[] = [];
+        if (hasNews) newsApiaSources.push('google_news');
+        if (hasNewsAPI) newsApiaSources.push('newsapi');
+
         tasks.push(
           fetch('/api/collect', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ keywords, regions, filterDays, maxArticles }),
+            body: JSON.stringify({
+              keywords,
+              regions,
+              sources: newsApiaSources,
+              filterDays,
+              maxArticles,
+              ...options,
+            }),
           }),
         );
       }
@@ -49,9 +77,9 @@ export function useCollect() {
       let liResult: CollectResult | null = null;
       let liErrorMessage: string | null = null;
 
-      // Map settled responses back to services in order: [news?, linkedin?]
+      // Map settled responses back to services in order: [news/newsapi?, linkedin?]
       let idx = 0;
-      const newsIdx = hasNews ? idx++ : -1;
+      const newsIdx = hasNews || hasNewsAPI ? idx++ : -1;
       const liIdx = hasLinkedIn ? idx++ : -1;
 
       if (newsIdx !== -1) {
@@ -60,7 +88,7 @@ export function useCollect() {
           const res = s.value;
           const data = await res.json();
           if (!res.ok) {
-            throw new Error(data.error ?? `News server error ${res.status}`);
+            throw new Error(data.error ?? `Collection server error ${res.status}`);
           }
           newsResult = data as CollectResult;
         }
@@ -115,9 +143,9 @@ export function useCollect() {
       const single = base;
       setStats(single.stats);
       if (!newsResult && liErrorMessage) {
-        setError(`News collection failed, using LinkedIn only: ${liErrorMessage}`);
+        setError(`News/NewsAPI collection failed, using LinkedIn only: ${liErrorMessage}`);
       } else if (!liResult && liErrorMessage) {
-        setError(`LinkedIn collection failed, using News only: ${liErrorMessage}`);
+        setError(`LinkedIn collection failed, using News/NewsAPI only: ${liErrorMessage}`);
       }
       return single;
     } catch (err) {

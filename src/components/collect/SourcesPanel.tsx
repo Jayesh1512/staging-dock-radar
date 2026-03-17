@@ -22,6 +22,7 @@ function toggleSource(
 
 export function SourcesPanel({ selected, onChange }: SourcesPanelProps) {
   const hasGoogle = selected.includes('google_news');
+  const hasNewsAPI = selected.includes('newsapi');
   const hasLinkedIn = selected.includes('linkedin');
 
   return (
@@ -61,6 +62,34 @@ export function SourcesPanel({ selected, onChange }: SourcesPanelProps) {
         </button>
         <span style={{ fontSize: 10, color: 'var(--dr-text-muted)', fontStyle: 'italic', paddingLeft: 22 }}>
           can select news regions
+        </span>
+      </div>
+
+      {/* NewsAPI toggle */}
+      <div className="flex flex-col" style={{ gap: 2 }}>
+        <button
+          type="button"
+          onClick={() => onChange(toggleSource(selected, 'newsapi'))}
+          className="flex items-center gap-1.5 cursor-pointer"
+          aria-pressed={hasNewsAPI}
+          style={{ background: 'transparent', border: 'none', padding: 0 }}
+        >
+          <div
+            className="flex items-center justify-center flex-shrink-0"
+            style={{
+              width: 16, height: 16, borderRadius: 4,
+              border: hasNewsAPI ? '2px solid var(--dr-blue)' : '2px solid #D1D5DB',
+              background: hasNewsAPI ? 'var(--dr-blue)' : '#fff',
+            }}
+          >
+            {hasNewsAPI && <span className="text-white font-bold" style={{ fontSize: 10 }}>✓</span>}
+          </div>
+          <span className="font-semibold" style={{ fontSize: 13, color: hasNewsAPI ? 'var(--dr-text-secondary)' : 'var(--dr-text-disabled)' }}>
+            NewsAPI
+          </span>
+        </button>
+        <span style={{ fontSize: 10, color: 'var(--dr-text-muted)', fontStyle: 'italic', paddingLeft: 22 }}>
+          global news coverage
         </span>
       </div>
 

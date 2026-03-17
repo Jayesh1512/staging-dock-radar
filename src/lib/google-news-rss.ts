@@ -110,17 +110,32 @@ function parseRssItems(xml: string, keyword: string, region: string): RawArticle
  * - Google News RSS returns ~10-20 items per request (no num param).
  * - No API key required.
  */
+/** Optional absolute date range for historical campaign searches */
+export interface DateRange {
+  /** YYYY-MM-DD */
+  start_date: string;
+  /** YYYY-MM-DD */
+  end_date: string;
+}
+
 export async function searchGoogleNewsRss(
   keyword: string,
   edition: { gl: string; ceid: string },
   filterDays: number,
+  dateRange?: DateRange,
 ): Promise<RawArticle[]> {
+  // Campaign mode: use after:/before: operators in query for historical windows
+  // Regular mode: use tbs=qdr:dN for relative "last N days" filter
+  const q = dateRange
+    ? `"${keyword}" after:${dateRange.start_date} before:${dateRange.end_date}`
+    : `"${keyword}"`;
+
   const params = new URLSearchParams({
-    q: `"${keyword}"`,       // phrase search
+    q,
     hl: 'en',
     gl: edition.gl,
     ceid: edition.ceid,
-    tbs: `qdr:d${filterDays}`,
+    ...(dateRange ? {} : { tbs: `qdr:d${filterDays}` }),
   });
 
   const url = `${GOOGLE_NEWS_RSS_BASE}?${params.toString()}`;

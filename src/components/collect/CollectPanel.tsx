@@ -37,6 +37,10 @@ export function CollectPanel({
   const [sources, setSources] = useState<ArticleSource[]>(['google_news', 'linkedin']);
   const [regions, setRegions] = useState<string[]>([...CORE_8_REGIONS]);
 
+  // NewsAPI doesn't support regions — only show regions selector when Google News or LinkedIn is selected
+  const hasGoogleOrLinkedIn = sources.includes('google_news') || sources.includes('linkedin');
+  const onlyNewsAPI = sources.length === 1 && sources.includes('newsapi');
+
   const handleCollect = async () => {
     if (keywords.length === 0) return;
     try {
@@ -55,7 +59,26 @@ export function CollectPanel({
 
         <div className="flex flex-col gap-4" style={{ marginBottom: 20 }}>
           <DateFilter days={filterDays} onChange={onFilterDaysChange} />
-          <RegionSelector selected={regions} onChange={setRegions} />
+          
+          {/* Only show regions if Google News or LinkedIn is selected */}
+          {hasGoogleOrLinkedIn && (
+            <RegionSelector selected={regions} onChange={setRegions} />
+          )}
+
+          {/* Info message when only NewsAPI is selected */}
+          {onlyNewsAPI && (
+            <div style={{
+              background: '#E0F2FE',
+              border: '1px solid #0EA5E9',
+              borderRadius: 6,
+              padding: '8px 12px',
+              fontSize: 12,
+              color: '#0369A1',
+              fontStyle: 'italic',
+            }}>
+              ℹ️ NewsAPI provides global news coverage and doesn't support regional filtering
+            </div>
+          )}
         </div>
 
         <div className="flex justify-center" style={{ marginBottom: 20 }}>
@@ -70,7 +93,13 @@ export function CollectPanel({
             }}
           >
             {isCollecting
-              ? <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Collecting from {regions.length} region{regions.length !== 1 ? 's' : ''}…</>
+              ? <>
+                  <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
+                  {onlyNewsAPI
+                    ? 'Collecting from NewsAPI…'
+                    : `Collecting from ${regions.length} region${regions.length !== 1 ? 's' : ''}…`
+                  }
+                </>
               : <>🔍&nbsp;&nbsp;Collect News</>
             }
           </button>

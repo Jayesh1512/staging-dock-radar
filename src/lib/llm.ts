@@ -82,9 +82,10 @@ async function callOpenAI(systemPrompt: string, userPrompt: string): Promise<str
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error('OPENAI_API_KEY is not set in environment');
 
-  const client = new OpenAI({ apiKey });
+  const client = new OpenAI({ apiKey, timeout: 60_000 });
   const response = await client.chat.completions.create({
     model: PROVIDER_MODELS.openai,
+    max_tokens: 16384,
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },

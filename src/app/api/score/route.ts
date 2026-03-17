@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { llmComplete, getActiveLLMInfo } from '@/lib/llm';
-import { SCORING_SYSTEM_PROMPT, formatBatchScoringPrompt } from '@/lib/scoring-prompt';
+import { SCORING_SYSTEM_PROMPT, CAMPAIGN_SCORING_SYSTEM_PROMPT, formatBatchScoringPrompt } from '@/lib/scoring-prompt';
 import { fetchArticleBody } from '@/lib/article-body';
 import { insertScoredArticles, updateArticleResolvedUrl, loadScoredByArticleIds, loadDedupKeysFromScoredArticles, loadEverQueuedArticleIds, markArticlesAsEverQueued } from '@/lib/db';
 import { gateTwoDedup } from '@/lib/dedup';
@@ -39,6 +39,7 @@ function parseToScoredArticle(articleId: string, raw: Record<string, unknown>): 
     persons: Array.isArray(raw.persons) ? raw.persons : [],
     entities: Array.isArray(raw.entities) ? raw.entities : [],
     drop_reason: typeof raw.drop_reason === 'string' ? raw.drop_reason : null,
+    industry: typeof raw.industry === 'string' ? raw.industry : null,
     is_duplicate: false,
     status: 'new',
     actions_taken: [],
@@ -56,7 +57,16 @@ function parseBatchResponse(raw: string, articles: Article[]): ArticleWithScore[
 
   try {
     const parsed = JSON.parse(json);
-    arr = Array.isArray(parsed) ? parsed : [parsed];
+    if (Array.isArray(parsed)) {
+      arr = parsed;
+    } else if (typeof parsed === 'object' && parsed !== null) {
+      // OpenAI json_object mode wraps arrays in an object like {"results": [...]}
+      // Find the first array value and use it
+      const arrayVal = Object.values(parsed).find((v) => Array.isArray(v)) as Record<string, unknown>[] | undefined;
+      arr = arrayVal ?? [parsed];
+    } else {
+      arr = [parsed];
+    }
   } catch {
     console.error('[/api/score] Batch JSON parse failed, applying fallback for all articles');
     return articles.map((article) => ({
@@ -66,6 +76,11 @@ function parseBatchResponse(raw: string, articles: Article[]): ArticleWithScore[
         drop_reason: 'LLM response could not be parsed',
       }),
     }));
+  }
+
+  // Truncation detection: LLM returned fewer items than expected
+  if (arr.length < articles.length) {
+    console.warn(`[/api/score] LLM truncation detected: expected ${articles.length} items, got ${arr.length}. Scoring in smaller batches may help.`);
   }
 
   // Match by article id for robustness; fall back to positional index
@@ -104,14 +119,15 @@ function filterExcludedByTitle(articles: Article[], excludeKeywords: string[]): 
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json() as { articles: Article[]; selectedRegions?: string[]; excludeTitleKeywords?: string[]; minScore?: number };
-    const { articles: rawArticles, minScore = 0 } = body;
+    const body = await req.json() as { articles: Article[]; selectedRegions?: string[]; excludeTitleKeywords?: string[]; minScore?: number; campaign?: string };
+    const { articles: rawArticles, minScore = 0, campaign } = body;
+    const isCampaign = !!campaign;
 
     if (!Array.isArray(rawArticles) || rawArticles.length === 0) {
       return NextResponse.json({ error: 'Non-empty articles array is required' }, { status: 400 });
     }
 
-    const MAX_BATCH = 40;
+    const MAX_BATCH = 50;
     if (rawArticles.length > MAX_BATCH) {
       return NextResponse.json(
         { error: `Batch too large: ${rawArticles.length} articles sent but the scoring limit is ${MAX_BATCH}. This is a configuration mismatch — MAX_BATCH in score/route.ts must equal DEFAULTS.maxArticles in constants.ts. Update both values together.` },
@@ -276,7 +292,8 @@ export async function POST(req: Request) {
     let llmResults: ArticleWithScore[] = [];
     if (toScore.length > 0) {
       const bodies = bodyResults.map(r => r.text);
-      const rawText = await llmComplete(SCORING_SYSTEM_PROMPT, formatBatchScoringPrompt(toScore, bodies));
+      const systemPrompt = isCampaign ? CAMPAIGN_SCORING_SYSTEM_PROMPT : SCORING_SYSTEM_PROMPT;
+      const rawText = await llmComplete(systemPrompt, formatBatchScoringPrompt(toScore, bodies, isCampaign));
       llmResults = parseBatchResponse(rawText, toScore);
 
       // Enrich with resolved URLs

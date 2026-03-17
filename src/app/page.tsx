@@ -13,6 +13,7 @@ import { useScore } from '@/hooks/use-score';
 import type { Article, ArticleWithScore, ArticleAction, ConfigItem, CollectResult, Run } from '@/lib/types';
 import { toast } from 'sonner';
 import { formatDateTimeIST } from '@/lib/utils';
+import { CampaignPanel } from '@/components/campaign/CampaignPanel';
 
 /** Async DB action persistence — non-blocking, warns user on failure so they can retry */
 function persistAction(articleId: string, action: string, actionsTaken?: ArticleAction[]) {
@@ -30,6 +31,7 @@ function persistAction(articleId: string, action: string, actionsTaken?: Article
 export default function Dashboard() {
   // ─── Core State ────────────────────────────────────────
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showCampaign, setShowCampaign] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
   const [currentRun, setCurrentRun] = useState<Run | null>(null);
   const [allRuns, setAllRuns] = useState<Run[]>([]);
@@ -279,8 +281,17 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen" style={{ background: '#F3F4F6' }}>
-      <Navbar onAnalytics={() => setShowAnalytics(v => !v)} analyticsActive={showAnalytics} />
-      {showAnalytics ? (
+      <Navbar
+        onAnalytics={() => { setShowAnalytics(v => !v); setShowCampaign(false); }}
+        analyticsActive={showAnalytics}
+        onCampaign={() => { setShowCampaign(v => !v); setShowAnalytics(false); }}
+        campaignActive={showCampaign}
+      />
+      {showCampaign ? (
+        <main style={{ padding: '24px 32px 64px' }}>
+          <CampaignPanel />
+        </main>
+      ) : showAnalytics ? (
         <AnalyticsPage onClose={() => setShowAnalytics(false)} />
       ) : (
         <>

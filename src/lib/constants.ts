@@ -25,12 +25,14 @@ export const SIGNAL_BADGE_COLORS: Record<SignalType, { bg: string; text: string 
 
 export const SOURCE_BADGE_COLORS: Record<ArticleSource, { bg: string; text: string }> = {
   google_news: { bg: '#FEF9C3', text: '#A16207' },
+  newsapi: { bg: '#F3E8FF', text: '#6B21A8' },
   linkedin: { bg: '#DBEAFE', text: '#1E40AF' },
   facebook: { bg: '#EEF2FF', text: '#4338CA' },
 };
 
 export const SOURCE_LABELS: Record<ArticleSource, string> = {
   google_news: 'Google News',
+  newsapi: 'NewsAPI',
   linkedin: 'LinkedIn',
   facebook: 'Facebook',
 };
@@ -61,7 +63,7 @@ export const ALL_COUNTRIES = REGION_GROUPS.flatMap((g) => [...g.countries]);
 export const CORE_8_REGIONS = ['US', 'UK', 'France', 'Australia', 'Italy', 'Singapore', 'UAE', 'Brazil'] as const;
 
 export const DEFAULTS = {
-  maxArticles: 40,
+  maxArticles: 50,
   filterDays: 7,
   minScore: 50,
   titleSimilarity: 0.80,
@@ -81,6 +83,37 @@ export const DATE_PRESET_LABELS: Record<number, string> = {
   1: 'Today',
   3: '3 Days',
 };
+
+// ─── DSP 6-Month Campaign ──────────────────────────────────────────────────
+
+export const CAMPAIGN_NAME = 'dsp_6mo_sweep';
+
+export const CAMPAIGN_WEST_REGIONS = ['US', 'Canada', 'Mexico', 'Brazil', 'UK', 'Germany', 'France', 'Italy'] as const;
+export const CAMPAIGN_EAST_REGIONS = ['India', 'Singapore', 'Japan', 'Australia', 'South Korea', 'UAE', 'Saudi Arabia', 'South Africa'] as const;
+
+export const CAMPAIGN_KEYWORDS = [
+  // DJI Dock product family — catches any DSP/operator using DJI dock hardware
+  'DJI Dock',
+  'DJI Dock 2',
+  'DJI Dock 3',
+  // Vendor-agnostic dock / drone-in-a-box signals
+  'drone in a box',
+  'drone dock',
+  'drone docking station',
+] as const;
+
+/** Campaign industry taxonomy (LLM output stored as raw text) */
+export const CAMPAIGN_INDUSTRIES = [
+  'Energy & Utilities',
+  'Public Safety & Emergency Response',
+  'Oil & Gas / Industrial Assets',
+  'Mining & Natural Resources',
+  'Construction & Infrastructure',
+  'Ports, Maritime & Logistics Hubs',
+  'Agriculture & Forestry',
+  'Perimeter Security & Smart Facilities',
+  'Water & Environmental Utilities',
+] as const;
 
 /**
  * Maps LLM-returned country name variants → canonical region key used in REGION_GROUPS.

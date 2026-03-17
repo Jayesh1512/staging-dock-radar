@@ -1,7 +1,7 @@
 export type SignalType = 'DEPLOYMENT' | 'CONTRACT' | 'TENDER' | 'PARTNERSHIP' | 'EXPANSION' | 'FUNDING' | 'REGULATION' | 'OTHER';
 export type ArticleStatus = 'new' | 'reviewed' | 'dismissed';
 export type ArticleAction = 'slack' | 'bookmarked' | 'email';
-export type ArticleSource = 'google_news' | 'linkedin' | 'facebook';
+export type ArticleSource = 'google_news' | 'newsapi' | 'linkedin' | 'facebook';
 
 export interface Run {
   id: string;
@@ -17,6 +17,8 @@ export interface Run {
   dedup_removed: number;
   created_at: string;
   completed_at: string | null;
+  /** Non-null for campaign runs (e.g. 'dsp_6mo_sweep') */
+  campaign?: string | null;
 }
 
 export interface Article {
@@ -76,6 +78,8 @@ export interface ScoredArticle {
   slack_sent_at: string | null;
   /** Set after lazy enrichment completes on drawer open. Null = not yet enriched. */
   enriched_at: string | null;
+  /** Industry classification from campaign scoring (null for regular runs) */
+  industry?: string | null;
   created_at: string;
 }
 
