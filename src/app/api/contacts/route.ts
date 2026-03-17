@@ -1,21 +1,18 @@
 /**
  * POST /api/contacts
  *
- * Test-only endpoint — used by EnrichmentTestAgent to find emails and
- * additional org contacts via Lemlist. NOT used by the main pipeline.
+ * Test-only endpoint — used by EnrichmentTestAgent.
+ * Orchestrates Apollo + Lemlist to enrich persons extracted from articles.
  *
- * Body: { persons: { name, role, organization }[], companyDomain?: string }
- * Returns: { enriched: LemlistEnrichResult[], additional: LemlistContact[], credits: number | null }
+ * Workflow per org:
+ *   1. Domain resolution: Apollo Org Enrich → Lemlist Company DB → manual fallback
+ *   2. Per extracted person: Apollo People Match (email + LinkedIn) → Lemlist Waterfall (email fallback)
+ *   3. For target orgs with no extracted persons: Apollo People Search (LinkedIn only, no credits)
  */
 
 import { NextResponse } from 'next/server';
-import {
-  findEmailForPerson,
-  findPeopleAtOrg,
-  getLemlistCredits,
-  type LemlistEnrichResult,
-  type LemlistContact,
-} from '@/lib/lemlist';
+import { apolloFindOrgDomain, apolloMatchPerson, apolloFindPeopleAtOrg } from '@/lib/apollo';
+import { findCompanyDomain, findEmailForPerson, getLemlistCredits } from '@/lib/lemlist';
 
 interface PersonInput {
   name: string;
@@ -23,34 +20,149 @@ interface PersonInput {
   organization: string;
 }
 
+export interface ContactResult {
+  name: string | null;
+  title: string | null;
+  organization: string;
+  email: string | null;
+  emailStatus: 'found' | 'not_found' | 'no_domain' | 'error';
+  emailSource: 'apollo' | 'lemlist' | null;
+  linkedinUrl: string | null;
+  isFromArticle: boolean;
+}
+
+export interface OrgResolution {
+  orgName: string;
+  domain: string | null;
+  domainSource: 'apollo' | 'lemlist' | 'manual' | null;
+}
+
 export async function POST(req: Request) {
   try {
-    const { persons, companyDomain } = await req.json() as {
+    const { persons, targetOrgs, manualDomain } = await req.json() as {
       persons: PersonInput[];
-      companyDomain?: string;
+      targetOrgs: string[];           // target entity org names (operators, buyers, partners, SIs)
+      manualDomain?: string;          // optional override when auto-resolution fails
     };
 
-    if (!Array.isArray(persons) || persons.length === 0) {
-      return NextResponse.json({ error: 'persons array required' }, { status: 400 });
+    // Collect all unique orgs we need to resolve (from article persons + target entities)
+    const articleOrgs = [...new Set(persons.map(p => p.organization))];
+    const allOrgs = [...new Set([...articleOrgs, ...targetOrgs])];
+
+    // ── Step 1: Resolve domain for each org ────────────────────────────────
+    const orgResolutions: OrgResolution[] = [];
+    const domainByOrg = new Map<string, string | null>();
+
+    for (const org of allOrgs) {
+      // If there's only one target org and user provided a manual domain, use it
+      const isOnlyOrg = allOrgs.length === 1;
+      if (isOnlyOrg && manualDomain?.trim()) {
+        orgResolutions.push({ orgName: org, domain: manualDomain.trim(), domainSource: 'manual' });
+        domainByOrg.set(org, manualDomain.trim());
+        continue;
+      }
+
+      // Apollo org enrich (free)
+      const apollo = await apolloFindOrgDomain(org);
+      if (apollo.domain) {
+        orgResolutions.push({ orgName: org, domain: apollo.domain, domainSource: 'apollo' });
+        domainByOrg.set(org, apollo.domain);
+        continue;
+      }
+
+      // Lemlist company DB fallback
+      const lemlistDomain = await findCompanyDomain(org);
+      if (lemlistDomain) {
+        orgResolutions.push({ orgName: org, domain: lemlistDomain, domainSource: 'lemlist' });
+        domainByOrg.set(org, lemlistDomain);
+        continue;
+      }
+
+      orgResolutions.push({ orgName: org, domain: null, domainSource: null });
+      domainByOrg.set(org, null);
     }
 
-    // 1. Find email for each extracted person (sequential to respect rate limit)
-    const enriched: LemlistEnrichResult[] = [];
+    const contacts: ContactResult[] = [];
+
+    // ── Step 2: Enrich each extracted person ───────────────────────────────
     for (const p of persons) {
-      const result = await findEmailForPerson(p.name, p.role, p.organization, companyDomain);
-      enriched.push(result);
+      const domain = domainByOrg.get(p.organization) ?? null;
+
+      // Apollo People Match → email + LinkedIn (1 credit if email found)
+      const apollo = await apolloMatchPerson(p.name, p.organization, domain);
+
+      if (apollo.email) {
+        contacts.push({
+          name: p.name,
+          title: p.role,
+          organization: p.organization,
+          email: apollo.email,
+          emailStatus: 'found',
+          emailSource: 'apollo',
+          linkedinUrl: apollo.linkedinUrl,
+          isFromArticle: true,
+        });
+        continue;
+      }
+
+      // Lemlist waterfall fallback (5 credits if found, 0 if not found)
+      const lemlist = await findEmailForPerson(p.name, p.role, p.organization, domain ?? undefined);
+
+      contacts.push({
+        name: p.name,
+        title: p.role,
+        organization: p.organization,
+        email: lemlist.email,
+        emailStatus: lemlist.emailStatus === 'found' ? 'found'
+          : lemlist.emailStatus === 'no_domain' ? 'no_domain'
+          : lemlist.emailStatus === 'error' ? 'error'
+          : 'not_found',
+        emailSource: lemlist.email ? 'lemlist' : null,
+        linkedinUrl: apollo.linkedinUrl, // Apollo gives LinkedIn even without email
+        isFromArticle: true,
+      });
     }
 
-    // 2. Find 2 additional people at the primary organization
-    // Use the first person's org as the target (most likely the main org in the article)
-    const primaryOrg = persons[0].organization;
-    const extractedNames = persons.map(p => p.name);
-    const additional: LemlistContact[] = await findPeopleAtOrg(primaryOrg, extractedNames, 2);
+    // ── Step 3: For target orgs with no extracted persons, find contacts ───
+    const orgsWithPersons = new Set(persons.map(p => p.organization));
+    const orgsNeedingDiscovery = targetOrgs.filter(o => !orgsWithPersons.has(o));
 
-    // 3. Return remaining credits so the test agent can display them
-    const credits = await getLemlistCredits();
+    for (const org of orgsNeedingDiscovery) {
+      const domain = domainByOrg.get(org) ?? null;
+      const extractedNames = persons.map(p => p.name);
+      const discovered = await apolloFindPeopleAtOrg(org, domain, extractedNames, 2);
 
-    return NextResponse.json({ enriched, additional, credits });
+      for (const d of discovered) {
+        contacts.push({
+          name: d.name,
+          title: d.title,
+          organization: org,
+          email: null,
+          emailStatus: 'not_found',
+          emailSource: null,
+          linkedinUrl: d.linkedinUrl,
+          isFromArticle: false,
+        });
+      }
+
+      // If Apollo found nothing, add one blank placeholder row for the org
+      if (discovered.length === 0) {
+        contacts.push({
+          name: null,
+          title: null,
+          organization: org,
+          email: null,
+          emailStatus: 'no_domain',
+          emailSource: null,
+          linkedinUrl: null,
+          isFromArticle: false,
+        });
+      }
+    }
+
+    const lemlistCredits = await getLemlistCredits();
+
+    return NextResponse.json({ contacts, orgResolutions, lemlistCredits });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });

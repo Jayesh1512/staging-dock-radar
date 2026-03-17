@@ -34,7 +34,7 @@ export interface LemlistEnrichResult {
   role: string;
   organization: string;
   email: string | null;
-  emailStatus: 'found' | 'not_found' | 'error';
+  emailStatus: 'found' | 'not_found' | 'no_domain' | 'error';
   errorDetail?: string;
 }
 
@@ -115,9 +115,14 @@ export async function findEmailForPerson(
   organization: string,
   companyDomain?: string,
 ): Promise<LemlistEnrichResult> {
+  // Lemlist requires companyDomain — without it the API returns 400 "Missing inputs"
+  if (!companyDomain) {
+    return { name: fullName, role, organization, email: null, emailStatus: 'no_domain' };
+  }
+
   const parts = fullName.trim().split(/\s+/);
   const firstName = parts[0] ?? fullName;
-  const lastName = parts.slice(1).join(' ') || parts[0]; // fallback to same if single name
+  const lastName = parts.slice(1).join(' ') || parts[0];
 
   try {
     const enrichId = await startEmailFind(firstName, lastName, organization, companyDomain);
@@ -132,6 +137,40 @@ export async function findEmailForPerson(
   } catch (err) {
     const errorDetail = err instanceof Error ? err.message : String(err);
     return { name: fullName, role, organization, email: null, emailStatus: 'error', errorDetail };
+  }
+}
+
+// ─── Auto-derive company domain from org name ────────────────────────────────
+
+/**
+ * Queries Lemlist's company database to find the domain for a given org name.
+ * Returns the best-match domain or null if not found.
+ */
+export async function findCompanyDomain(orgName: string): Promise<string | null> {
+  try {
+    const res = await lemlistFetch('/database/companies', {
+      method: 'POST',
+      body: JSON.stringify({ search: orgName, size: 5, page: 1 }),
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json() as {
+      results?: Array<{ company_name?: string; company_domain?: string }>;
+    };
+
+    if (!data.results?.length) return null;
+
+    // Pick the result whose name most closely matches (case-insensitive contains)
+    const lowerOrg = orgName.toLowerCase();
+    const best =
+      data.results.find(c => (c.company_name ?? '').toLowerCase().includes(lowerOrg)) ??
+      data.results.find(c => lowerOrg.includes((c.company_name ?? '').toLowerCase())) ??
+      data.results[0];
+
+    return best?.company_domain ?? null;
+  } catch {
+    return null;
   }
 }
 
