@@ -22,7 +22,7 @@ import { NextResponse } from 'next/server';
  */
 export async function POST(req: Request) {
   try {
-    const { message } = await req.json() as { message: string; articleUrl?: string };
+    const { message, unfurlLinks } = await req.json() as { message: string; articleUrl?: string; unfurlLinks?: boolean };
 
     if (!message?.trim()) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -50,8 +50,8 @@ export async function POST(req: Request) {
         // true: Slack unfurls the URL in the message for og:image preview.
         // Works when resolved_url (real article URL) is set on the article.
         // Falls back to "Google News" card if only the raw redirect URL is available.
-        unfurl_links: true,
-        unfurl_media: true,
+        unfurl_links: unfurlLinks !== false,
+        unfurl_media: unfurlLinks !== false,
       }),
     });
 

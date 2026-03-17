@@ -3,6 +3,13 @@ import type { ArticleWithScore } from '@/lib/types';
 import { ScoreBadge } from '@/components/shared/ScoreBadge';
 import { SignalBadge } from '@/components/shared/SignalBadge';
 import { formatTimeAgo } from '@/lib/utils';
+import { SOURCE_BADGE_COLORS } from '@/lib/constants';
+
+const SOURCE_SHORT: Record<string, string> = {
+  google_news: 'GN',
+  linkedin: 'LI',
+  facebook: 'FB',
+};
 
 interface QueueRowProps {
   article: ArticleWithScore;
@@ -70,8 +77,17 @@ export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onTo
             </span>
           )}
         </div>
-        <div className="truncate" style={{ fontSize: 11, color: 'var(--dr-text-disabled)', marginTop: 1 }}>
-          {art.publisher}&nbsp;·&nbsp;{art.published_at ? formatTimeAgo(art.published_at) : '—'}
+        <div className="flex items-center gap-1" style={{ fontSize: 11, color: 'var(--dr-text-disabled)', marginTop: 1 }}>
+          <span
+            style={{
+              background: SOURCE_BADGE_COLORS[art.source]?.bg ?? '#F3F4F6',
+              color: SOURCE_BADGE_COLORS[art.source]?.text ?? '#6B7280',
+              fontSize: 9.5, fontWeight: 700, padding: '1px 4px', borderRadius: 3, flexShrink: 0,
+            }}
+          >
+            {SOURCE_SHORT[art.source] ?? art.source}
+          </span>
+          <span className="truncate">{art.publisher}&nbsp;·&nbsp;{art.published_at ? formatTimeAgo(art.published_at) : '—'}</span>
         </div>
       </div>
 

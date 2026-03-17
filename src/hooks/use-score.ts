@@ -20,9 +20,8 @@ async function scoreBatch(articles: Article[], selectedRegions: string[], minSco
 
   if (res.status === 400 && serverError?.includes('Batch too large')) {
     throw new Error(
-      `Too many articles for a single scoring batch (${articles.length} sent). ` +
-      `This is a server configuration issue — MAX_BATCH and maxArticles must match. ` +
-      `Contact your administrator or check server logs.`
+      `Too many articles for a single scoring batch (${articles.length} sent, limit is ${SCORE_CHUNK_SIZE}). ` +
+      `Reduce the number of articles collected and retry.`
     );
   }
 
@@ -42,6 +41,8 @@ async function scoreBatch(articles: Article[], selectedRegions: string[], minSco
       : `Scoring API returned an unexpected response (HTTP ${res.status}). Check server logs for details.`
   );
 }
+
+const SCORE_CHUNK_SIZE = 40;
 
 export function useScore() {
   const [isScoring, setIsScoring] = useState(false);
@@ -67,20 +68,30 @@ export function useScore() {
     abortRef.current = false;
 
     try {
-      const results = await scoreBatch(articles, selectedRegions, minScore);
+      // Split into chunks of SCORE_CHUNK_SIZE so combined GN+LinkedIn runs never exceed MAX_BATCH
+      const chunks: Article[][] = [];
+      for (let i = 0; i < articles.length; i += SCORE_CHUNK_SIZE) {
+        chunks.push(articles.slice(i, i + SCORE_CHUNK_SIZE));
+      }
+
+      const allResults: ArticleWithScore[] = [];
+      for (const chunk of chunks) {
+        if (abortRef.current) break;
+        const chunkResults = await scoreBatch(chunk, selectedRegions, minScore);
+        allResults.push(...chunkResults);
+        setProgress(allResults.length);
+        setPartialResults([...allResults]);
+      }
 
       if (!abortRef.current) {
-        setProgress(articles.length);
-        setPartialResults(results);
-
-        if (results.length === 0) {
+        if (allResults.length === 0) {
           setError(
             'All articles returned a score of zero — the LLM may have failed to parse the batch response. ' +
             'This can happen if the response was malformed or truncated. ' +
             'Try reducing the number of articles (Max Articles in Step 1) and retry.'
           );
         } else {
-          onComplete(results);
+          onComplete(allResults);
         }
       }
     } catch (err) {

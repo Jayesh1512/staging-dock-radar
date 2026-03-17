@@ -10,9 +10,9 @@ const TARGET_TYPES = new Set(['buyer', 'operator', 'partner', 'si']);
 
 const WORKFLOW_STEPS = [
   { icon: '🤖', label: 'LLM Extraction', detail: 'Article body → persons (name/title/org) + entity classification (buyer, operator, OEM…)' },
-  { icon: '🌐', label: 'Domain Resolution', detail: 'Per target org: Apollo Org Enrich (free) → Lemlist Company DB fallback → manual input' },
+  { icon: '🌐', label: 'Domain Resolution', detail: 'Per target org: Apollo Org Enrich (free) → Lemlist Company DB fallback → manual override' },
   { icon: '✉', label: 'Email + LinkedIn', detail: 'Apollo People Match (1 credit/person) → Lemlist Waterfall fallback (5 credits, charged on success only)' },
-  { icon: '🔎', label: 'Contact Discovery', detail: 'Orgs with no extracted persons → Apollo People Search → 2 contacts with LinkedIn (no email credits)' },
+  { icon: '🔎', label: 'Contact Discovery', detail: 'Orgs with domain but no extracted persons → Apollo People Search → 2 contacts with LinkedIn (no credits)' },
 ];
 
 export function EnrichmentTestAgent() {
@@ -29,12 +29,14 @@ export function EnrichmentTestAgent() {
   const [orgResolutions, setOrgResolutions] = useState<OrgResolution[]>([]);
   const [lemlistCredits, setLemlistCredits] = useState<number | null>(null);
   const [contactError, setContactError] = useState('');
-  const [manualDomain, setManualDomain] = useState('');
+
+  // Per-org domain overrides — persisted across re-runs so user doesn't re-type
+  const [domainOverrides, setDomainOverrides] = useState<Record<string, string>>({});
 
   const targetEntities = entities.filter(e => TARGET_TYPES.has(e.type.toLowerCase()));
   const referenceEntities = entities.filter(e => !TARGET_TYPES.has(e.type.toLowerCase()));
 
-  // Orgs that have no auto-resolved domain after contacts run
+  // Orgs that still have no resolved domain after the last contacts run
   const unresolvableOrgs = orgResolutions.filter(r => !r.domain);
 
   async function runEnrichment() {
@@ -47,7 +49,7 @@ export function EnrichmentTestAgent() {
     setContactStatus('idle');
     setContacts([]);
     setOrgResolutions([]);
-    setManualDomain('');
+    setDomainOverrides({});
 
     try {
       const res = await fetch('/api/enrich', {
@@ -71,13 +73,18 @@ export function EnrichmentTestAgent() {
     }
   }
 
-  async function runContactEnrichment(domainOverride?: string) {
+  async function runContactEnrichment() {
     setContactStatus('loading');
     setContactError('');
     setContacts([]);
     setOrgResolutions([]);
 
     const tOrgs = entities.filter(e => TARGET_TYPES.has(e.type.toLowerCase())).map(e => e.name);
+
+    // Strip blank overrides before sending
+    const cleanOverrides = Object.fromEntries(
+      Object.entries(domainOverrides).filter(([, v]) => v.trim()),
+    );
 
     try {
       const res = await fetch('/api/contacts', {
@@ -86,7 +93,7 @@ export function EnrichmentTestAgent() {
         body: JSON.stringify({
           persons,
           targetOrgs: tOrgs,
-          manualDomain: domainOverride,
+          domainOverrides: Object.keys(cleanOverrides).length > 0 ? cleanOverrides : undefined,
         }),
       });
       const data = await res.json() as {
@@ -108,14 +115,23 @@ export function EnrichmentTestAgent() {
 
   function reset() {
     setUrl(''); setStatus('idle'); setPersons([]); setEntities([]); setErrorMsg(''); setCached(false);
-    setContactStatus('idle'); setContacts([]); setOrgResolutions([]); setLemlistCredits(null); setContactError(''); setManualDomain('');
+    setContactStatus('idle'); setContacts([]); setOrgResolutions([]); setLemlistCredits(null);
+    setContactError(''); setDomainOverrides({});
   }
 
-  // Group contacts by organization for table rendering
+  function setDomain(org: string, value: string) {
+    setDomainOverrides(prev => ({ ...prev, [org]: value }));
+  }
+
+  // Group contacts by org for table rendering
   const allOrgs = [...new Set([
     ...targetEntities.map(e => e.name),
     ...contacts.map(c => c.organization),
   ])];
+
+  // Orgs that still need a domain after contacts run (for re-run section)
+  const stillUnresolved = contactStatus === 'done' ? unresolvableOrgs : [];
+  const hasNewDomainForRerun = stillUnresolved.some(o => domainOverrides[o.orgName]?.trim());
 
   return (
     <>
@@ -211,22 +227,17 @@ export function EnrichmentTestAgent() {
                       </thead>
                       <tbody>
                         {contactStatus !== 'done' ? (
-                          // Before contacts run: show extracted persons + blank rows for orgs with no persons
                           <>
                             {persons.map((p, i) => (
                               <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#F9FAFB' }}>
                                 <td style={tdStyle}><span style={{ fontWeight: 600, color: '#111827' }}>{p.name}</span></td>
                                 <td style={tdStyle}>{p.role}</td>
                                 <td style={tdStyle}><span style={{ color: '#6B7280' }}>{p.organization}</span></td>
-                                <td style={tdStyle}>
-                                  {contactStatus === 'loading'
-                                    ? <Spinner />
-                                    : <Dash />}
-                                </td>
+                                <td style={tdStyle}>{contactStatus === 'loading' ? <Spinner /> : <Dash />}</td>
                                 <td style={tdStyle}><Dash /></td>
                               </tr>
                             ))}
-                            {/* Blank rows for target orgs with no persons */}
+                            {/* Blank rows for target orgs with no extracted persons */}
                             {targetEntities
                               .filter(e => !persons.some(p => p.organization === e.name))
                               .map((e, i) => (
@@ -234,15 +245,12 @@ export function EnrichmentTestAgent() {
                                   <td style={{ ...tdStyle, color: '#D1D5DB', fontStyle: 'italic' }}>—</td>
                                   <td style={{ ...tdStyle, color: '#D1D5DB', fontStyle: 'italic' }}>—</td>
                                   <td style={tdStyle}><span style={{ color: '#6B7280' }}>{e.name}</span></td>
-                                  <td style={tdStyle}>
-                                    {contactStatus === 'loading' ? <Spinner /> : <Dash />}
-                                  </td>
+                                  <td style={tdStyle}>{contactStatus === 'loading' ? <Spinner /> : <Dash />}</td>
                                   <td style={tdStyle}><Dash /></td>
                                 </tr>
                               ))}
                           </>
                         ) : (
-                          // After contacts run: grouped by org
                           allOrgs.map(org => {
                             const orgContacts = contacts.filter(c => c.organization === org);
                             const resolution = orgResolutions.find(r => r.orgName === org);
@@ -330,10 +338,33 @@ export function EnrichmentTestAgent() {
                     </div>
                   )}
 
+                  {/* ── Per-org domain overrides (before first Find Emails run) ── */}
+                  {contactStatus === 'idle' && targetEntities.length > 0 && (
+                    <div style={{ marginBottom: 12, padding: '10px 14px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8 }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+                        Domain Overrides <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: '#94A3B8' }}>— optional, leave blank for auto-resolution</span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {targetEntities.map(e => (
+                          <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: 12, color: '#374151', width: 170, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={e.name}>{e.name}</span>
+                            <input
+                              type="text"
+                              value={domainOverrides[e.name] ?? ''}
+                              onChange={(ev) => setDomain(e.name, ev.target.value)}
+                              placeholder="company.com"
+                              style={{ flex: 1, padding: '4px 8px', fontSize: 12, border: '1px solid #D1D5DB', borderRadius: 5, outline: 'none', color: '#111827' }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* ── Find Emails button ────────────────────────────────── */}
                   {contactStatus === 'idle' && (
                     <button
-                      onClick={() => runContactEnrichment()}
+                      onClick={runContactEnrichment}
                       style={{ width: '100%', padding: '9px 0', fontSize: 13, fontWeight: 600, borderRadius: 7, border: '1px solid #7C3AED', background: '#F5F3FF', color: '#6D28D9', cursor: 'pointer', marginBottom: 12 }}
                     >
                       🔍 Find Emails + LinkedIn via Apollo & Lemlist
@@ -353,28 +384,34 @@ export function EnrichmentTestAgent() {
                     </div>
                   )}
 
-                  {/* Manual domain fallback for unresolvable orgs */}
-                  {contactStatus === 'done' && unresolvableOrgs.length > 0 && (
-                    <div style={{ marginBottom: 12, padding: '10px 12px', background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 7 }}>
-                      <div style={{ fontSize: 11.5, color: '#C2410C', marginBottom: 8 }}>
-                        ⚠ Domain not found for: <strong>{unresolvableOrgs.map(o => o.orgName).join(', ')}</strong> — enter domain to retry
+                  {/* ── Re-run with domain overrides for unresolved orgs ─── */}
+                  {stillUnresolved.length > 0 && (
+                    <div style={{ marginBottom: 12, padding: '10px 14px', background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 8 }}>
+                      <div style={{ fontSize: 11.5, fontWeight: 600, color: '#C2410C', marginBottom: 8 }}>
+                        ⚠ Domain not resolved for {stillUnresolved.length} org{stillUnresolved.length > 1 ? 's' : ''} — enter domain to retry
                       </div>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <input
-                          type="text" value={manualDomain}
-                          onChange={(e) => setManualDomain(e.target.value)}
-                          onKeyDown={(e) => { if (e.key === 'Enter' && manualDomain.trim()) runContactEnrichment(manualDomain.trim()); }}
-                          placeholder="e.g. austintownfd.org"
-                          style={{ flex: 1, padding: '6px 10px', fontSize: 13, border: '1px solid #FDBA74', borderRadius: 6, outline: 'none', color: '#111827' }}
-                        />
-                        <button
-                          onClick={() => { if (manualDomain.trim()) runContactEnrichment(manualDomain.trim()); }}
-                          disabled={!manualDomain.trim()}
-                          style={{ padding: '6px 14px', fontSize: 12.5, fontWeight: 600, borderRadius: 6, border: 'none', background: manualDomain.trim() ? '#EA580C' : '#FED7AA', color: '#fff', cursor: manualDomain.trim() ? 'pointer' : 'not-allowed', whiteSpace: 'nowrap' }}
-                        >
-                          Retry
-                        </button>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+                        {stillUnresolved.map(o => (
+                          <div key={o.orgName} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: 12, color: '#374151', width: 170, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={o.orgName}>{o.orgName}</span>
+                            <input
+                              type="text"
+                              value={domainOverrides[o.orgName] ?? ''}
+                              onChange={(ev) => setDomain(o.orgName, ev.target.value)}
+                              onKeyDown={(ev) => { if (ev.key === 'Enter' && hasNewDomainForRerun) runContactEnrichment(); }}
+                              placeholder="company.com"
+                              style={{ flex: 1, padding: '4px 8px', fontSize: 12, border: '1px solid #FDBA74', borderRadius: 5, outline: 'none', color: '#111827' }}
+                            />
+                          </div>
+                        ))}
                       </div>
+                      <button
+                        onClick={runContactEnrichment}
+                        disabled={!hasNewDomainForRerun}
+                        style={{ padding: '5px 16px', fontSize: 12, fontWeight: 600, borderRadius: 6, border: 'none', cursor: hasNewDomainForRerun ? 'pointer' : 'not-allowed', background: hasNewDomainForRerun ? '#EA580C' : '#FED7AA', color: '#fff' }}
+                      >
+                        Re-run with domains
+                      </button>
                     </div>
                   )}
 

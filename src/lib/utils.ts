@@ -64,15 +64,77 @@ export function articleMatchesRegions(country: string | null, selectedRegions: s
   return selectedRegions.includes(regionKey);
 }
 
-export function generateSlackMessage(article: Article, scored: ScoredArticle): string {
-  // Use resolved_url (real article URL) when available — enables Slack unfurl + og:image.
-  // Falls back to the raw Google News URL (shows "Google News" card) if not yet resolved.
+/**
+ * Formats use_case string into Slack-readable tags.
+ * "Precision agriculture, farm monitoring, night-time security" → "Precision agriculture · Farm monitoring · Night-time security"
+ */
+function formatUseCaseTags(useCase: string | null): string {
+  if (!useCase) return '';
+  return useCase
+    .split(/[,;]/)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(' · ');
+}
+
+/**
+ * Slack message for Google News articles.
+ * Has a real article URL that Slack can unfurl with og:image.
+ * Lead with company + signal, then use-case tags, then summary, then dated link.
+ */
+function generateNewsSlackMessage(article: Article, scored: ScoredArticle): string {
   const articleUrl = article.resolved_url ?? article.url;
+  const location = scored.country ? ` · ${scored.country}` : '';
+  const useCaseLine = formatUseCaseTags(scored.use_case);
+  const flytbaseLine = scored.flytbase_mentioned ? '\n✅ *FlytBase mentioned*' : '';
+  const pubDate = article.published_at
+    ? new Date(article.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null;
+  const pubLine = [article.publisher, pubDate].filter(Boolean).join(' · ');
 
-  return `*${scored.company ?? 'Unknown'}* — ${scored.signal_type} | ${scored.country ?? 'Unknown'}
-Score: ${scored.relevance_score}/100 | Use Case: ${scored.use_case ?? 'N/A'}
+  return [
+    `*${scored.company ?? 'Unknown Company'}* — ${scored.signal_type}${location}`,
+    useCaseLine ? `🏷 ${useCaseLine}` : null,
+    '',
+    scored.summary ?? '',
+    flytbaseLine || null,
+    '',
+    pubLine ? `📰 ${pubLine}` : null,
+    `<${articleUrl}|Read article>`,
+  ].filter(s => s !== null).join('\n').replace(/\n{3,}/g, '\n\n');
+}
 
-${scored.summary ?? ''}
+/**
+ * Slack message for LinkedIn articles.
+ * LinkedIn URLs unfurl as a login wall — so we lead with more context in the text itself.
+ * Include article title prominently since the unfurl preview is useless.
+ */
+function generateLinkedInSlackMessage(article: Article, scored: ScoredArticle): string {
+  const articleUrl = article.resolved_url ?? article.url;
+  const location = scored.country ? ` · ${scored.country}` : '';
+  const useCaseLine = formatUseCaseTags(scored.use_case);
+  const flytbaseLine = scored.flytbase_mentioned ? '\n✅ *FlytBase mentioned*' : '';
+  const pubDate = article.published_at
+    ? new Date(article.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null;
 
-${articleUrl}`;
+  return [
+    `🔗 *LinkedIn Signal* — ${scored.signal_type}${location}`,
+    `*${article.title}*`,
+    useCaseLine ? `🏷 ${useCaseLine}` : null,
+    '',
+    scored.summary ?? '',
+    flytbaseLine || null,
+    '',
+    pubDate ? `📅 ${pubDate}` : null,
+    `<${articleUrl}|View on LinkedIn>`,
+  ].filter(s => s !== null).join('\n').replace(/\n{3,}/g, '\n\n');
+}
+
+export function generateSlackMessage(article: Article, scored: ScoredArticle): string {
+  if (article.source === 'linkedin') {
+    return generateLinkedInSlackMessage(article, scored);
+  }
+  return generateNewsSlackMessage(article, scored);
 }

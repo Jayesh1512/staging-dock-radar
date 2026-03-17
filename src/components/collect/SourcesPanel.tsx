@@ -37,76 +37,70 @@ export function SourcesPanel({ selected, onChange }: SourcesPanelProps) {
       </span>
 
       {/* Google News toggle */}
-      <button
-        type="button"
-        onClick={() => onChange(toggleSource(selected, 'google_news'))}
-        className="flex items-center gap-1.5 cursor-pointer"
-        aria-pressed={hasGoogle}
-        style={{ background: 'transparent', border: 'none', padding: 0 }}
-      >
-        <div
-          className="flex items-center justify-center flex-shrink-0"
-          style={{
-            width: 16,
-            height: 16,
-            borderRadius: 4,
-            border: hasGoogle ? '2px solid var(--dr-blue)' : '2px solid #D1D5DB',
-            background: hasGoogle ? 'var(--dr-blue)' : '#fff',
-          }}
+      <div className="flex flex-col" style={{ gap: 2 }}>
+        <button
+          type="button"
+          onClick={() => onChange(toggleSource(selected, 'google_news'))}
+          className="flex items-center gap-1.5 cursor-pointer"
+          aria-pressed={hasGoogle}
+          style={{ background: 'transparent', border: 'none', padding: 0 }}
         >
-          {hasGoogle && (
-            <span className="text-white font-bold" style={{ fontSize: 10 }}>✓</span>
-          )}
-        </div>
-        <span
-          className="font-semibold"
-          style={{
-            fontSize: 13,
-            color: hasGoogle ? 'var(--dr-text-secondary)' : 'var(--dr-text-disabled)',
-          }}
-        >
-          Google News
+          <div
+            className="flex items-center justify-center flex-shrink-0"
+            style={{
+              width: 16, height: 16, borderRadius: 4,
+              border: hasGoogle ? '2px solid var(--dr-blue)' : '2px solid #D1D5DB',
+              background: hasGoogle ? 'var(--dr-blue)' : '#fff',
+            }}
+          >
+            {hasGoogle && <span className="text-white font-bold" style={{ fontSize: 10 }}>✓</span>}
+          </div>
+          <span className="font-semibold" style={{ fontSize: 13, color: hasGoogle ? 'var(--dr-text-secondary)' : 'var(--dr-text-disabled)' }}>
+            Google News
+          </span>
+        </button>
+        <span style={{ fontSize: 10, color: 'var(--dr-text-muted)', fontStyle: 'italic', paddingLeft: 22 }}>
+          can select news regions
         </span>
-      </button>
+      </div>
 
       {/* LinkedIn toggle */}
-      <button
-        type="button"
-        onClick={() => onChange(toggleSource(selected, 'linkedin'))}
-        className="flex items-center gap-1.5 cursor-pointer"
-        aria-pressed={hasLinkedIn}
-        style={{ background: 'transparent', border: 'none', padding: 0 }}
-      >
-        <div
-          className="flex items-center justify-center flex-shrink-0"
-          style={{
-            width: 16,
-            height: 16,
-            borderRadius: 4,
-            border: hasLinkedIn ? '2px solid var(--dr-blue)' : '2px solid #D1D5DB',
-            background: hasLinkedIn ? 'var(--dr-blue)' : '#fff',
-          }}
+      <div className="flex flex-col" style={{ gap: 2 }}>
+        <button
+          type="button"
+          onClick={() => onChange(toggleSource(selected, 'linkedin'))}
+          className="flex items-center gap-1.5 cursor-pointer"
+          aria-pressed={hasLinkedIn}
+          style={{ background: 'transparent', border: 'none', padding: 0 }}
         >
-          {hasLinkedIn && (
-            <span className="text-white font-bold" style={{ fontSize: 10 }}>✓</span>
-          )}
-        </div>
-        <span
-          className="font-semibold"
-          style={{
-            fontSize: 13,
-            color: hasLinkedIn ? 'var(--dr-text-secondary)' : 'var(--dr-text-disabled)',
-          }}
-        >
-          LinkedIn
+          <div
+            className="flex items-center justify-center flex-shrink-0"
+            style={{
+              width: 16, height: 16, borderRadius: 4,
+              border: hasLinkedIn ? '2px solid var(--dr-blue)' : '2px solid #D1D5DB',
+              background: hasLinkedIn ? 'var(--dr-blue)' : '#fff',
+            }}
+          >
+            {hasLinkedIn && <span className="text-white font-bold" style={{ fontSize: 10 }}>✓</span>}
+          </div>
+          <span className="font-semibold" style={{ fontSize: 13, color: hasLinkedIn ? 'var(--dr-text-secondary)' : 'var(--dr-text-disabled)' }}>
+            LinkedIn
+          </span>
+        </button>
+        <span style={{ fontSize: 10, color: 'var(--dr-text-muted)', fontStyle: 'italic', paddingLeft: 22 }}>
+          global search only
         </span>
-      </button>
+      </div>
 
       {/* Facebook - still disabled / coming soon */}
-      <div className="flex items-center gap-1.5">
-        <div className="flex-shrink-0" style={{ width: 16, height: 16, borderRadius: 4, border: '2px solid #D1D5DB', background: '#fff' }} />
-        <span className="font-medium" style={{ fontSize: 13, color: 'var(--dr-text-disabled)' }}>Facebook</span>
-        <span className="font-semibold" style={{ fontSize: 10, color: 'var(--dr-text-disabled)', background: '#F3F4F6', border: '1px solid #E5E7EB', padding: '1px 7px', borderRadius: 20 }}>coming soon</span>
+      <div className="flex flex-col" style={{ gap: 2 }}>
+        <div className="flex items-center gap-1.5">
+          <div className="flex-shrink-0" style={{ width: 16, height: 16, borderRadius: 4, border: '2px solid #D1D5DB', background: '#fff' }} />
+          <span className="font-medium" style={{ fontSize: 13, color: 'var(--dr-text-disabled)' }}>Facebook</span>
+        </div>
+        <span style={{ fontSize: 10, color: 'var(--dr-text-muted)', fontStyle: 'italic', paddingLeft: 22 }}>
+          coming soon
+        </span>
       </div>
     </div>
   );

@@ -148,11 +148,13 @@ async function fetchLinkedInPosts(keyword: string, runId: string): Promise<Artic
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const keywords: string[] = Array.isArray(body.keywords) 
-      ? body.keywords 
-      : body.keyword 
-        ? [body.keyword] 
+    const keywords: string[] = Array.isArray(body.keywords)
+      ? body.keywords
+      : body.keyword
+        ? [body.keyword]
         : [];
+    const filterDays: number = typeof body.filterDays === 'number' ? body.filterDays : 7;
+    const maxArticles: number = typeof body.maxArticles === 'number' ? body.maxArticles : 40;
 
     if (keywords.length === 0) {
       return NextResponse.json(
@@ -171,27 +173,32 @@ export async function POST(req: NextRequest) {
       allArticles.push(...articles);
     }
 
+    // ── Date filter: enforce filterDays cutoff ───────────────────────────────
+    const cutoff = new Date(Date.now() - filterDays * 86_400_000);
+    const dateFiltered = allArticles.filter(a => a.published_at ? new Date(a.published_at) >= cutoff : false);
+    console.log(`[/api/collect-linkedin] Date filter (${filterDays}d): ${allArticles.length} → ${dateFiltered.length} articles`);
+
     // ── Deduplicate by normalized_url before insertion ──────────────────────
     const uniqueMap = new Map<string, Article>();
-    for (const a of allArticles) {
+    for (const a of dateFiltered) {
       if (!uniqueMap.has(a.normalized_url)) {
         uniqueMap.set(a.normalized_url, a);
       }
     }
-    const uniqueArticles = Array.from(uniqueMap.values());
+    const uniqueArticles = Array.from(uniqueMap.values()).slice(0, maxArticles);
 
     const run: Run = {
       id: runId,
       keywords: keywords,
       sources: ['linkedin'],
       regions: [],
-      filter_days: 7,
+      filter_days: filterDays,
       min_score: body.minScore ?? 40,
-      max_articles: uniqueArticles.length,
+      max_articles: maxArticles,
       status: 'completed',
       articles_fetched: allArticles.length,
       articles_stored: uniqueArticles.length,
-      dedup_removed: allArticles.length - uniqueArticles.length,
+      dedup_removed: (allArticles.length - dateFiltered.length) + (dateFiltered.length - uniqueArticles.length),
       created_at: new Date().toISOString(),
       completed_at: new Date().toISOString(),
     };
@@ -222,11 +229,11 @@ export async function POST(req: NextRequest) {
         runId,
         stats: {
           totalFetched: allArticles.length,
-          afterDateFilter: allArticles.length,
-          afterDedup: allArticles.length,
-          afterScoreFilter: allArticles.length,
-          stored: allArticles.length,
-          dedupRemoved: 0,
+          afterDateFilter: dateFiltered.length,
+          afterDedup: uniqueArticles.length,
+          afterScoreFilter: uniqueArticles.length,
+          stored: uniqueArticles.length,
+          dedupRemoved: dateFiltered.length - uniqueArticles.length,
           scoreFilterRemoved: 0,
         },
       },

@@ -105,7 +105,7 @@ function filterExcludedByTitle(articles: Article[], excludeKeywords: string[]): 
 export async function POST(req: Request) {
   try {
     const body = await req.json() as { articles: Article[]; selectedRegions?: string[]; excludeTitleKeywords?: string[]; minScore?: number };
-    const { articles: rawArticles, selectedRegions = [], minScore = 0 } = body;
+    const { articles: rawArticles, minScore = 0 } = body;
 
     if (!Array.isArray(rawArticles) || rawArticles.length === 0) {
       return NextResponse.json({ error: 'Non-empty articles array is required' }, { status: 400 });
@@ -175,8 +175,28 @@ export async function POST(req: Request) {
       console.log(`[/api/score] URL fingerprint dedup: ${urlDedup.length} articles skipped (URL params already in scored_articles), ${articlesForPipeline.length} to process`);
       urlDedup.forEach((a) => console.log(`  url-dedup: "${a.title.slice(0, 50)}"`));
     }
+
+    // ── Protect existing real scores from URL-dedup overwrite ────────────────
+    // If a URL-dedup article already has a real scored record (prior LLM score),
+    // do NOT overwrite it with a zero-score placeholder. Only write placeholders
+    // for articles that have never been scored before.
+    let urlDedupExistingScores: Map<string, ScoredArticle> = new Map();
+    if (urlDedup.length > 0) {
+      try {
+        urlDedupExistingScores = await loadScoredByArticleIds(urlDedup.map(a => a.id));
+        const preserved = [...urlDedupExistingScores.keys()];
+        if (preserved.length > 0) console.log(`[/api/score] URL-dedup: ${preserved.length} articles have existing scores — preserving, skipping overwrite`);
+      } catch (e) {
+        console.warn('[/api/score] URL-dedup existing score lookup failed (non-fatal):', e);
+      }
+    }
+    // urlDedupNew → no prior score → write a placeholder
+    // urlDedupPreserved → already have a real score → return existing record unchanged
+    const urlDedupNew = urlDedup.filter(a => !urlDedupExistingScores.has(a.id));
+    const urlDedupPreserved = urlDedup.filter(a => urlDedupExistingScores.has(a.id));
+
     if (articlesForPipeline.length === 0) {
-      const urlDedupScored: ScoredArticle[] = urlDedup.map((a) => ({
+      const urlDedupScored: ScoredArticle[] = urlDedupNew.map((a) => ({
         id: `scored_${a.id}_${Date.now()}`,
         article_id: a.id,
         normalized_url: a.normalized_url,
@@ -202,15 +222,19 @@ export async function POST(req: Request) {
         created_at: new Date().toISOString(),
       }));
       try {
-        await insertScoredArticles(urlDedupScored);
+        if (urlDedupScored.length > 0) await insertScoredArticles(urlDedupScored);
       } catch (e) {
         console.error('[/api/score] DB write url-dedup failed (non-fatal):', e);
       }
+      const preservedResults: ArticleWithScore[] = urlDedupPreserved.map(a => ({
+        article: a,
+        scored: urlDedupExistingScores.get(a.id)!,
+      }));
       return NextResponse.json({
-        results: urlDedup.map((a) => ({
-          article: a,
-          scored: urlDedupScored.find((s) => s.article_id === a.id)!,
-        })),
+        results: [
+          ...urlDedupNew.map((a) => ({ article: a, scored: urlDedupScored.find((s) => s.article_id === a.id)! })),
+          ...preservedResults,
+        ],
         provider: '',
         model: '',
         excludedCount: excludedArticles.length,
@@ -363,7 +387,8 @@ export async function POST(req: Request) {
     }
 
     // ── Persist to Supabase ──────────────────────────────────────────────────
-    const urlDedupScored: ScoredArticle[] = urlDedup.map((a) => ({
+    // Only write placeholder records for URL-dedup articles that have no prior real score.
+    const urlDedupScored: ScoredArticle[] = urlDedupNew.map((a) => ({
       id: `scored_${a.id}_${Date.now()}`,
       article_id: a.id,
       normalized_url: a.normalized_url,
@@ -390,7 +415,7 @@ export async function POST(req: Request) {
     }));
 
     try {
-      // Upsert all results — pipeline results have normalized_url set; url-dedup rows marked as duplicate
+      // Upsert pipeline results + new url-dedup placeholders only (preserved scores untouched)
       await insertScoredArticles([
         ...freshnessResults.map(r => r.scored),
         ...urlDedupScored,
@@ -402,16 +427,16 @@ export async function POST(req: Request) {
         .map(r => updateArticleResolvedUrl(r.article.id, r.article.resolved_url!));
       if (urlUpdates.length > 0) await Promise.all(urlUpdates);
 
-      console.log(`[/api/score] DB: ${freshnessResults.length} scored + ${urlDedupScored.length} url-dedup persisted (${cached.length} from cache)`);
+      console.log(`[/api/score] DB: ${freshnessResults.length} scored + ${urlDedupScored.length} url-dedup placeholders + ${urlDedupPreserved.length} preserved (${cached.length} from cache)`);
     } catch (dbErr) {
       // DB write failure is non-fatal — data still returned to client
       console.error('[/api/score] DB write failed (non-fatal):', dbErr instanceof Error ? dbErr.message : dbErr);
     }
 
-    const urlDedupResults: ArticleWithScore[] = urlDedup.map((a) => ({
-      article: a,
-      scored: urlDedupScored.find((s) => s.article_id === a.id)!,
-    }));
+    const urlDedupResults: ArticleWithScore[] = [
+      ...urlDedupNew.map((a) => ({ article: a, scored: urlDedupScored.find((s) => s.article_id === a.id)! })),
+      ...urlDedupPreserved.map((a) => ({ article: a, scored: urlDedupExistingScores.get(a.id)! })),
+    ];
 
     return NextResponse.json({
       results: [...freshnessResults, ...urlDedupResults],

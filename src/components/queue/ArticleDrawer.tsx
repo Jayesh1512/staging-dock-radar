@@ -151,7 +151,10 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
       const res = await fetch('/api/slack', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: slackMessage }),
+        body: JSON.stringify({
+          message: slackMessage,
+          unfurlLinks: article.article.source !== 'linkedin',
+        }),
       });
       const data = await res.json() as { ok?: boolean; error?: string };
       if (!res.ok) throw new Error(data.error ?? 'Failed to send');
@@ -240,15 +243,32 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
               <div style={{ fontSize: 11.5, color: 'var(--dr-text-muted)', marginTop: 2 }}>
                 Published {formatDateIST(article.article.published_at)}
               </div>
-              <a
-                href={resolvedUrl ?? article.article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 font-medium"
-                style={{ fontSize: 11.5, color: 'var(--dr-blue)', marginTop: 8, textDecoration: 'none' }}
-              >
-                ↗ Open original article
-              </a>
+              <div className="flex items-center gap-2" style={{ marginTop: 8 }}>
+                <a
+                  href={resolvedUrl ?? article.article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-medium"
+                  style={{ fontSize: 11.5, color: 'var(--dr-blue)', textDecoration: 'none' }}
+                >
+                  ↗ Open original article
+                </a>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(resolvedUrl ?? article.article.url)
+                      .then(() => toast.success('Link copied'))
+                      .catch(() => toast.error('Copy failed'));
+                  }}
+                  title="Copy link"
+                  style={{
+                    background: 'none', border: '1px solid var(--dr-border)', borderRadius: 4,
+                    padding: '2px 6px', cursor: 'pointer', fontSize: 11, color: 'var(--dr-text-muted)',
+                    lineHeight: 1,
+                  }}
+                >
+                  ⎘
+                </button>
+              </div>
             </div>
           </div>
         </div>

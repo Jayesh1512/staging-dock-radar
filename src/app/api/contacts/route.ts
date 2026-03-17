@@ -39,10 +39,10 @@ export interface OrgResolution {
 
 export async function POST(req: Request) {
   try {
-    const { persons, targetOrgs, manualDomain } = await req.json() as {
+    const { persons, targetOrgs, domainOverrides } = await req.json() as {
       persons: PersonInput[];
       targetOrgs: string[];           // target entity org names (operators, buyers, partners, SIs)
-      manualDomain?: string;          // optional override when auto-resolution fails
+      domainOverrides?: Record<string, string>; // per-org domain override: { "OrgName": "domain.com" }
     };
 
     // Collect all unique orgs we need to resolve (from article persons + target entities)
@@ -54,11 +54,11 @@ export async function POST(req: Request) {
     const domainByOrg = new Map<string, string | null>();
 
     for (const org of allOrgs) {
-      // If there's only one target org and user provided a manual domain, use it
-      const isOnlyOrg = allOrgs.length === 1;
-      if (isOnlyOrg && manualDomain?.trim()) {
-        orgResolutions.push({ orgName: org, domain: manualDomain.trim(), domainSource: 'manual' });
-        domainByOrg.set(org, manualDomain.trim());
+      // User-provided domain override takes priority (per-org)
+      const override = domainOverrides?.[org]?.trim();
+      if (override) {
+        orgResolutions.push({ orgName: org, domain: override, domainSource: 'manual' });
+        domainByOrg.set(org, override);
         continue;
       }
 
@@ -129,6 +129,18 @@ export async function POST(req: Request) {
 
     for (const org of orgsNeedingDiscovery) {
       const domain = domainByOrg.get(org) ?? null;
+
+      // Guardrail: without a domain, Apollo people search returns low-quality results
+      // (wrong company matches). Skip and add placeholder instead.
+      if (!domain) {
+        contacts.push({
+          name: null, title: null, organization: org,
+          email: null, emailStatus: 'no_domain', emailSource: null,
+          linkedinUrl: null, isFromArticle: false,
+        });
+        continue;
+      }
+
       const extractedNames = persons.map(p => p.name);
       const discovered = await apolloFindPeopleAtOrg(org, domain, extractedNames, 2);
 
