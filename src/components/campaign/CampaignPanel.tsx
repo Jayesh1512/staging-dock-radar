@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { CAMPAIGN_NAME, CAMPAIGN_KEYWORDS, CAMPAIGN_WEST_REGIONS, CAMPAIGN_EAST_REGIONS, DEFAULTS } from '@/lib/constants';
 import type { Run, Article, ArticleWithScore } from '@/lib/types';
 
@@ -66,6 +66,8 @@ const PHASE_COLORS: Record<BucketPhase, { bg: string; text: string; dot: string 
   failed:     { bg: '#FEE2E2', text: '#991B1B', dot: '#DC2626' },
 };
 
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+
 /** Score campaign articles in chunks of 10 to avoid LLM output truncation */
 const CAMPAIGN_SCORE_CHUNK = 10;
 
@@ -106,6 +108,11 @@ export function CampaignPanel() {
   const [buckets] = useState(generateBuckets);
   const [states, setStates] = useState<Record<string, BucketState>>({});
   const [expandedWeek, setExpandedWeek] = useState<number | null>(null);
+  const [autoRunning, setAutoRunning] = useState(false);
+  const [autoStatus, setAutoStatus] = useState<string | null>(null);
+  const [autoFailures, setAutoFailures] = useState<{ label: string; step: string; error: string }[]>([]);
+  const statesRef = useRef<Record<string, BucketState>>({});
+  const shouldStopRef = useRef(false);
 
   // Load existing campaign runs from DB to restore status + scoreResults
   useEffect(() => {
@@ -163,6 +170,9 @@ export function CampaignPanel() {
     }
     loadCampaignRuns();
   }, [buckets]);
+
+  // Keep statesRef in sync so the async auto-run loop never reads stale closure state
+  useEffect(() => { statesRef.current = states; }, [states]);
 
   // ─── Step 1: Collect only ───────────────────────────────────────────────────
   const collectBucket = useCallback(async (bucket: Bucket) => {
@@ -241,6 +251,97 @@ export function CampaignPanel() {
     }
   }, [states]);
 
+  // ─── Auto-Run All Pending Buckets ───────────────────────────────────────────
+  const runAll = useCallback(async () => {
+    shouldStopRef.current = false;
+    setAutoRunning(true);
+    setAutoFailures([]);
+
+    // Only run pending, failed (collect-failed), or collected-but-not-yet-scored
+    const pending = buckets.filter(b => {
+      const s = statesRef.current[b.label];
+      return !s || s.phase === 'pending' || s.phase === 'failed' || s.phase === 'collected';
+    });
+
+    for (let i = 0; i < pending.length; i++) {
+      if (shouldStopRef.current) break;
+      const bucket = pending[i];
+      const key = bucket.label;
+      const existing = statesRef.current[key];
+      setAutoStatus(`Auto-running ${key} (${i + 1}/${pending.length})`);
+
+      // Reuse already-collected articles if available (e.g. collected-but-not-scored, or score-failed)
+      let articles: Article[] = existing?.articles ?? [];
+
+      // ── S1: Collect (skip if articles already in memory) ────────────────────
+      if (articles.length === 0) {
+        setStates(prev => ({ ...prev, [key]: { phase: 'collecting' } }));
+        try {
+          const res = await fetch('/api/collect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              keywords: [...CAMPAIGN_KEYWORDS],
+              regions: [...bucket.regions],
+              filterDays: 7,
+              maxArticles: DEFAULTS.maxArticles,
+              minScore: DEFAULTS.minScore,
+              start_date: bucket.start_date,
+              end_date: bucket.end_date,
+              campaign: CAMPAIGN_NAME,
+            }),
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error ?? `HTTP ${res.status}`);
+          }
+          const data = await res.json();
+          articles = data.articles ?? [];
+          setStates(prev => ({
+            ...prev,
+            [key]: { phase: 'collected', runId: data.runId, articles, articlesCollected: articles.length },
+          }));
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : 'Collect failed';
+          setStates(prev => ({ ...prev, [key]: { phase: 'failed', error: msg } }));
+          setAutoFailures(prev => [...prev, { label: key, step: 'collect', error: msg }]);
+          continue; // never abort the whole run on a single bucket failure
+        }
+        await sleep(10_000);
+        if (shouldStopRef.current) break;
+      }
+
+      // ── S2: Score ────────────────────────────────────────────────────────────
+      if (articles.length === 0) {
+        // Nothing to score — mark done with empty results
+        setStates(prev => ({ ...prev, [key]: { ...prev[key], phase: 'scored', articlesScored: 0, scoreResults: [] } }));
+        continue;
+      }
+
+      setStates(prev => ({ ...prev, [key]: { ...prev[key], phase: 'scoring' } }));
+      try {
+        const results = await scoreChunked(articles);
+        const aboveThreshold = results.filter(
+          r => r.scored.relevance_score >= DEFAULTS.minScore && !r.scored.is_duplicate && !r.scored.drop_reason,
+        ).length;
+        setStates(prev => ({
+          ...prev,
+          [key]: { ...prev[key], phase: 'scored', articlesScored: aboveThreshold, scoreResults: results },
+        }));
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Score failed';
+        setStates(prev => ({ ...prev, [key]: { ...prev[key], phase: 'failed', error: msg } }));
+        setAutoFailures(prev => [...prev, { label: key, step: 'score', error: msg }]);
+      }
+
+      // Pause between buckets to avoid hammering Google News / Gemini
+      if (i < pending.length - 1) await sleep(15_000);
+    }
+
+    setAutoRunning(false);
+    setAutoStatus(null);
+  }, [buckets]);
+
   // ─── Summary Stats ──────────────────────────────────────────────────────────
   const stateValues = Object.values(states);
   const completedCount = stateValues.filter(s => s.phase === 'scored').length;
@@ -265,18 +366,61 @@ export function CampaignPanel() {
             <p style={{ fontSize: 12, color: 'var(--dr-text-muted)', marginTop: 2 }}>
               26 weeks × 2 region groups = 52 runs &middot; {CAMPAIGN_KEYWORDS.length} keywords &middot; 16 regions
             </p>
-            <p style={{ fontSize: 11, color: 'var(--dr-text-disabled)', marginTop: 4 }}>
-              Manual flow: Collect &rarr; review titles &rarr; Score (10 articles/batch to prevent LLM truncation)
-            </p>
+            {autoStatus ? (
+              <p style={{ fontSize: 11, color: '#2563EB', marginTop: 4, fontWeight: 600 }}>
+                ⚡ {autoStatus}
+              </p>
+            ) : (
+              <p style={{ fontSize: 11, color: 'var(--dr-text-disabled)', marginTop: 4 }}>
+                Collect &rarr; review titles &rarr; Score (10 articles/batch to prevent LLM truncation)
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-4">
             <StatBox value={completedCount} label="/ 52 runs" color="var(--dr-blue)" />
             <StatBox value={totalCollected} label="collected" color="#6B7280" />
             <StatBox value={totalScored} label="at 50+" color="#166534" />
             <StatBox value={total25to49} label="at 25-49" color="#A16207" />
+            {autoRunning ? (
+              <button
+                onClick={() => { shouldStopRef.current = true; }}
+                className="cursor-pointer"
+                style={{ fontSize: 11, fontWeight: 700, padding: '6px 14px', borderRadius: 6, background: '#FEF3C7', color: '#92400E', border: '1.5px solid #FCD34D' }}
+              >
+                Pause
+              </button>
+            ) : (
+              <button
+                onClick={runAll}
+                className="cursor-pointer"
+                style={{ fontSize: 11, fontWeight: 700, padding: '6px 14px', borderRadius: 6, background: 'var(--dr-blue)', color: '#fff', border: 'none' }}
+              >
+                Run All
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Failure Summary — shown after auto-run completes with errors */}
+      {autoFailures.length > 0 && !autoRunning && (
+        <div style={{ padding: '8px 20px', background: '#FEF2F2', borderBottom: '1px solid #FECACA' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#991B1B', marginRight: 8 }}>
+            {autoFailures.length} bucket{autoFailures.length !== 1 ? 's' : ''} failed:
+          </span>
+          <span className="flex flex-wrap gap-1.5" style={{ display: 'inline-flex' }}>
+            {autoFailures.map(f => (
+              <span
+                key={`${f.label}-${f.step}`}
+                title={`${f.step}: ${f.error}`}
+                style={{ fontSize: 10, background: '#FEE2E2', color: '#991B1B', borderRadius: 4, padding: '1px 6px', cursor: 'help' }}
+              >
+                {f.label} ({f.step})
+              </span>
+            ))}
+          </span>
+        </div>
+      )}
 
       {/* Bucket Grid */}
       <div style={{ padding: '12px 20px 20px' }}>
@@ -524,7 +668,7 @@ function BucketRow({ bucket, state, onCollect, onScore }: { bucket: Bucket; stat
             {progress >= 1 && <span style={{ fontSize: 10, color: '#166534' }}>✓</span>}
           </div>
           <div className="flex items-center gap-1.5">
-            {(state.phase === 'pending' || state.phase === 'failed') && (
+            {(state.phase === 'pending' || (state.phase === 'failed' && !state.articles?.length)) && (
               <button
                 onClick={(e) => { e.stopPropagation(); onCollect(); }}
                 className="cursor-pointer"
@@ -608,6 +752,15 @@ function BucketRow({ bucket, state, onCollect, onScore }: { bucket: Bucket; stat
                 style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: '#C2410C', color: '#fff', border: 'none' }}
               >
                 Score ({state.articlesCollected})
+              </button>
+            )}
+            {state.phase === 'failed' && state.articles && state.articles.length > 0 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onScore(); }}
+                className="cursor-pointer"
+                style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: '#C2410C', color: '#fff', border: 'none' }}
+              >
+                Re-score ({state.articles.length})
               </button>
             )}
             {progress >= 1 && (

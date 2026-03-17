@@ -1,5 +1,6 @@
 "use client";
 import { EnrichmentTestAgent } from './EnrichmentTestAgent';
+import { CometImportPanel } from '../import/CometImportPanel';
 
 export function Navbar({ onAnalytics, analyticsActive, onCampaign, campaignActive }: { onAnalytics?: () => void; analyticsActive?: boolean; onCampaign?: () => void; campaignActive?: boolean }) {
   return (
@@ -16,6 +17,7 @@ export function Navbar({ onAnalytics, analyticsActive, onCampaign, campaignActiv
         </div>
         <div className="flex items-center gap-3">
           <EnrichmentTestAgent />
+          <CometImportPanel />
           <button
             onClick={onCampaign}
             style={{

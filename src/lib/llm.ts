@@ -31,6 +31,9 @@ function getActiveProvider(): LLMProvider {
 
 // ─── Provider implementations ─────────────────────────────────────────────────
 
+const GEMINI_503_MAX_RETRIES = 3;
+const GEMINI_503_RETRY_DELAYS_MS = [5_000, 10_000, 20_000];
+
 async function callGemini(systemPrompt: string, userPrompt: string): Promise<string> {
   const apiKeyRaw = process.env.GEMINI_API_KEY;
   if (!apiKeyRaw) throw new Error('GEMINI_API_KEY is not set in environment');
@@ -40,42 +43,59 @@ async function callGemini(systemPrompt: string, userPrompt: string): Promise<str
 
   let lastError: any = null;
 
-  for (let i = 0; i < apiKeys.length; i++) {
-    const apiKey = apiKeys[i];
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: PROVIDER_MODELS.gemini,
-        systemInstruction: systemPrompt,
-        generationConfig: {
-          responseMimeType: 'application/json',
-        },
-      });
+  // Outer loop: key rotation (for 429 rate limits)
+  for (let keyIdx = 0; keyIdx < apiKeys.length; keyIdx++) {
+    const apiKey = apiKeys[keyIdx];
 
-      const result = await model.generateContent(userPrompt);
-      return result.response.text();
-    } catch (err: any) {
-      lastError = err;
-      
-      // Check for rate limit error (429)
-      const errorText = String(err.message || err.stack || '');
-      const isRateLimit = 
-        errorText.includes('429') || 
-        errorText.includes('Too Many Requests') || 
-        err.status === 429 ||
-        err.statusCode === 429;
+    // Inner loop: retry same key (for 503 service unavailable)
+    for (let retryAttempt = 0; retryAttempt <= GEMINI_503_MAX_RETRIES; retryAttempt++) {
+      try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({
+          model: PROVIDER_MODELS.gemini,
+          systemInstruction: systemPrompt,
+          generationConfig: { responseMimeType: 'application/json' },
+        });
+        const result = await model.generateContent(userPrompt);
+        return result.response.text();
+      } catch (err: any) {
+        lastError = err;
+        const errorText = String(err.message || err.stack || '');
 
-      if (isRateLimit && i < apiKeys.length - 1) {
-        console.warn(`[llm] Gemini key ${i + 1}/${apiKeys.length} rate limited. Rotating to next key...`);
-        continue;
+        const isRateLimit =
+          errorText.includes('429') ||
+          errorText.includes('Too Many Requests') ||
+          err.status === 429 ||
+          err.statusCode === 429;
+
+        const isServiceUnavailable =
+          errorText.includes('503') ||
+          errorText.includes('Service Unavailable') ||
+          errorText.includes('overloaded') ||
+          errorText.includes('high demand') ||
+          err.status === 503 ||
+          err.statusCode === 503;
+
+        if (isRateLimit) {
+          // Rotate to next key
+          console.warn(`[llm] Gemini key ${keyIdx + 1}/${apiKeys.length} rate limited (429). Rotating...`);
+          break; // break inner retry loop → continue outer key loop
+        }
+
+        if (isServiceUnavailable && retryAttempt < GEMINI_503_MAX_RETRIES) {
+          const delay = GEMINI_503_RETRY_DELAYS_MS[retryAttempt];
+          console.warn(`[llm] Gemini 503 on key ${keyIdx + 1} (attempt ${retryAttempt + 1}/${GEMINI_503_MAX_RETRIES}). Retrying in ${delay / 1000}s…`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue; // retry same key
+        }
+
+        // All other errors or retries exhausted: throw
+        throw err;
       }
-      
-      // For non-rate-limit errors or if it's the last key, re-throw
-      throw err;
     }
   }
 
-  throw lastError || new Error('All Gemini API keys failed');
+  throw lastError || new Error('All Gemini API keys exhausted');
 }
 
 async function callOpenAI(systemPrompt: string, userPrompt: string): Promise<string> {

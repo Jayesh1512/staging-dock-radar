@@ -109,7 +109,6 @@ export async function searchNewsAPI(
   });
 
   const url = `${NEWSAPI_BASE}?${params.toString()}`;
-  console.log(`[newsapi] Fetching "${keyword}" from ${fromDate} to ${toDate}, API key set: ${!!apiKey}`);
 
   try {
     const controller = new AbortController();
@@ -138,10 +137,6 @@ export async function searchNewsAPI(
       console.warn(`[newsapi] API returned status "${data.status}" for "${keyword}"`);
       return [];
     }
-
-    // Log all returned URLs
-    console.log(`[newsapi] For "${keyword}": totalResults=${data.totalResults}, articles.length=${data.articles.length}`);
-    console.log(`[newsapi] URLs returned for "${keyword}":`, data.articles.map(a => a.url));
 
     return transformArticles(data.articles, keyword);
   } catch (err) {

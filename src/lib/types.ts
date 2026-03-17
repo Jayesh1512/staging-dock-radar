@@ -1,7 +1,7 @@
 export type SignalType = 'DEPLOYMENT' | 'CONTRACT' | 'TENDER' | 'PARTNERSHIP' | 'EXPANSION' | 'FUNDING' | 'REGULATION' | 'OTHER';
 export type ArticleStatus = 'new' | 'reviewed' | 'dismissed';
 export type ArticleAction = 'slack' | 'bookmarked' | 'email';
-export type ArticleSource = 'google_news' | 'newsapi' | 'linkedin' | 'facebook';
+export type ArticleSource = 'google_news' | 'newsapi' | 'linkedin' | 'facebook' | 'comet_crawler' | 'news_site' | 'dronelife' | string;
 
 export interface Run {
   id: string;
