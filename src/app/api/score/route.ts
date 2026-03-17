@@ -45,6 +45,7 @@ function parseToScoredArticle(articleId: string, raw: Record<string, unknown>): 
     reviewed_at: null,
     dismissed_at: null,
     slack_sent_at: null,
+    enriched_at: null,
     created_at: new Date().toISOString(),
   };
 }
@@ -197,6 +198,7 @@ export async function POST(req: Request) {
         reviewed_at: null,
         dismissed_at: null,
         slack_sent_at: null,
+        enriched_at: null,
         created_at: new Date().toISOString(),
       }));
       try {
@@ -235,11 +237,16 @@ export async function POST(req: Request) {
     // Fetch article bodies for uncached articles only (no LLM cost)
     console.log(`[/api/score] Fetching bodies for ${toScore.length} articles...`);
     const bodyResults = toScore.length > 0
-      ? await Promise.all(toScore.map((a) => fetchArticleBody(a.url, a.source)))
+      ? await Promise.all(toScore.map((a) => {
+          // Skip body fetching for LinkedIn — snippet is already the full content
+          if (a.source === 'linkedin') return Promise.resolve({ text: '', resolvedUrl: a.url });
+          return fetchArticleBody(a.url, a.source);
+        }))
       : [];
+    const skippedLinkedIn = toScore.filter(a => a.source === 'linkedin').length;
     const fetchedCount = bodyResults.filter(r => r.text).length;
     const resolvedCount = bodyResults.filter((r, i) => r.resolvedUrl !== toScore[i]?.url).length;
-    if (toScore.length > 0) console.log(`[/api/score] Bodies fetched: ${fetchedCount}/${toScore.length}, URLs resolved: ${resolvedCount}`);
+    if (toScore.length > 0) console.log(`[/api/score] Bodies: ${fetchedCount} fetched, ${skippedLinkedIn} LinkedIn skipped, ${resolvedCount} URLs resolved`);
 
     // LLM scoring — only for uncached articles
     let llmResults: ArticleWithScore[] = [];
@@ -378,6 +385,7 @@ export async function POST(req: Request) {
       reviewed_at: null,
       dismissed_at: null,
       slack_sent_at: null,
+      enriched_at: null,
       created_at: new Date().toISOString(),
     }));
 

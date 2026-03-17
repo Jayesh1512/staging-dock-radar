@@ -32,20 +32,50 @@ function getActiveProvider(): LLMProvider {
 // ─── Provider implementations ─────────────────────────────────────────────────
 
 async function callGemini(systemPrompt: string, userPrompt: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not set in environment');
+  const apiKeyRaw = process.env.GEMINI_API_KEY;
+  if (!apiKeyRaw) throw new Error('GEMINI_API_KEY is not set in environment');
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: PROVIDER_MODELS.gemini,
-    systemInstruction: systemPrompt,
-    generationConfig: {
-      responseMimeType: 'application/json',
-    },
-  });
+  const apiKeys = apiKeyRaw.split(/[,;]/).map((k) => k.trim()).filter(Boolean);
+  if (apiKeys.length === 0) throw new Error('GEMINI_API_KEY is empty');
 
-  const result = await model.generateContent(userPrompt);
-  return result.response.text();
+  let lastError: any = null;
+
+  for (let i = 0; i < apiKeys.length; i++) {
+    const apiKey = apiKeys[i];
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({
+        model: PROVIDER_MODELS.gemini,
+        systemInstruction: systemPrompt,
+        generationConfig: {
+          responseMimeType: 'application/json',
+        },
+      });
+
+      const result = await model.generateContent(userPrompt);
+      return result.response.text();
+    } catch (err: any) {
+      lastError = err;
+      
+      // Check for rate limit error (429)
+      const errorText = String(err.message || err.stack || '');
+      const isRateLimit = 
+        errorText.includes('429') || 
+        errorText.includes('Too Many Requests') || 
+        err.status === 429 ||
+        err.statusCode === 429;
+
+      if (isRateLimit && i < apiKeys.length - 1) {
+        console.warn(`[llm] Gemini key ${i + 1}/${apiKeys.length} rate limited. Rotating to next key...`);
+        continue;
+      }
+      
+      // For non-rate-limit errors or if it's the last key, re-throw
+      throw err;
+    }
+  }
+
+  throw lastError || new Error('All Gemini API keys failed');
 }
 
 async function callOpenAI(systemPrompt: string, userPrompt: string): Promise<string> {

@@ -115,12 +115,26 @@ export async function insertArticles(articles: Article[]): Promise<{ insertedCou
 export async function loadEverQueuedArticleIds(articleIds: string[]): Promise<Set<string>> {
   if (articleIds.length === 0) return new Set();
   const db = requireSupabase();
-  const { data, error } = await db.from('articles')
-    .select('id')
-    .in('id', articleIds)
-    .eq('ever_queued', true);
-  if (error) throw new Error(`[db] loadEverQueuedArticleIds failed: ${error.message}`);
-  return new Set((data ?? []).map((r: { id: string }) => r.id));
+  try {
+    const { data, error } = await db.from('articles')
+      .select('id')
+      .in('id', articleIds)
+      .eq('ever_queued', true);
+    if (error) {
+      if (error.message.includes('column') && error.message.includes('ever_queued')) {
+        console.warn('[db] loadEverQueuedArticleIds: ever_queued column missing, skipping check');
+        return new Set();
+      }
+      throw new Error(`[db] loadEverQueuedArticleIds failed: ${error.message}`);
+    }
+    return new Set((data ?? []).map((r: { id: string }) => r.id));
+  } catch (err: any) {
+    if (err.message?.includes('ever_queued')) {
+       console.warn('[db] loadEverQueuedArticleIds column error:', err.message);
+       return new Set();
+    }
+    throw err;
+  }
 }
 
 /**
@@ -130,10 +144,24 @@ export async function loadEverQueuedArticleIds(articleIds: string[]): Promise<Se
 export async function markArticlesAsEverQueued(articleIds: string[]): Promise<void> {
   if (articleIds.length === 0) return;
   const db = requireSupabase();
-  const { error } = await db.from('articles')
-    .update({ ever_queued: true })
-    .in('id', articleIds);
-  if (error) throw new Error(`[db] markArticlesAsEverQueued failed: ${error.message}`);
+  try {
+    const { error } = await db.from('articles')
+      .update({ ever_queued: true })
+      .in('id', articleIds);
+    if (error) {
+       if (error.message.includes('column') && error.message.includes('ever_queued')) {
+         console.warn('[db] markArticlesAsEverQueued: ever_queued column missing, ignoring update');
+         return;
+       }
+       throw new Error(`[db] markArticlesAsEverQueued failed: ${error.message}`);
+    }
+  } catch (err: any) {
+    if (err.message?.includes('ever_queued')) {
+      console.warn('[db] markArticlesAsEverQueued column error:', err.message);
+      return;
+    }
+    throw err;
+  }
 }
 
 /** Update resolved_url on an article (set during scoring body fetch) */
