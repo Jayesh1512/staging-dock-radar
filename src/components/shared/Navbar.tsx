@@ -1,6 +1,7 @@
 "use client";
+import { EnrichmentTestAgent } from './EnrichmentTestAgent';
 
-export function Navbar() {
+export function Navbar({ onAnalytics, analyticsActive }: { onAnalytics?: () => void; analyticsActive?: boolean }) {
   return (
     <header className="sticky top-0 z-[100] bg-white border-b" style={{ borderColor: 'var(--dr-border)', height: 53 }}>
       <div className="flex items-center justify-between h-full px-8" style={{ maxWidth: 'var(--dr-max-w)', margin: '0 auto' }}>
@@ -14,6 +15,18 @@ export function Navbar() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <EnrichmentTestAgent />
+          <button
+            onClick={onAnalytics}
+            style={{
+              fontSize: 12, fontWeight: 600, padding: '5px 14px', borderRadius: 7, cursor: 'pointer',
+              background: analyticsActive ? 'var(--dr-blue)' : 'var(--dr-blue-light)',
+              color: analyticsActive ? '#fff' : 'var(--dr-blue)',
+              border: 'none',
+            }}
+          >
+            Radar Analytics ↗
+          </button>
           <span className="font-semibold rounded-full" style={{ fontSize: 11, padding: '3px 10px', background: 'var(--dr-blue-light)', color: 'var(--dr-blue)' }}>Phase 1</span>
           <span className="font-medium" style={{ fontSize: 13, color: 'var(--dr-text-disabled)' }}>FlytBase</span>
         </div>

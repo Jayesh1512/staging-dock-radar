@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Navbar } from '@/components/shared/Navbar';
 import { StepTabs } from '@/components/shared/StepTabs';
+import { AnalyticsPage } from '@/components/analytics/AnalyticsPage';
 import { ConfigBar } from '@/components/shared/ConfigBar';
 import { CollectPanel } from '@/components/collect/CollectPanel';
 import { ScorePanel } from '@/components/score/ScorePanel';
@@ -28,6 +29,7 @@ function persistAction(articleId: string, action: string, actionsTaken?: Article
 
 export default function Dashboard() {
   // ─── Core State ────────────────────────────────────────
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
   const [currentRun, setCurrentRun] = useState<Run | null>(null);
   const [allRuns, setAllRuns] = useState<Run[]>([]);
@@ -277,60 +279,66 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen" style={{ background: '#F3F4F6' }}>
-      <Navbar />
-      <StepTabs
-        activeStep={activeStep}
-        onStepChange={setActiveStep}
-        queueCount={queueCount}
-        step3Enabled={step3Enabled}
-      />
-      <main className="mx-auto" style={{ maxWidth: 'var(--dr-max-w)', padding: '24px 32px 64px' }}>
-        {activeStep === 1 && (
-          <>
-            <ConfigBar items={step1Config} />
-            <CollectPanel
-              keywords={keywords}
-              maxArticles={maxArticles}
-              onAddKeyword={(kw) => setKeywords(prev => [...prev, kw])}
-              onRemoveKeyword={(i) => setKeywords(prev => prev.filter((_, idx) => idx !== i))}
-              filterDays={filterDays}
-              onFilterDaysChange={setFilterDays}
-              onCollectComplete={handleCollectComplete}
-              collectionComplete={collectionComplete}
-              onProceedToScoring={() => { setActiveStep(2); setScoringStarted(true); }}
-            />
-          </>
-        )}
-        {activeStep === 2 && (
-          <>
-            <ConfigBar items={step2Config} />
-            <ScorePanel
-              currentRun={currentRun}
-              scoredArticles={scoredArticles}
-              minScore={minScore}
-              onDismiss={handleDismiss}
-              isScoring={isScoring}
-              progress={progress}
-              total={total}
-              scoringError={scoringError}
-              partialResults={partialResults}
-            />
-          </>
-        )}
-        {activeStep === 3 && (
-          <QueuePanel
-            articles={articles}
-            runs={allRuns}
-            runArticleMap={runArticleMap}
-            getActions={getActions}
-            onSlack={handleSlack}
-            onBookmark={handleBookmark}
-            onMarkReviewed={handleMarkReviewed}
-            onDismiss={handleDismiss}
-            onBulkDismiss={handleBulkDismiss}
+      <Navbar onAnalytics={() => setShowAnalytics(v => !v)} analyticsActive={showAnalytics} />
+      {showAnalytics ? (
+        <AnalyticsPage onClose={() => setShowAnalytics(false)} />
+      ) : (
+        <>
+          <StepTabs
+            activeStep={activeStep}
+            onStepChange={setActiveStep}
+            queueCount={queueCount}
+            step3Enabled={step3Enabled}
           />
-        )}
-      </main>
+          <main className="mx-auto" style={{ maxWidth: 'var(--dr-max-w)', padding: '24px 32px 64px' }}>
+            {activeStep === 1 && (
+              <>
+                <ConfigBar items={step1Config} />
+                <CollectPanel
+                  keywords={keywords}
+                  maxArticles={maxArticles}
+                  onAddKeyword={(kw) => setKeywords(prev => [...prev, kw])}
+                  onRemoveKeyword={(i) => setKeywords(prev => prev.filter((_, idx) => idx !== i))}
+                  filterDays={filterDays}
+                  onFilterDaysChange={setFilterDays}
+                  onCollectComplete={handleCollectComplete}
+                  collectionComplete={collectionComplete}
+                  onProceedToScoring={() => { setActiveStep(2); setScoringStarted(true); }}
+                />
+              </>
+            )}
+            {activeStep === 2 && (
+              <>
+                <ConfigBar items={step2Config} />
+                <ScorePanel
+                  currentRun={currentRun}
+                  scoredArticles={scoredArticles}
+                  minScore={minScore}
+                  onDismiss={handleDismiss}
+                  isScoring={isScoring}
+                  progress={progress}
+                  total={total}
+                  scoringError={scoringError}
+                  partialResults={partialResults}
+                />
+              </>
+            )}
+            {activeStep === 3 && (
+              <QueuePanel
+                articles={articles}
+                runs={allRuns}
+                runArticleMap={runArticleMap}
+                getActions={getActions}
+                onSlack={handleSlack}
+                onBookmark={handleBookmark}
+                onMarkReviewed={handleMarkReviewed}
+                onDismiss={handleDismiss}
+                onBulkDismiss={handleBulkDismiss}
+              />
+            )}
+          </main>
+        </>
+      )}
     </div>
   );
 }
