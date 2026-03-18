@@ -26,7 +26,7 @@ export async function withBrowserPage<T>(
   task: BrowserTask<T>,
   options: BrowserOptions = {},
 ): Promise<T> {
-  const { headless = true, args = [] } = options;
+  const { headless = false, args = [] } = options;
   const browser = await puppeteer.launch({
     headless,
     args: [...DEFAULT_ARGS, ...args],

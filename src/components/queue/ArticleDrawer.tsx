@@ -19,6 +19,63 @@ interface ArticleDrawerProps {
 }
 
 export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkReviewed, onDismiss }: ArticleDrawerProps) {
+  // Temporary: disable auto-enrichment on drawer open.
+  // Enrichment can be re-enabled later by flipping this flag.
+  const AUTO_ENRICH_ON_OPEN = false;
+
+  function norm(s: unknown) { return String(s ?? '').trim().toLowerCase(); }
+  function mergePersons(base: Person[], incoming: Person[]): Person[] {
+    const out: Person[] = [];
+    const seen = new Set<string>();
+    const add = (p: Person) => {
+      const key = `${norm(p.name)}|${norm(p.organization)}|${norm((p as any).linkedin_url)}`;
+      if (!norm(p.name)) return;
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push(p);
+    };
+    for (const p of base) add(p);
+    for (const p of incoming) {
+      const keyNoLinkedIn = `${norm(p.name)}|${norm(p.organization)}|`;
+      const idx = out.findIndex((x) => `${norm(x.name)}|${norm(x.organization)}|` === keyNoLinkedIn);
+      if (idx >= 0) {
+        const existing = out[idx];
+        const existingLinkedIn = (existing as any).linkedin_url;
+        const incomingLinkedIn = (p as any).linkedin_url;
+        out[idx] = {
+          ...existing,
+          role: existing.role || p.role,
+          organization: existing.organization || p.organization,
+          ...(incomingLinkedIn && !existingLinkedIn ? { linkedin_url: incomingLinkedIn } : {}),
+        };
+      } else add(p);
+    }
+    return out;
+  }
+  function mergeEntities(base: Entity[], incoming: Entity[]): Entity[] {
+    const out: Entity[] = [];
+    const seen = new Set<string>();
+    const add = (e: Entity) => {
+      const key = `${norm(e.name)}|${norm(e.type)}|${norm((e as any).linkedin_url)}`;
+      if (!norm(e.name)) return;
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push(e);
+    };
+    for (const e of base) add(e);
+    for (const e of incoming) {
+      const keyNoLinkedIn = `${norm(e.name)}|${norm(e.type)}|`;
+      const idx = out.findIndex((x) => `${norm(x.name)}|${norm(x.type)}|` === keyNoLinkedIn);
+      if (idx >= 0) {
+        const existing = out[idx];
+        const existingLinkedIn = (existing as any).linkedin_url;
+        const incomingLinkedIn = (e as any).linkedin_url;
+        out[idx] = { ...existing, ...(incomingLinkedIn && !existingLinkedIn ? { linkedin_url: incomingLinkedIn } : {}) };
+      } else add(e);
+    }
+    return out;
+  }
+
   // ── URL resolution state ──────────────────────────────────────────────────
   // Pre-initialize from DB if resolved_url was already persisted
   const preResolved = (() => {
@@ -88,6 +145,7 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
   // Google News with resolved_url in DB: resolvedUrl pre-initialized → fires immediately.
   // Google News without resolved_url: waits until resolveStatus is 'resolved' or 'failed'.
   useEffect(() => {
+    if (!AUTO_ENRICH_ON_OPEN) return;
     if (article.scored.enriched_at) return; // Already enriched (DB cache)
     if (enrichmentFiredRef.current) return; // Already fired this drawer session
 
@@ -113,8 +171,10 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
       .then(res => res.json())
       .then((data: { persons?: Person[]; entities?: Entity[]; error?: string }) => {
         if (data.error) { setEnrichmentStatus('failed'); return; }
-        setEnrichedPersons(data.persons ?? []);
-        setEnrichedEntities(data.entities ?? []);
+        // Append (merge) rather than overwrite what scoring already found.
+        // Prevents links/entities disappearing after enrichment completes.
+        setEnrichedPersons(mergePersons(article.scored.persons, data.persons ?? []));
+        setEnrichedEntities(mergeEntities(article.scored.entities, data.entities ?? []));
         setEnrichmentStatus('done');
       })
       .catch(() => setEnrichmentStatus('failed'));
@@ -168,6 +228,17 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
   }
 
   const displayEntities = enrichedEntities ?? article.scored.entities;
+  const uniqueDisplayEntities = (() => {
+    const seen = new Set<string>();
+    const out: Entity[] = [];
+    for (const e of displayEntities) {
+      const key = `${String(e.name ?? '').trim().toLowerCase()}|${String(e.type ?? '').trim().toLowerCase()}`;
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push(e);
+    }
+    return out;
+  })();
 
   return (
     <div
@@ -211,18 +282,30 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
           <div>
             <SectionLabel>Organizations</SectionLabel>
             <div className="flex flex-wrap gap-1.5" style={{ marginBottom: 20 }}>
-              {displayEntities.length === 0 ? (
+              {uniqueDisplayEntities.length === 0 ? (
                 <span style={{ fontSize: 12, color: 'var(--dr-text-muted)', fontStyle: 'italic' }}>None detected</span>
               ) : (
-                displayEntities.map((entity) => {
+                uniqueDisplayEntities.map((entity) => {
                   const colors = ENTITY_TYPE_COLORS[entity.type] ?? { bg: '#F3F4F6', text: '#374151' };
                   return (
                     <span
-                      key={entity.name}
+                      key={`${entity.name}-${entity.type}`}
                       className="inline-flex items-center gap-1.5 font-semibold"
                       style={{ fontSize: 11.5, padding: '4px 10px', borderRadius: 20, background: colors.bg, color: colors.text }}
                     >
-                      {entity.name}
+                      {entity.linkedin_url ? (
+                        <a
+                          href={entity.linkedin_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                          style={{ color: colors.text }}
+                        >
+                          {entity.name}
+                        </a>
+                      ) : (
+                        entity.name
+                      )}
                       <span style={{ fontSize: 9.5, opacity: 0.65, fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.3 }}>
                         {entity.type}
                       </span>

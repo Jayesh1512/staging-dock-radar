@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import { llmComplete, getActiveLLMInfo } from '@/lib/llm';
-import { SCORING_SYSTEM_PROMPT, CAMPAIGN_SCORING_SYSTEM_PROMPT, formatBatchScoringPrompt } from '@/lib/scoring-prompt';
+import {
+  SCORING_SYSTEM_PROMPT,
+  LINKEDIN_SCORING_SYSTEM_PROMPT,
+  CAMPAIGN_SCORING_SYSTEM_PROMPT,
+  LINKEDIN_CAMPAIGN_SCORING_SYSTEM_PROMPT,
+  formatBatchScoringPrompt,
+  formatLinkedInBatchScoringPrompt,
+} from '@/lib/scoring-prompt';
 import { fetchArticleBody } from '@/lib/article-body';
 import { insertScoredArticles, updateArticleResolvedUrl, loadScoredByArticleIds, loadDedupKeysFromScoredArticles, loadEverQueuedArticleIds, markArticlesAsEverQueued } from '@/lib/db';
 import { gateTwoDedup } from '@/lib/dedup';
@@ -278,8 +285,9 @@ export async function POST(req: Request) {
     console.log(`[/api/score] Fetching bodies for ${toScore.length} articles...`);
     const bodyResults = toScore.length > 0
       ? await Promise.all(toScore.map((a) => {
-          // Skip body fetching for LinkedIn — snippet is already the full content
-          if (a.source === 'linkedin') return Promise.resolve({ text: '', resolvedUrl: a.url });
+          // LinkedIn: we already captured post content in snippet during collection.
+          // Provide it as "body" to the LLM prompt (helps scoring without extra fetch).
+          if (a.source === 'linkedin') return Promise.resolve({ text: a.snippet ?? '', resolvedUrl: a.url });
           return fetchArticleBody(a.url, a.source);
         }))
       : [];
@@ -292,13 +300,52 @@ export async function POST(req: Request) {
     let llmResults: ArticleWithScore[] = [];
     if (toScore.length > 0) {
       const bodies = bodyResults.map(r => r.text);
-      const systemPrompt = isCampaign ? CAMPAIGN_SCORING_SYSTEM_PROMPT : SCORING_SYSTEM_PROMPT;
-      const rawText = await llmComplete(systemPrompt, formatBatchScoringPrompt(toScore, bodies, isCampaign));
-      llmResults = parseBatchResponse(rawText, toScore);
+
+      // Build resolved URL map by article id (robust even when we split batches)
+      const resolvedUrlById = new Map<string, string>();
+      for (let i = 0; i < toScore.length; i++) {
+        const a = toScore[i];
+        const resolvedUrl = bodyResults[i]?.resolvedUrl;
+        if (resolvedUrl) resolvedUrlById.set(a.id, resolvedUrl);
+      }
+
+      // Split: LinkedIn posts vs all other sources (Google News/NewsAPI/etc)
+      const liArticles: Article[] = [];
+      const liBodies: string[] = [];
+      const otherArticles: Article[] = [];
+      const otherBodies: string[] = [];
+
+      for (let i = 0; i < toScore.length; i++) {
+        const a = toScore[i];
+        const b = bodies[i] ?? '';
+        if (a.source === 'linkedin') {
+          liArticles.push(a);
+          liBodies.push(b);
+        } else {
+          otherArticles.push(a);
+          otherBodies.push(b);
+        }
+      }
+
+      const results: ArticleWithScore[] = [];
+
+      if (liArticles.length > 0) {
+        const systemPrompt = isCampaign ? LINKEDIN_CAMPAIGN_SCORING_SYSTEM_PROMPT : LINKEDIN_SCORING_SYSTEM_PROMPT;
+        const userPrompt = formatLinkedInBatchScoringPrompt(liArticles, liBodies, isCampaign);
+        const rawText = await llmComplete(systemPrompt, userPrompt);
+        results.push(...parseBatchResponse(rawText, liArticles));
+      }
+
+      if (otherArticles.length > 0) {
+        const systemPrompt = isCampaign ? CAMPAIGN_SCORING_SYSTEM_PROMPT : SCORING_SYSTEM_PROMPT;
+        const userPrompt = formatBatchScoringPrompt(otherArticles, otherBodies, isCampaign);
+        const rawText = await llmComplete(systemPrompt, userPrompt);
+        results.push(...parseBatchResponse(rawText, otherArticles));
+      }
 
       // Enrich with resolved URLs
-      llmResults = llmResults.map((r, i) => {
-        const resolvedUrl = bodyResults[i]?.resolvedUrl;
+      llmResults = results.map((r) => {
+        const resolvedUrl = resolvedUrlById.get(r.article.id);
         if (!resolvedUrl || resolvedUrl === r.article.url) return r;
         return { ...r, article: { ...r.article, resolved_url: resolvedUrl } };
       });
