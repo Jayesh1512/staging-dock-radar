@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { CAMPAIGN_NAME, CAMPAIGN_KEYWORDS, CAMPAIGN_WEST_REGIONS, CAMPAIGN_EAST_REGIONS, DEFAULTS } from '@/lib/constants';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { DEFAULTS, type CampaignConfig } from '@/lib/constants';
 import type { Run, Article, ArticleWithScore } from '@/lib/types';
 
 // ─── 52-Bucket Generator ──────────────────────────────────────────────────────
@@ -15,7 +15,7 @@ interface Bucket {
   regions: readonly string[];
 }
 
-function generateBuckets(): Bucket[] {
+function generateBuckets(westRegions: readonly string[], eastRegions: readonly string[]): Bucket[] {
   const now = new Date();
   const start = new Date(now);
   start.setMonth(start.getMonth() - 6);
@@ -33,11 +33,11 @@ function generateBuckets(): Bucket[] {
 
     buckets.push({
       week: w + 1, group: 'West', label: `W${w + 1} West`,
-      start_date: sd, end_date: ed, regions: CAMPAIGN_WEST_REGIONS,
+      start_date: sd, end_date: ed, regions: westRegions,
     });
     buckets.push({
       week: w + 1, group: 'East', label: `W${w + 1} East`,
-      start_date: sd, end_date: ed, regions: CAMPAIGN_EAST_REGIONS,
+      start_date: sd, end_date: ed, regions: eastRegions,
     });
   }
   return buckets;
@@ -68,10 +68,60 @@ const PHASE_COLORS: Record<BucketPhase, { bg: string; text: string; dot: string 
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
+function exportCampaignCSV(buckets: Bucket[], states: Record<string, BucketState>, campaignId: string) {
+  const headers = [
+    'Week', 'Group', 'Period Start', 'Period End',
+    'Score', 'Signal Type', 'Company', 'Country', 'City', 'Industry', 'Use Case',
+    'Summary', 'Title', 'Publisher', 'Published At', 'URL',
+    'FlytBase Mentioned', 'Persons', 'Entities', 'Is Duplicate', 'Drop Reason',
+  ];
+  const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const rows: string[] = [headers.map(esc).join(',')];
+
+  for (const bucket of buckets) {
+    const results = states[bucket.label]?.scoreResults;
+    if (!results) continue;
+    const sorted = [...results].sort((a, b) => b.scored.relevance_score - a.scored.relevance_score);
+    for (const r of sorted) {
+      rows.push([
+        bucket.week,
+        bucket.group,
+        bucket.start_date,
+        bucket.end_date,
+        r.scored.relevance_score,
+        r.scored.signal_type,
+        r.scored.company,
+        r.scored.country,
+        r.scored.city,
+        r.scored.industry,
+        r.scored.use_case,
+        r.scored.summary,
+        r.article.title,
+        r.article.publisher,
+        r.article.published_at,
+        r.article.url,
+        r.scored.flytbase_mentioned ? 'Yes' : 'No',
+        r.scored.persons?.map(p => `${p.name} (${p.role}, ${p.organization})`).join('; '),
+        r.scored.entities?.map(e => `${e.name} [${e.type}]`).join('; '),
+        r.scored.is_duplicate ? 'Yes' : 'No',
+        r.scored.drop_reason,
+      ].map(esc).join(','));
+    }
+  }
+
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${campaignId}-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 /** Score campaign articles in chunks of 10 to avoid LLM output truncation */
 const CAMPAIGN_SCORE_CHUNK = 10;
 
-async function scoreChunked(articles: Article[]): Promise<ArticleWithScore[]> {
+async function scoreChunked(articles: Article[], campaignId: string): Promise<ArticleWithScore[]> {
   const allResults: ArticleWithScore[] = [];
   for (let i = 0; i < articles.length; i += CAMPAIGN_SCORE_CHUNK) {
     const chunk = articles.slice(i, i + CAMPAIGN_SCORE_CHUNK);
@@ -81,7 +131,7 @@ async function scoreChunked(articles: Article[]): Promise<ArticleWithScore[]> {
       body: JSON.stringify({
         articles: chunk,
         minScore: DEFAULTS.minScore,
-        campaign: CAMPAIGN_NAME,
+        campaign: campaignId,
       }),
     });
     if (!res.ok) {
@@ -91,7 +141,6 @@ async function scoreChunked(articles: Article[]): Promise<ArticleWithScore[]> {
     const data = await res.json();
     const results: ArticleWithScore[] = data.results ?? [];
 
-    // Truncation detection: if < 50% of articles got a non-zero score or non-null company, warn
     const meaningful = results.filter(r => r.scored.relevance_score > 0 || r.scored.company);
     if (meaningful.length < chunk.length * 0.3 && chunk.length > 3) {
       console.warn(`[campaign] Possible LLM truncation: ${meaningful.length}/${chunk.length} articles scored meaningfully in chunk ${Math.floor(i / CAMPAIGN_SCORE_CHUNK) + 1}`);
@@ -104,8 +153,11 @@ async function scoreChunked(articles: Article[]): Promise<ArticleWithScore[]> {
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-export function CampaignPanel() {
-  const [buckets] = useState(generateBuckets);
+export function CampaignPanel({ config }: { config: CampaignConfig }) {
+  const buckets = useMemo(
+    () => generateBuckets(config.westRegions, config.eastRegions),
+    [config],
+  );
   const [states, setStates] = useState<Record<string, BucketState>>({});
   const [expandedWeek, setExpandedWeek] = useState<number | null>(null);
   const [autoRunning, setAutoRunning] = useState(false);
@@ -121,10 +173,9 @@ export function CampaignPanel() {
         const res = await fetch('/api/runs');
         if (!res.ok) return;
         const data = await res.json() as { runs: Run[]; scoredArticles: ArticleWithScore[] };
-        const campaignRuns = data.runs.filter(r => r.campaign === CAMPAIGN_NAME);
+        const campaignRuns = data.runs.filter(r => r.campaign === config.id);
         const allScored: ArticleWithScore[] = data.scoredArticles ?? [];
 
-        // Index scored articles by run_id for fast lookup
         const scoredByRunId = new Map<string, ArticleWithScore[]>();
         for (const item of allScored) {
           const rid = item.article.run_id;
@@ -132,7 +183,6 @@ export function CampaignPanel() {
           scoredByRunId.get(rid)!.push(item);
         }
 
-        // Sort runs oldest-first so we match the right week bucket
         const sorted = [...campaignRuns].sort(
           (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
         );
@@ -140,8 +190,8 @@ export function CampaignPanel() {
         const restored: Record<string, BucketState> = {};
         for (const run of sorted) {
           const runRegions = new Set(run.regions);
-          const isWest = CAMPAIGN_WEST_REGIONS.some(r => runRegions.has(r));
-          const isEast = CAMPAIGN_EAST_REGIONS.some(r => runRegions.has(r));
+          const isWest = config.westRegions.some(r => runRegions.has(r));
+          const isEast = config.eastRegions.some(r => runRegions.has(r));
           const group = isWest ? 'West' : isEast ? 'East' : null;
           if (!group) continue;
 
@@ -169,7 +219,7 @@ export function CampaignPanel() {
       } catch { /* non-fatal */ }
     }
     loadCampaignRuns();
-  }, [buckets]);
+  }, [buckets, config]);
 
   // Keep statesRef in sync so the async auto-run loop never reads stale closure state
   useEffect(() => { statesRef.current = states; }, [states]);
@@ -184,14 +234,14 @@ export function CampaignPanel() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          keywords: [...CAMPAIGN_KEYWORDS],
+          keywords: [...config.keywords],
           regions: [...bucket.regions],
           filterDays: 7,
           maxArticles: DEFAULTS.maxArticles,
           minScore: DEFAULTS.minScore,
           start_date: bucket.start_date,
           end_date: bucket.end_date,
-          campaign: CAMPAIGN_NAME,
+          campaign: config.id,
         }),
       });
 
@@ -205,12 +255,7 @@ export function CampaignPanel() {
 
       setStates(prev => ({
         ...prev,
-        [key]: {
-          phase: 'collected',
-          runId: data.runId,
-          articles,
-          articlesCollected: articles.length,
-        },
+        [key]: { phase: 'collected', runId: data.runId, articles, articlesCollected: articles.length },
       }));
     } catch (err) {
       setStates(prev => ({
@@ -218,7 +263,7 @@ export function CampaignPanel() {
         [key]: { phase: 'failed', error: err instanceof Error ? err.message : 'Unknown error' },
       }));
     }
-  }, []);
+  }, [config]);
 
   // ─── Step 2: Score collected articles (in chunks of 10) ─────────────────────
   const scoreBucket = useCallback(async (bucket: Bucket) => {
@@ -229,19 +274,14 @@ export function CampaignPanel() {
     setStates(prev => ({ ...prev, [key]: { ...prev[key], phase: 'scoring' } }));
 
     try {
-      const results = await scoreChunked(current.articles);
+      const results = await scoreChunked(current.articles, config.id);
       const aboveThreshold = results.filter(
         r => r.scored.relevance_score >= DEFAULTS.minScore && !r.scored.is_duplicate && !r.scored.drop_reason
       ).length;
 
       setStates(prev => ({
         ...prev,
-        [key]: {
-          ...prev[key],
-          phase: 'scored',
-          articlesScored: aboveThreshold,
-          scoreResults: results,
-        },
+        [key]: { ...prev[key], phase: 'scored', articlesScored: aboveThreshold, scoreResults: results },
       }));
     } catch (err) {
       setStates(prev => ({
@@ -249,7 +289,7 @@ export function CampaignPanel() {
         [key]: { ...prev[key], phase: 'failed', error: err instanceof Error ? err.message : 'Unknown error' },
       }));
     }
-  }, [states]);
+  }, [states, config.id]);
 
   // ─── Auto-Run All Pending Buckets ───────────────────────────────────────────
   const runAll = useCallback(async () => {
@@ -257,7 +297,6 @@ export function CampaignPanel() {
     setAutoRunning(true);
     setAutoFailures([]);
 
-    // Only run pending, failed (collect-failed), or collected-but-not-yet-scored
     const pending = buckets.filter(b => {
       const s = statesRef.current[b.label];
       return !s || s.phase === 'pending' || s.phase === 'failed' || s.phase === 'collected';
@@ -270,7 +309,6 @@ export function CampaignPanel() {
       const existing = statesRef.current[key];
       setAutoStatus(`Auto-running ${key} (${i + 1}/${pending.length})`);
 
-      // Reuse already-collected articles if available (e.g. collected-but-not-scored, or score-failed)
       let articles: Article[] = existing?.articles ?? [];
 
       // ── S1: Collect (skip if articles already in memory) ────────────────────
@@ -281,14 +319,14 @@ export function CampaignPanel() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              keywords: [...CAMPAIGN_KEYWORDS],
+              keywords: [...config.keywords],
               regions: [...bucket.regions],
               filterDays: 7,
               maxArticles: DEFAULTS.maxArticles,
               minScore: DEFAULTS.minScore,
               start_date: bucket.start_date,
               end_date: bucket.end_date,
-              campaign: CAMPAIGN_NAME,
+              campaign: config.id,
             }),
           });
           if (!res.ok) {
@@ -305,7 +343,7 @@ export function CampaignPanel() {
           const msg = err instanceof Error ? err.message : 'Collect failed';
           setStates(prev => ({ ...prev, [key]: { phase: 'failed', error: msg } }));
           setAutoFailures(prev => [...prev, { label: key, step: 'collect', error: msg }]);
-          continue; // never abort the whole run on a single bucket failure
+          continue;
         }
         await sleep(10_000);
         if (shouldStopRef.current) break;
@@ -313,14 +351,13 @@ export function CampaignPanel() {
 
       // ── S2: Score ────────────────────────────────────────────────────────────
       if (articles.length === 0) {
-        // Nothing to score — mark done with empty results
         setStates(prev => ({ ...prev, [key]: { ...prev[key], phase: 'scored', articlesScored: 0, scoreResults: [] } }));
         continue;
       }
 
       setStates(prev => ({ ...prev, [key]: { ...prev[key], phase: 'scoring' } }));
       try {
-        const results = await scoreChunked(articles);
+        const results = await scoreChunked(articles, config.id);
         const aboveThreshold = results.filter(
           r => r.scored.relevance_score >= DEFAULTS.minScore && !r.scored.is_duplicate && !r.scored.drop_reason,
         ).length;
@@ -334,13 +371,12 @@ export function CampaignPanel() {
         setAutoFailures(prev => [...prev, { label: key, step: 'score', error: msg }]);
       }
 
-      // Pause between buckets to avoid hammering Google News / Gemini
       if (i < pending.length - 1) await sleep(15_000);
     }
 
     setAutoRunning(false);
     setAutoStatus(null);
-  }, [buckets]);
+  }, [buckets, config]);
 
   // ─── Summary Stats ──────────────────────────────────────────────────────────
   const stateValues = Object.values(states);
@@ -352,6 +388,8 @@ export function CampaignPanel() {
     return sum + s.scoreResults.filter(r => r.scored.relevance_score >= 25 && r.scored.relevance_score < 50 && !r.scored.is_duplicate).length;
   }, 0);
 
+  const isCompleted = config.status === 'completed';
+  const isPlanned = config.status === 'planned';
   const weeks = Array.from({ length: 26 }, (_, i) => i + 1);
 
   return (
@@ -360,11 +398,20 @@ export function CampaignPanel() {
       <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--dr-border)' }}>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-bold" style={{ fontSize: 16, color: 'var(--dr-text-primary)' }}>
-              DSP 6-Month Campaign
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="font-bold" style={{ fontSize: 16, color: 'var(--dr-text-primary)' }}>
+                {config.label}
+              </h2>
+              <span style={{
+                fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 4,
+                background: isCompleted ? '#DCFCE7' : isPlanned ? '#F3F4F6' : '#DBEAFE',
+                color: isCompleted ? '#166534' : isPlanned ? '#6B7280' : '#2563EB',
+              }}>
+                {config.status.toUpperCase()}
+              </span>
+            </div>
             <p style={{ fontSize: 12, color: 'var(--dr-text-muted)', marginTop: 2 }}>
-              26 weeks × 2 region groups = 52 runs &middot; {CAMPAIGN_KEYWORDS.length} keywords &middot; 16 regions
+              26 weeks × 2 region groups = 52 runs &middot; {config.keywords.length} keywords &middot; 16 regions
             </p>
             {autoStatus ? (
               <p style={{ fontSize: 11, color: '#2563EB', marginTop: 4, fontWeight: 600 }}>
@@ -372,7 +419,9 @@ export function CampaignPanel() {
               </p>
             ) : (
               <p style={{ fontSize: 11, color: 'var(--dr-text-disabled)', marginTop: 4 }}>
-                Collect &rarr; review titles &rarr; Score (10 articles/batch to prevent LLM truncation)
+                {isPlanned
+                  ? 'Planned — run after C2 analysis is complete'
+                  : 'Collect → review titles → Score (10 articles/batch to prevent LLM truncation)'}
               </p>
             )}
           </div>
@@ -381,7 +430,29 @@ export function CampaignPanel() {
             <StatBox value={totalCollected} label="collected" color="#6B7280" />
             <StatBox value={totalScored} label="at 50+" color="#166534" />
             <StatBox value={total25to49} label="at 25-49" color="#A16207" />
-            {autoRunning ? (
+            <button
+              onClick={() => exportCampaignCSV(buckets, states, config.id)}
+              className="cursor-pointer"
+              style={{ fontSize: 11, fontWeight: 600, padding: '6px 12px', borderRadius: 6, background: '#F3F4F6', color: '#374151', border: '1px solid #D1D5DB' }}
+            >
+              Export CSV
+            </button>
+            {isPlanned ? (
+              <button
+                disabled
+                style={{ fontSize: 11, fontWeight: 700, padding: '6px 14px', borderRadius: 6, background: '#F3F4F6', color: '#9CA3AF', border: '1px solid #E5E7EB', cursor: 'not-allowed' }}
+                title="Available after C2 is analysed"
+              >
+                Run All
+              </button>
+            ) : isCompleted ? (
+              <button
+                disabled
+                style={{ fontSize: 11, fontWeight: 700, padding: '6px 14px', borderRadius: 6, background: '#DCFCE7', color: '#166534', border: '1px solid #BBF7D0', cursor: 'default' }}
+              >
+                ✓ Done
+              </button>
+            ) : autoRunning ? (
               <button
                 onClick={() => { shouldStopRef.current = true; }}
                 className="cursor-pointer"
@@ -402,7 +473,7 @@ export function CampaignPanel() {
         </div>
       </div>
 
-      {/* Failure Summary — shown after auto-run completes with errors */}
+      {/* Failure Summary */}
       {autoFailures.length > 0 && !autoRunning && (
         <div style={{ padding: '8px 20px', background: '#FEF2F2', borderBottom: '1px solid #FECACA' }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: '#991B1B', marginRight: 8 }}>
@@ -422,51 +493,71 @@ export function CampaignPanel() {
         </div>
       )}
 
-      {/* Bucket Grid */}
-      <div style={{ padding: '12px 20px 20px' }}>
-        <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
-          {weeks.map((weekNum) => {
-            const westBucket = buckets.find(b => b.week === weekNum && b.group === 'West')!;
-            const eastBucket = buckets.find(b => b.week === weekNum && b.group === 'East')!;
-            const westState = states[westBucket.label] ?? { phase: 'pending' as BucketPhase };
-            const eastState = states[eastBucket.label] ?? { phase: 'pending' as BucketPhase };
-            const isExpanded = expandedWeek === weekNum;
-
-            return (
-              <div key={weekNum} style={{ border: '1px solid var(--dr-border)', borderRadius: 8, overflow: 'hidden' }}>
-                <button
-                  onClick={() => setExpandedWeek(isExpanded ? null : weekNum)}
-                  className="w-full flex items-center justify-between cursor-pointer"
-                  style={{ background: '#FAFAFA', padding: '8px 12px', border: 'none', borderBottom: isExpanded ? '1px solid var(--dr-border)' : 'none' }}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold" style={{ fontSize: 12.5, color: 'var(--dr-text-primary)' }}>
-                      Week {weekNum}
-                    </span>
-                    <span style={{ fontSize: 11, color: 'var(--dr-text-muted)' }}>
-                      {westBucket.start_date} &rarr; {westBucket.end_date}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <PhaseDot phase={westState.phase} label="W" />
-                    <PhaseDot phase={eastState.phase} label="E" />
-                    <span style={{ fontSize: 11, color: 'var(--dr-text-muted)', marginLeft: 4 }}>
-                      {isExpanded ? '▾' : '▸'}
-                    </span>
-                  </div>
-                </button>
-
-                {isExpanded && (
-                  <div style={{ padding: '10px 12px' }} className="flex flex-col gap-2">
-                    <BucketRow bucket={westBucket} state={westState} onCollect={() => collectBucket(westBucket)} onScore={() => scoreBucket(westBucket)} />
-                    <BucketRow bucket={eastBucket} state={eastState} onCollect={() => collectBucket(eastBucket)} onScore={() => scoreBucket(eastBucket)} />
-                  </div>
-                )}
-              </div>
-            );
-          })}
+      {/* Planned campaign overlay */}
+      {isPlanned && (
+        <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--dr-text-muted)' }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>🔜</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--dr-text-primary)', marginBottom: 4 }}>
+            Campaign not yet started
+          </div>
+          <div style={{ fontSize: 12, maxWidth: 480, margin: '0 auto' }}>{config.intent}</div>
+          <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {config.keywords.map(kw => (
+              <span key={kw} style={{ fontSize: 11, background: '#F3F4F6', color: '#374151', borderRadius: 4, padding: '2px 8px', border: '1px solid #E5E7EB' }}>
+                {kw}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Bucket Grid — hidden for planned campaigns */}
+      {!isPlanned && (
+        <div style={{ padding: '12px 20px 20px' }}>
+          <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
+            {weeks.map((weekNum) => {
+              const westBucket = buckets.find(b => b.week === weekNum && b.group === 'West')!;
+              const eastBucket = buckets.find(b => b.week === weekNum && b.group === 'East')!;
+              const westState = states[westBucket.label] ?? { phase: 'pending' as BucketPhase };
+              const eastState = states[eastBucket.label] ?? { phase: 'pending' as BucketPhase };
+              const isExpanded = expandedWeek === weekNum;
+
+              return (
+                <div key={weekNum} style={{ border: '1px solid var(--dr-border)', borderRadius: 8, overflow: 'hidden' }}>
+                  <button
+                    onClick={() => setExpandedWeek(isExpanded ? null : weekNum)}
+                    className="w-full flex items-center justify-between cursor-pointer"
+                    style={{ background: '#FAFAFA', padding: '8px 12px', border: 'none', borderBottom: isExpanded ? '1px solid var(--dr-border)' : 'none' }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold" style={{ fontSize: 12.5, color: 'var(--dr-text-primary)' }}>
+                        Week {weekNum}
+                      </span>
+                      <span style={{ fontSize: 11, color: 'var(--dr-text-muted)' }}>
+                        {westBucket.start_date} &rarr; {westBucket.end_date}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <PhaseDot phase={westState.phase} label="W" />
+                      <PhaseDot phase={eastState.phase} label="E" />
+                      <span style={{ fontSize: 11, color: 'var(--dr-text-muted)', marginLeft: 4 }}>
+                        {isExpanded ? '▾' : '▸'}
+                      </span>
+                    </div>
+                  </button>
+
+                  {isExpanded && (
+                    <div style={{ padding: '10px 12px' }} className="flex flex-col gap-2">
+                      <BucketRow bucket={westBucket} state={westState} onCollect={() => collectBucket(westBucket)} onScore={() => scoreBucket(westBucket)} />
+                      <BucketRow bucket={eastBucket} state={eastState} onCollect={() => collectBucket(eastBucket)} onScore={() => scoreBucket(eastBucket)} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -504,35 +595,26 @@ function ScoredResultsView({ results }: { results: ArticleWithScore[] }) {
 
   return (
     <div style={{ marginTop: 8, paddingTop: 6, borderTop: '1px solid rgba(0,0,0,0.08)' }}>
-      {/* Scored 50+ */}
       {scored50Plus.length > 0 && (
         <>
           <div style={{ fontSize: 10, color: '#166534', marginBottom: 4, fontWeight: 700 }}>
             SCORED 50+ ({scored50Plus.length}):
           </div>
           <div style={{ marginBottom: 8 }}>
-            {scored50Plus.map(r => (
-              <ScoreRow key={r.article.id} r={r} />
-            ))}
+            {scored50Plus.map(r => <ScoreRow key={r.article.id} r={r} />)}
           </div>
         </>
       )}
-
-      {/* Scored 25-49 (weak signals) */}
       {scored25to49.length > 0 && (
         <>
           <div style={{ fontSize: 10, color: '#A16207', marginBottom: 4, fontWeight: 700 }}>
             WEAK SIGNALS 25-49 ({scored25to49.length}):
           </div>
           <div style={{ marginBottom: 8 }}>
-            {scored25to49.map(r => (
-              <ScoreRow key={r.article.id} r={r} />
-            ))}
+            {scored25to49.map(r => <ScoreRow key={r.article.id} r={r} />)}
           </div>
         </>
       )}
-
-      {/* Dropped (<25) — collapsed by default */}
       {dropped.length > 0 && (
         <>
           <button
@@ -544,9 +626,7 @@ function ScoredResultsView({ results }: { results: ArticleWithScore[] }) {
           </button>
           {showDropped && (
             <div style={{ maxHeight: 300, overflowY: 'auto' }}>
-              {dropped.map(r => (
-                <ScoreRow key={r.article.id} r={r} muted />
-              ))}
+              {dropped.map(r => <ScoreRow key={r.article.id} r={r} muted />)}
             </div>
           )}
         </>
@@ -611,7 +691,6 @@ function BucketRow({ bucket, state, onCollect, onScore }: { bucket: Bucket; stat
     total: state.scoreResults.length,
   } : null;
 
-  // Auto-open the relevant step when phase changes
   useEffect(() => {
     if (state.phase === 'collected') setOpenStep(2);
     if (state.phase === 'scored') setOpenStep(3);
@@ -624,8 +703,6 @@ function BucketRow({ bucket, state, onCollect, onScore }: { bucket: Bucket; stat
 
   return (
     <div style={{ background: color.bg, borderRadius: 6, padding: '8px 10px' }}>
-
-      {/* ── Bucket header ─────────────────────────────────────── */}
       <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
         <div className="flex items-center gap-2">
           <span className="rounded-full" style={{ width: 7, height: 7, background: color.dot, flexShrink: 0 }} />
@@ -640,9 +717,9 @@ function BucketRow({ bucket, state, onCollect, onScore }: { bucket: Bucket; stat
         <div className="flex items-center gap-1.5">
           {scoreBreakdown ? (
             <>
-              <StatPill value={scoreBreakdown.r50}    label="≥50"    color="#166534" bg="#DCFCE7" />
-              <StatPill value={scoreBreakdown.r25}    label="25-49"  color="#92400E" bg="#FEF3C7" />
-              <StatPill value={scoreBreakdown.dropped} label="drop"   color="#6B7280" bg="#F3F4F6" />
+              <StatPill value={scoreBreakdown.r50}     label="≥50"   color="#166534" bg="#DCFCE7" />
+              <StatPill value={scoreBreakdown.r25}     label="25-49" color="#92400E" bg="#FEF3C7" />
+              <StatPill value={scoreBreakdown.dropped} label="drop"  color="#6B7280" bg="#F3F4F6" />
             </>
           ) : state.articlesCollected != null ? (
             <span style={{ fontSize: 10.5, color: 'var(--dr-text-muted)' }}>{state.articlesCollected} collected</span>
@@ -656,7 +733,7 @@ function BucketRow({ bucket, state, onCollect, onScore }: { bucket: Bucket; stat
         </div>
       </div>
 
-      {/* ── Step 1: Collect ───────────────────────────────────── */}
+      {/* Step 1: Collect */}
       <div style={stepRowStyle}>
         <div style={{ ...stepHeaderStyle, cursor: 'pointer' }} onClick={() => toggle(1)}>
           <div className="flex items-center gap-1.5">
@@ -691,7 +768,7 @@ function BucketRow({ bucket, state, onCollect, onScore }: { bucket: Bucket; stat
         )}
       </div>
 
-      {/* ── Step 2: Review Titles ────────────────────────────── */}
+      {/* Step 2: Review Titles */}
       <div style={{ ...stepRowStyle, opacity: progress < 1 ? 0.4 : 1 }}>
         <div
           style={{ ...stepHeaderStyle, cursor: progress >= 1 ? 'pointer' : 'default' }}
@@ -730,7 +807,7 @@ function BucketRow({ bucket, state, onCollect, onScore }: { bucket: Bucket; stat
         )}
       </div>
 
-      {/* ── Step 3: Score & Results ──────────────────────────── */}
+      {/* Step 3: Score & Results */}
       <div style={{ ...stepRowStyle, opacity: progress < 1 ? 0.4 : 1 }}>
         <div
           style={{ ...stepHeaderStyle, cursor: progress >= 1 ? 'pointer' : 'default' }}
@@ -774,7 +851,6 @@ function BucketRow({ bucket, state, onCollect, onScore }: { bucket: Bucket; stat
           </div>
         )}
       </div>
-
     </div>
   );
 }
