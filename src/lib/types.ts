@@ -115,3 +115,31 @@ export interface ConfigItem {
   options?: { label: string; value: string }[];
   onChange?: (value: string | number | boolean) => void;
 }
+
+export interface DspHitListEntry {
+  name: string;
+  normalized_name: string;
+  mention_count: number;
+  avg_score: number;
+  latest_article_date: string;
+  countries: string[];
+  industries: string[];
+  signal_types: string[];
+  hit_score: number;
+  articles: { id: string; title: string; url: string; score: number; date: string }[];
+  website?: string;
+  linkedin?: string;
+  isKnown?: boolean; // true if in flytbase_partners
+}
+
+export interface HitListData {
+  new_companies: DspHitListEntry[];
+  known_companies: DspHitListEntry[];
+  stats: {
+    total_extracted: number;
+    new_count: number;
+    known_count: number;
+    match_rate: number;
+  };
+  partner_count: number;
+}

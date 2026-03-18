@@ -97,7 +97,7 @@ export const CAMPAIGN_KEYWORDS = [
   'DJI Dock 2',
   'DJI Dock 3',
   // Vendor-agnostic dock / drone-in-a-box signals
-  'drone in a box',
+  'autonomous drone station',
   'drone dock',
   'drone docking station',
 ] as const;
@@ -138,7 +138,7 @@ export const CAMPAIGNS: readonly CampaignConfig[] = [
     label: 'C1 · Hardware Dock',
     tagline: 'Hardware brand sweep — 6 keywords',
     intent: 'Identifies drone operators and SIs by explicit DJI Dock product name and dock hardware terms. Highest precision: if an article mentions the hardware by name, the operator is actively deploying. Started Sep 2025, 52 buckets completed.',
-    keywords: ['DJI Dock', 'DJI Dock 2', 'DJI Dock 3', 'drone in a box', 'drone dock', 'drone docking station'],
+    keywords: ['DJI Dock', 'DJI Dock 2', 'DJI Dock 3', 'autonomous drone station', 'drone dock', 'drone docking station'],
     westRegions: CAMPAIGN_WEST_REGIONS,
     eastRegions: CAMPAIGN_EAST_REGIONS,
     status: 'completed',

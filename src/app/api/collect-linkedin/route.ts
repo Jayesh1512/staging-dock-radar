@@ -132,7 +132,11 @@ async function fetchLinkedInPosts(keyword: string, runId: string): Promise<Artic
       id: `li_${runId}_${ts}_${i}`,
       run_id: runId,
       source: "linkedin",
-      title: `${post.authorName || "LinkedIn User"} post`,
+      // Use the first ~120 chars of post content as the title so the LLM has a real signal.
+      // Falls back to "LinkedIn Post" only when content is empty.
+      title: post.postContent
+        ? post.postContent.replace(/\s+/g, ' ').trim().slice(0, 120)
+        : (post.authorName ? `${post.authorName} – LinkedIn post` : 'LinkedIn Post'),
       url: post.postUrl || `https://www.linkedin.com/search/results/content/?keywords=${runId}`,
       normalized_url: post.postUrl || `li_${runId}_${ts}_${i}`,
       snippet: post.postContent,
@@ -173,10 +177,19 @@ export async function POST(req: NextRequest) {
       allArticles.push(...articles);
     }
 
-    // ── Date filter: enforce filterDays cutoff ───────────────────────────────
-    const cutoff = new Date(Date.now() - filterDays * 86_400_000);
-    const dateFiltered = allArticles.filter(a => a.published_at ? new Date(a.published_at) >= cutoff : false);
-    console.log(`[/api/collect-linkedin] Date filter (${filterDays}d): ${allArticles.length} → ${dateFiltered.length} articles`);
+    // ── Date filter: filterDays=0 means "All" — skip cutoff entirely ────────
+    // LinkedIn's relevance-ranked search surfaces old posts (>1 month) when they
+    // are the best match; our cutoff is the only thing discarding them.
+    // filterDays=0 trusts LinkedIn's ranking and keeps everything.
+    let dateFiltered: Article[];
+    if (filterDays === 0) {
+      dateFiltered = allArticles;
+      console.log(`[/api/collect-linkedin] Date filter: All (no cutoff) — ${allArticles.length} articles`);
+    } else {
+      const cutoff = new Date(Date.now() - filterDays * 86_400_000);
+      dateFiltered = allArticles.filter(a => a.published_at ? new Date(a.published_at) >= cutoff : false);
+      console.log(`[/api/collect-linkedin] Date filter (${filterDays}d): ${allArticles.length} → ${dateFiltered.length} articles`);
+    }
 
     // ── Deduplicate by normalized_url before insertion ──────────────────────
     const uniqueMap = new Map<string, Article>();

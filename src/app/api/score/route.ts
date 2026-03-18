@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { llmComplete, getActiveLLMInfo } from '@/lib/llm';
-import { SCORING_SYSTEM_PROMPT, CAMPAIGN_SCORING_SYSTEM_PROMPT, formatBatchScoringPrompt } from '@/lib/scoring-prompt';
+import { SCORING_SYSTEM_PROMPT, CAMPAIGN_SCORING_SYSTEM_PROMPT, LINKEDIN_SCORING_SYSTEM_PROMPT, formatBatchScoringPrompt, formatLinkedInBatchPrompt } from '@/lib/scoring-prompt';
 import { fetchArticleBody } from '@/lib/article-body';
 import { insertScoredArticles, updateArticleResolvedUrl, loadScoredByArticleIds, loadDedupKeysFromScoredArticles, loadEverQueuedArticleIds, markArticlesAsEverQueued } from '@/lib/db';
 import { gateTwoDedup } from '@/lib/dedup';
@@ -292,8 +292,14 @@ export async function POST(req: Request) {
     let llmResults: ArticleWithScore[] = [];
     if (toScore.length > 0) {
       const bodies = bodyResults.map(r => r.text);
-      const systemPrompt = isCampaign ? CAMPAIGN_SCORING_SYSTEM_PROMPT : SCORING_SYSTEM_PROMPT;
-      const rawText = await llmComplete(systemPrompt, formatBatchScoringPrompt(toScore, bodies, isCampaign));
+      const isLinkedIn = toScore.every(a => a.source === 'linkedin');
+      const systemPrompt = isLinkedIn
+        ? LINKEDIN_SCORING_SYSTEM_PROMPT
+        : isCampaign ? CAMPAIGN_SCORING_SYSTEM_PROMPT : SCORING_SYSTEM_PROMPT;
+      const userPrompt = isLinkedIn
+        ? formatLinkedInBatchPrompt(toScore)
+        : formatBatchScoringPrompt(toScore, bodies, isCampaign);
+      const rawText = await llmComplete(systemPrompt, userPrompt);
       llmResults = parseBatchResponse(rawText, toScore);
 
       // Enrich with resolved URLs

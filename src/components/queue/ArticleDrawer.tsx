@@ -188,7 +188,9 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
           Article Detail
         </span>
         <span style={{ fontSize: 11, color: '#BFDBFE' }}>
-          ·&nbsp; {article.scored.signal_type}&nbsp;·&nbsp;Score {article.scored.relevance_score}
+          ·&nbsp; {article.scored.signal_type}
+          {article.scored.industry && <>&nbsp;·&nbsp;{article.scored.industry}</>}
+          &nbsp;·&nbsp;Score {article.scored.relevance_score}
         </span>
         <div style={{ flex: 1 }} />
         <span style={{ fontSize: 11, color: '#93C5FD', fontStyle: 'italic' }}>
@@ -209,6 +211,24 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
 
           {/* Right column */}
           <div>
+            {article.scored.industry && (
+              <>
+                <SectionLabel>Industry</SectionLabel>
+                <div style={{ marginBottom: 20 }}>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      fontSize: 12, fontWeight: 600,
+                      padding: '4px 12px', borderRadius: 20,
+                      background: '#F0F9FF', color: '#0369A1',
+                      border: '1px solid #BAE6FD',
+                    }}
+                  >
+                    {article.scored.industry}
+                  </span>
+                </div>
+              </>
+            )}
             <SectionLabel>Organizations</SectionLabel>
             <div className="flex flex-wrap gap-1.5" style={{ marginBottom: 20 }}>
               {displayEntities.length === 0 ? (

@@ -14,6 +14,7 @@ import type { Article, ArticleWithScore, ArticleAction, ConfigItem, CollectResul
 import { toast } from 'sonner';
 import { formatDateTimeIST } from '@/lib/utils';
 import { CampaignHub } from '@/components/campaign/CampaignHub';
+import { PartnerDashboard } from '@/components/partner-dashboard/PartnerDashboard';
 
 /** Async DB action persistence — non-blocking, warns user on failure so they can retry */
 function persistAction(articleId: string, action: string, actionsTaken?: ArticleAction[]) {
@@ -32,6 +33,7 @@ export default function Dashboard() {
   // ─── Core State ────────────────────────────────────────
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showCampaign, setShowCampaign] = useState(false);
+  const [showDspHitList, setShowDspHitList] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
   const [currentRun, setCurrentRun] = useState<Run | null>(null);
   const [allRuns, setAllRuns] = useState<Run[]>([]);
@@ -56,7 +58,7 @@ export default function Dashboard() {
   currentRunRef.current = currentRun;
 
   // ─── Collect Config ────────────────────────────────────
-  const [keywords, setKeywords] = useState<string[]>(['DJI Dock', 'DJI Dock 3', 'Drone in a box', 'Drone-in-a-box', 'Drone Dock']);
+  const [keywords, setKeywords] = useState<string[]>(['DJI Dock', 'DJI Dock 3', 'autonomous drone station', 'Drone-in-a-box', 'Drone Dock']);
   const [maxArticles] = useState<number>(DEFAULTS.maxArticles);
   const [minScore, setMinScore] = useState<number>(DEFAULTS.minScore);
   const [filterDays, setFilterDays] = useState<number>(DEFAULTS.filterDays);
@@ -282,12 +284,16 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen" style={{ background: '#F3F4F6' }}>
       <Navbar
-        onAnalytics={() => { setShowAnalytics(v => !v); setShowCampaign(false); }}
+        onAnalytics={() => { setShowAnalytics(v => !v); setShowCampaign(false); setShowDspHitList(false); }}
         analyticsActive={showAnalytics}
-        onCampaign={() => { setShowCampaign(v => !v); setShowAnalytics(false); }}
+        onCampaign={() => { setShowCampaign(v => !v); setShowAnalytics(false); setShowDspHitList(false); }}
         campaignActive={showCampaign}
+        onPartnerHitList={() => { setShowDspHitList(v => !v); setShowAnalytics(false); setShowCampaign(false); }}
+        partnerHitListActive={showDspHitList}
       />
-      {showCampaign ? (
+      {showDspHitList ? (
+        <PartnerDashboard />
+      ) : showCampaign ? (
         <main style={{ padding: '24px 32px 64px' }}>
           <CampaignHub />
         </main>

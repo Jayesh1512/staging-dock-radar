@@ -2,7 +2,21 @@
 import { EnrichmentTestAgent } from './EnrichmentTestAgent';
 import { CometImportPanel } from '../import/CometImportPanel';
 
-export function Navbar({ onAnalytics, analyticsActive, onCampaign, campaignActive }: { onAnalytics?: () => void; analyticsActive?: boolean; onCampaign?: () => void; campaignActive?: boolean }) {
+export function Navbar({
+  onAnalytics,
+  analyticsActive,
+  onCampaign,
+  campaignActive,
+  onPartnerHitList,
+  partnerHitListActive,
+}: {
+  onAnalytics?: () => void;
+  analyticsActive?: boolean;
+  onCampaign?: () => void;
+  campaignActive?: boolean;
+  onPartnerHitList?: () => void;
+  partnerHitListActive?: boolean;
+}) {
   return (
     <header className="sticky top-0 z-[100] bg-white border-b" style={{ borderColor: 'var(--dr-border)', height: 53 }}>
       <div className="flex items-center justify-between h-full px-8" style={{ maxWidth: 'var(--dr-max-w)', margin: '0 auto' }}>
@@ -28,6 +42,17 @@ export function Navbar({ onAnalytics, analyticsActive, onCampaign, campaignActiv
             }}
           >
             DSP Campaign
+          </button>
+          <button
+            onClick={onPartnerHitList}
+            style={{
+              fontSize: 12, fontWeight: 600, padding: '5px 14px', borderRadius: 7, cursor: 'pointer',
+              background: partnerHitListActive ? '#15803D' : '#DCFCE7',
+              color: partnerHitListActive ? '#fff' : '#15803D',
+              border: 'none',
+            }}
+          >
+            Partners Hit List ↗
           </button>
           <button
             onClick={onAnalytics}
