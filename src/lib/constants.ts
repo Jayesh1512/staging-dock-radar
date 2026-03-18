@@ -115,6 +115,56 @@ export const CAMPAIGN_INDUSTRIES = [
   'Water & Environmental Utilities',
 ] as const;
 
+// ─── Campaign Registry ──────────────────────────────────────────────────────
+
+export interface CampaignConfig {
+  /** DB value stored in runs.campaign — never change after data exists */
+  id: string;
+  /** Short display label shown in tabs and cards */
+  label: string;
+  /** One-line angle descriptor for the campaign header */
+  tagline: string;
+  /** 2–3 sentence intent description for the demo/overview view */
+  intent: string;
+  keywords: readonly string[];
+  westRegions: readonly string[];
+  eastRegions: readonly string[];
+  status: 'completed' | 'active' | 'planned';
+}
+
+export const CAMPAIGNS: readonly CampaignConfig[] = [
+  {
+    id: 'dsp_6mo_sweep',
+    label: 'C1 · Hardware Dock',
+    tagline: 'Hardware brand sweep — 6 keywords',
+    intent: 'Identifies drone operators and SIs by explicit DJI Dock product name and dock hardware terms. Highest precision: if an article mentions the hardware by name, the operator is actively deploying. Started Sep 2025, 52 buckets completed.',
+    keywords: ['DJI Dock', 'DJI Dock 2', 'DJI Dock 3', 'drone in a box', 'drone dock', 'drone docking station'],
+    westRegions: CAMPAIGN_WEST_REGIONS,
+    eastRegions: CAMPAIGN_EAST_REGIONS,
+    status: 'completed',
+  },
+  {
+    id: 'dsp_op_direct',
+    label: 'C2 · Direct Operators',
+    tagline: 'Operator behavior signals — 4 keywords',
+    intent: 'Catches DSPs running autonomous/unattended missions without naming the hardware brand. Focuses on what operators DO rather than which product they use. Expected to surface 40–60% net new companies vs C1.',
+    keywords: ['drone-in-a-box', 'autonomous drone station', 'unattended drone operations', 'remote drone deployment'],
+    westRegions: CAMPAIGN_WEST_REGIONS,
+    eastRegions: CAMPAIGN_EAST_REGIONS,
+    status: 'active',
+  },
+  {
+    id: 'dsp_op_adjacent',
+    label: 'C3 · Adjacent Ops',
+    tagline: 'Dock-adjacent operations — 5 keywords',
+    intent: 'Widens the TOFU funnel to companies evaluating dock drones via patrol, surveillance, and inspection signals. Highest volume, lowest precision — expect a larger 25–49 band. Run after C2 analysis is complete.',
+    keywords: ['persistent drone surveillance', 'automated drone patrol', 'drone inspection services', 'drone base station', 'autonomous drone inspection'],
+    westRegions: CAMPAIGN_WEST_REGIONS,
+    eastRegions: CAMPAIGN_EAST_REGIONS,
+    status: 'planned',
+  },
+] as const;
+
 /**
  * Maps LLM-returned country name variants → canonical region key used in REGION_GROUPS.
  * Keeps filtering robust when the LLM uses shorthand ("US", "UK") or full names.

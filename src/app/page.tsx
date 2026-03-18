@@ -13,7 +13,7 @@ import { useScore } from '@/hooks/use-score';
 import type { Article, ArticleWithScore, ArticleAction, ConfigItem, CollectResult, Run } from '@/lib/types';
 import { toast } from 'sonner';
 import { formatDateTimeIST } from '@/lib/utils';
-import { CampaignPanel } from '@/components/campaign/CampaignPanel';
+import { CampaignHub } from '@/components/campaign/CampaignHub';
 
 /** Async DB action persistence — non-blocking, warns user on failure so they can retry */
 function persistAction(articleId: string, action: string, actionsTaken?: ArticleAction[]) {
@@ -289,7 +289,7 @@ export default function Dashboard() {
       />
       {showCampaign ? (
         <main style={{ padding: '24px 32px 64px' }}>
-          <CampaignPanel />
+          <CampaignHub />
         </main>
       ) : showAnalytics ? (
         <AnalyticsPage onClose={() => setShowAnalytics(false)} />
