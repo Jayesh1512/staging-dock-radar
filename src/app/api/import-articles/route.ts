@@ -103,7 +103,8 @@ export async function POST(req: Request) {
       return {
         id: `article_${ts}_${i}`,
         run_id: runId,
-        source: (source as ArticleSource) || 'google_news',
+        // Use the exact source from the incoming JSON if present; otherwise fall back to the top-level source
+        source: (raw.source as ArticleSource | undefined) ?? (source as ArticleSource),
         title: raw.title,
         url: raw.url,
         normalized_url: raw.normalized_url,
@@ -139,7 +140,7 @@ export async function POST(req: Request) {
       dedup_removed: removedCount,
       created_at: new Date().toISOString(),
       completed_at: new Date().toISOString(),
-      campaign: campaign ?? null,
+      campaign: campaign ?? 'dsp_6mo_sweep',
     };
 
     try {
@@ -173,7 +174,7 @@ export async function POST(req: Request) {
       stats,
       runId,
       source,
-      campaign: campaign ?? null,
+      campaign: campaign ?? 'dsp_6mo_sweep',
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unexpected error';
