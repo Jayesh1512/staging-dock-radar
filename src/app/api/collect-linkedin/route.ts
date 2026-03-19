@@ -1,14 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 import {
   withBrowserPage,
   loadServiceCookies,
   scrollPage,
 } from "../../../lib/browser/puppeteerClient";
-import { insertRun, insertArticles } from "@/lib/db";
-import type { Article, ArticleSource, Run } from "@/lib/types";
+import type { Article, Run } from "@/lib/types";
+import { normalizeUrl } from "@/lib/google-news-rss";
+import { insertArticles, insertRun } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+function collapseWhitespace(s: string): string {
+  return String(s || "").replace(/\s+/g, " ").trim();
+}
+
+function truncate(s: string, max: number): string {
+  const str = String(s || "");
+  return str.length <= max ? str : str.slice(0, max);
+}
 
 function parseLinkedInRelativeDate(timeStr: string): string {
   if (!timeStr) return new Date().toISOString();
@@ -33,7 +45,11 @@ function parseLinkedInRelativeDate(timeStr: string): string {
   return now.toISOString();
 }
 
-async function fetchLinkedInPosts(keyword: string, runId: string): Promise<Article[]> {
+async function fetchLinkedInPosts(
+  keyword: string,
+  runId: string,
+  scrollSeconds: number
+): Promise<Article[]> {
   return withBrowserPage(async (page) => {
     await loadServiceCookies(page, "linkedin");
 
@@ -50,8 +66,9 @@ async function fetchLinkedInPosts(keyword: string, runId: string): Promise<Artic
       console.warn("[collect-linkedin] page.goto timeout, continuing with best-effort content");
     }
 
-    // Scroll down for ~10–15 seconds
-    await scrollPage(page, 10, 1000);
+    // Scroll down to load more results
+    const seconds = 30
+    await scrollPage(page, seconds, 1000);
 
     // Expand all "see more" buttons in posts
     await page.$$eval("button, span", (elements) => {
@@ -62,6 +79,15 @@ async function fetchLinkedInPosts(keyword: string, runId: string): Promise<Artic
         }
       });
     });
+
+    // Save the raw HTML in /data for debugging + offline parsing
+    const html = await page.content();
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const safeKeyword = keyword.replace(/[^\w-]+/g, "_").slice(0, 50) || "linkedin";
+    const dataDir = path.join(process.cwd(), "data");
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    const htmlPath = path.join(dataDir, `linkedin-search-${safeKeyword}-${timestamp}.html`);
+    fs.writeFileSync(htmlPath, html, "utf8");
 
     // Extract posts into structured data
     const rawPosts = await page.evaluate(() => {
@@ -82,14 +108,28 @@ async function fetchLinkedInPosts(keyword: string, runId: string): Promise<Artic
         if (!postContent) return;
 
         // AUTHOR
+        const authorLinkEl =
+          node.querySelector<HTMLAnchorElement>('a[href*="/in/"][data-field="actor-link"]') ??
+          node.querySelector<HTMLAnchorElement>('a[href*="/company/"][data-field="actor-link"]') ??
+          node.querySelector<HTMLAnchorElement>('a[href*="/in/"]') ??
+          node.querySelector<HTMLAnchorElement>('a[href*="/company/"]');
+
         const authorEl =
-          node.querySelector<HTMLElement>('a[href*="/in/"][data-field="actor-link"]') ??
+          authorLinkEl ??
           node.querySelector<HTMLElement>(".update-components-actor__name") ??
           node.querySelector<HTMLElement>(".feed-shared-actor__name") ??
           node.querySelector<HTMLElement>('.update-components-actor__title span[dir="ltr"]') ??
           node.querySelector<HTMLElement>('.app-aware-link > span[dir="ltr"]');
 
         const authorName = (authorEl?.innerText || authorEl?.textContent || "").trim().split("\n")[0];
+        let authorUrl: string = "";
+        if (authorLinkEl?.getAttribute) {
+          const href = authorLinkEl.getAttribute("href") || "";
+          if (href) {
+            authorUrl = href.startsWith("/") ? `https://www.linkedin.com${href}` : href;
+            authorUrl = authorUrl.split("?")[0];
+          }
+        }
 
         // TIME
         const timeEl =
@@ -103,20 +143,56 @@ async function fetchLinkedInPosts(keyword: string, runId: string): Promise<Artic
 
         // URL
         let postUrl: string = "";
-        const permalink =
-          node.querySelector<HTMLAnchorElement>('a[href*="activity"]') ??
-          node.querySelector<HTMLAnchorElement>('a[href*="/feed/update/"]') ??
-          node.querySelector<HTMLAnchorElement>(".update-components-actor__meta-link");
+        const anchors = Array.from(node.querySelectorAll<HTMLAnchorElement>("a[href]"));
+        const candidate = anchors.find((a) => {
+          const href = a.getAttribute("href") || "";
+          if (!href) return false;
+          // Prefer the real post permalink, not the actor profile.
+          // Examples we want:
+          // - /feed/update/urn:li:activity:...
+          // - /posts/...
+          // - /pulse/... (rare)
+          const isPost =
+            href.includes("/feed/update/") ||
+            href.includes("urn:li:activity:") ||
+            href.includes("/posts/") ||
+            href.includes("/pulse/");
+          if (!isPost) return false;
+          // Exclude obvious profile/company links that can sometimes include "activity" fragments.
+          if (href.includes("/in/") || href.includes("/company/")) return false;
+          return true;
+        });
 
-        if (permalink?.href) {
-          postUrl = permalink.href.split("?")[0];
-          if (postUrl.startsWith("/")) {
-            postUrl = `https://www.linkedin.com${postUrl}`;
+        const href = candidate?.getAttribute("href") || "";
+        if (href) {
+          postUrl = href.startsWith("/") ? `https://www.linkedin.com${href}` : href;
+          postUrl = postUrl.split("?")[0];
+        }
+        // Fallback: LinkedIn search results often include the activity URN on the article node.
+        // Build a canonical permalink that opens the post directly.
+        if (!postUrl) {
+          const urn =
+            node.getAttribute("data-urn") ||
+            node.getAttribute("data-entity-urn") ||
+            node.querySelector<HTMLElement>("[data-urn]")?.getAttribute("data-urn") ||
+            node.querySelector<HTMLElement>("[data-entity-urn]")?.getAttribute("data-entity-urn") ||
+            "";
+
+          const match = String(urn).match(/urn:li:activity:\d+/);
+          if (match?.[0]) {
+            postUrl = `https://www.linkedin.com/feed/update/${match[0]}/`;
           }
+        }
+        // Last-resort: scan node HTML for an activity URN.
+        if (!postUrl) {
+          const html = node.outerHTML || "";
+          const match = html.match(/urn:li:activity:\d+/);
+          if (match?.[0]) postUrl = `https://www.linkedin.com/feed/update/${match[0]}/`;
         }
 
         extracted.push({
           authorName,
+          authorUrl,
           postContent,
           publishedAtStr,
           postUrl,
@@ -126,24 +202,95 @@ async function fetchLinkedInPosts(keyword: string, runId: string): Promise<Artic
       return extracted;
     });
 
+    // Hydrate: open each post permalink and extract the canonical post text.
+    // Why: search pages sometimes show truncated/quoted text and "url" can otherwise point to publisher.
+    // Best-effort: on failure, keep the already-extracted postContent.
+    const hydrateLimit = 30; // safety cap to avoid long runs / LinkedIn rate limits
+    const browser = page.browser();
+    const hydratedPosts: any[] = [];
+
+    for (let i = 0; i < rawPosts.length; i++) {
+      const post = rawPosts[i];
+      if (!post?.postUrl || typeof post.postUrl !== "string") {
+        hydratedPosts.push(post);
+        continue;
+      }
+      if (i >= hydrateLimit) {
+        hydratedPosts.push(post);
+        continue;
+      }
+
+      let hydratedText: string | null = null;
+      try {
+        const postPage = await browser.newPage();
+        postPage.setDefaultNavigationTimeout(45000);
+        await postPage.goto(post.postUrl, { waitUntil: "domcontentloaded" });
+
+        // Expand "see more" if present
+        await postPage.$$eval("button, span", (elements) => {
+          elements.forEach((el) => {
+            const text = el.textContent?.trim().toLowerCase() || "";
+            if (text === "see more") (el as HTMLElement).click();
+          });
+        });
+
+        hydratedText = await postPage.evaluate(() => {
+          const textEl =
+            document.querySelector<HTMLElement>('[data-test-id="feed-update-text"]') ??
+            document.querySelector<HTMLElement>("div.feed-shared-update-v2__commentary") ??
+            document.querySelector<HTMLElement>("span.break-words") ??
+            document.querySelector<HTMLElement>("div.break-words");
+          const t = (textEl?.innerText || textEl?.textContent || "").trim();
+          return t || null;
+        });
+
+        await postPage.close();
+      } catch (e) {
+        // Non-fatal: keep search text
+      }
+
+      hydratedPosts.push({
+        ...post,
+        postContent: hydratedText && hydratedText.length > (post.postContent?.length ?? 0)
+          ? hydratedText
+          : post.postContent,
+      });
+    }
+
     // Map to canonical Article type with parsed dates in Node.js context
     const ts = Date.now();
-    const articles: Article[] = rawPosts.map((post: any, i: number) => ({
-      id: `li_${runId}_${ts}_${i}`,
-      run_id: runId,
-      source: "linkedin",
-      // Use the first ~120 chars of post content as the title so the LLM has a real signal.
-      // Falls back to "LinkedIn Post" only when content is empty.
-      title: post.postContent
-        ? post.postContent.replace(/\s+/g, ' ').trim().slice(0, 120)
-        : (post.authorName ? `${post.authorName} – LinkedIn post` : 'LinkedIn Post'),
-      url: post.postUrl || `https://www.linkedin.com/search/results/content/?keywords=${runId}`,
-      normalized_url: post.postUrl || `li_${runId}_${ts}_${i}`,
-      snippet: post.postContent,
-      publisher: post.authorName || "LinkedIn",
-      published_at: parseLinkedInRelativeDate(post.publishedAtStr),
-      created_at: new Date().toISOString(),
-    }));
+    const createdAt = new Date().toISOString();
+    const articles: Article[] = hydratedPosts
+      .map((post: any, i: number) => {
+        const url: string = post.postUrl || "";
+        const normalized = url ? normalizeUrl(url) : `linkedin_${runId}_${ts}_${i}`.toLowerCase();
+        const content = collapseWhitespace(post.postContent || "");
+        const author = collapseWhitespace(post.authorName || "") || null;
+        const publisherUrl: string | undefined = post.authorUrl ? String(post.authorUrl) : undefined;
+
+        // IMPORTANT: keep snippet bounded so /api/score prompt doesn't explode and fall back to 0s.
+        const snippet = content ? truncate(content, 1000) : null;
+        // Keep title short but meaningful (helps LLM signal + UI)
+        const title = content
+          ? truncate(content, 140)
+          : (author ? `${author} – LinkedIn post` : "LinkedIn Post");
+
+        return {
+          id: `li_${runId}_${ts}_${i}`,
+          run_id: runId,
+          source: "linkedin",
+          title,
+          url: url || "https://www.linkedin.com/",
+          publisher_url: publisherUrl,
+          normalized_url: normalized,
+          snippet,
+          publisher: author ?? "LinkedIn",
+          published_at: parseLinkedInRelativeDate(post.publishedAtStr),
+          created_at: createdAt,
+        };
+      })
+      // Drop any items missing a usable URL+content (these cause noise + dedup issues downstream)
+      .filter((a) => !!a.url && !!a.normalized_url && !!a.snippet);
 
     return articles;
   });
@@ -159,6 +306,7 @@ export async function POST(req: NextRequest) {
         : [];
     const filterDays: number = typeof body.filterDays === 'number' ? body.filterDays : 7;
     const maxArticles: number = typeof body.maxArticles === 'number' ? body.maxArticles : 40;
+    const scrollSeconds: number = typeof body.scrollSeconds === "number" ? body.scrollSeconds : 25;
 
     if (keywords.length === 0) {
       return NextResponse.json(
@@ -173,7 +321,7 @@ export async function POST(req: NextRequest) {
     for (const k of keywords) {
       if (!k.trim()) continue;
       console.log(`[/api/collect-linkedin] Fetching for keyword: ${k.trim()}`);
-      const articles = await fetchLinkedInPosts(k.trim(), runId);
+      const articles = await fetchLinkedInPosts(k.trim(), runId, scrollSeconds);
       allArticles.push(...articles);
     }
 
@@ -190,7 +338,6 @@ export async function POST(req: NextRequest) {
       dateFiltered = allArticles.filter(a => a.published_at ? new Date(a.published_at) >= cutoff : false);
       console.log(`[/api/collect-linkedin] Date filter (${filterDays}d): ${allArticles.length} → ${dateFiltered.length} articles`);
     }
-
     // ── Deduplicate by normalized_url before insertion ──────────────────────
     const uniqueMap = new Map<string, Article>();
     for (const a of dateFiltered) {
@@ -211,27 +358,60 @@ export async function POST(req: NextRequest) {
       status: 'completed',
       articles_fetched: allArticles.length,
       articles_stored: uniqueArticles.length,
-      dedup_removed: (allArticles.length - dateFiltered.length) + (dateFiltered.length - uniqueArticles.length),
+      dedup_removed: allArticles.length - uniqueArticles.length,
       created_at: new Date().toISOString(),
       completed_at: new Date().toISOString(),
     };
 
+    // Persist to JSON file (audit/debug) and DB (for downstream pipeline)
+    const dataDir = path.join(process.cwd(), "data");
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    const jsonPath = path.join(
+      dataDir,
+      `linkedin-collect-${new Date().toISOString().replace(/[:.]/g, "-")}.json`
+    );
+    fs.writeFileSync(
+      jsonPath,
+      JSON.stringify(
+        {
+          run,
+          stats: {
+            totalFetched: allArticles.length,
+            afterDateFilter: dateFiltered.length,
+            afterDedup: uniqueArticles.length,
+            stored: uniqueArticles.length,
+          },
+          articles: uniqueArticles,
+        },
+        null,
+        2
+      ),
+      "utf8"
+    );
+
+    // DB persistence (non-fatal on failure, consistent with /api/collect behavior)
     let finalArticles = uniqueArticles;
     try {
       await insertRun(run);
       const { insertedCount, idMap } = await insertArticles(uniqueArticles);
-      
-      // ── Remap IDs to handle cross-run duplicates ──────────────────────────
-      // If an article already existed in DB from a previous run, use the existing ID.
-      // This is CRITICAL to avoid FK violations in scored_articles later.
-      finalArticles = uniqueArticles.map(a => ({
-        ...a,
-        id: idMap.get(a.id) ?? a.id
-      }));
 
-      console.log(`[/api/collect-linkedin] DB: run ${runId}, ${insertedCount} new articles persisted, ${idMap.size} remapped`);
+      // Remap cross-run duplicates to the DB's canonical IDs
+      if (idMap.size > 0) {
+        finalArticles = uniqueArticles.map((a) => ({
+          ...a,
+          id: idMap.get(a.id) ?? a.id,
+        }));
+        console.log(
+          `[/api/collect-linkedin] DB: ${insertedCount} new, ${idMap.size} remapped to existing IDs`
+        );
+      } else {
+        console.log(`[/api/collect-linkedin] DB: ${insertedCount} new articles persisted`);
+      }
     } catch (dbErr) {
-      console.error('[/api/collect-linkedin] DB write failed:', dbErr);
+      console.error(
+        "[/api/collect-linkedin] DB write failed (non-fatal):",
+        dbErr instanceof Error ? dbErr.message : dbErr
+      );
     }
 
     return NextResponse.json(
@@ -242,11 +422,11 @@ export async function POST(req: NextRequest) {
         runId,
         stats: {
           totalFetched: allArticles.length,
-          afterDateFilter: dateFiltered.length,
+          afterDateFilter: allArticles.length,
           afterDedup: uniqueArticles.length,
           afterScoreFilter: uniqueArticles.length,
           stored: uniqueArticles.length,
-          dedupRemoved: dateFiltered.length - uniqueArticles.length,
+          dedupRemoved: allArticles.length - uniqueArticles.length,
           scoreFilterRemoved: 0,
         },
       },

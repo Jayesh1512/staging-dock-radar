@@ -27,6 +27,8 @@ export interface Article {
   source: ArticleSource;
   title: string;
   url: string;
+  /** For social sources (e.g. LinkedIn): profile URL of the publisher (person/org). */
+  publisher_url?: string;
   normalized_url: string;
   snippet: string | null;
   publisher: string | null;
@@ -45,11 +47,15 @@ export interface Person {
   name: string;
   role: string;
   organization: string;
+  /** Optional LinkedIn profile URL when available (primarily for LinkedIn sources). */
+  linkedin_url?: string;
 }
 
 export interface Entity {
   name: string;
   type: 'buyer' | 'operator' | 'regulator' | 'partner' | 'si' | 'oem';
+  /** Optional LinkedIn/company URL when available (primarily for LinkedIn sources). */
+  linkedin_url?: string;
 }
 
 export interface ScoredArticle {

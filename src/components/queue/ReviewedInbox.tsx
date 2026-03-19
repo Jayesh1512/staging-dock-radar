@@ -156,7 +156,19 @@ export function ReviewedInbox({ articles, getActions }: ReviewedInboxProps) {
                             <div className="flex flex-wrap gap-2">
                               {a.scored.persons.map((p) => (
                                 <span key={p.name} style={{ fontSize: 12, background: '#fff', border: '1px solid var(--dr-border)', borderRadius: 6, padding: '3px 8px', color: 'var(--dr-text)' }}>
-                                  <span className="font-semibold">{p.name}</span>
+                                  {p.linkedin_url ? (
+                                    <a
+                                      href={p.linkedin_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="font-semibold hover:underline"
+                                      style={{ color: 'var(--dr-blue)' }}
+                                    >
+                                      {p.name}
+                                    </a>
+                                  ) : (
+                                    <span className="font-semibold">{p.name}</span>
+                                  )}
                                   {p.role && <span style={{ color: 'var(--dr-text-muted)' }}> · {p.role}</span>}
                                   {p.organization && <span style={{ color: 'var(--dr-text-muted)' }}> @ {p.organization}</span>}
                                 </span>
@@ -172,7 +184,19 @@ export function ReviewedInbox({ articles, getActions }: ReviewedInboxProps) {
                             <div className="flex flex-wrap gap-2">
                               {a.scored.entities.map((e) => (
                                 <span key={e.name} style={{ fontSize: 11.5, background: '#fff', border: '1px solid var(--dr-border)', borderRadius: 6, padding: '3px 8px', color: 'var(--dr-text)' }}>
-                                  <span className="font-semibold">{e.name}</span>
+                                  {e.linkedin_url ? (
+                                    <a
+                                      href={e.linkedin_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="font-semibold hover:underline"
+                                      style={{ color: 'var(--dr-blue)' }}
+                                    >
+                                      {e.name}
+                                    </a>
+                                  ) : (
+                                    <span className="font-semibold">{e.name}</span>
+                                  )}
                                   <span style={{ color: 'var(--dr-text-muted)', textTransform: 'uppercase', fontSize: 10, marginLeft: 4 }}>{e.type}</span>
                                 </span>
                               ))}

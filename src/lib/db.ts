@@ -73,6 +73,7 @@ export async function insertArticles(articles: Article[]): Promise<{ insertedCou
     source: a.source,
     title: a.title,
     url: a.url,
+    publisher_url: a.publisher_url ?? null,
     normalized_url: a.normalized_url,
     snippet: a.snippet,
     publisher: a.publisher,

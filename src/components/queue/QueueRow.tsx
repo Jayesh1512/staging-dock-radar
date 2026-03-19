@@ -32,8 +32,9 @@ export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onTo
         borderBottom: '1px solid #F3F4F6',
         background: isExpanded ? '#EBF2FE' : '#fff',
         transition: 'background 0.15s ease',
-        cursor: 'default',
+        cursor: 'pointer',
       }}
+      onClick={onToggleExpand}
       onMouseEnter={(e) => { if (!isExpanded) e.currentTarget.style.background = '#F5F8FF'; }}
       onMouseLeave={(e) => { e.currentTarget.style.background = isExpanded ? '#EBF2FE' : '#fff'; }}
     >
@@ -49,7 +50,8 @@ export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onTo
 
       {/* Expand arrow — rotates on expand */}
       <button
-        onClick={onToggleExpand}
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onToggleExpand(); }}
         className="cursor-pointer"
         style={{
           background: 'none', border: 'none', padding: 0,
@@ -63,7 +65,7 @@ export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onTo
       </button>
 
       {/* Title + publisher */}
-      <div className="min-w-0" onClick={onToggleExpand} style={{ cursor: 'pointer' }}>
+      <div className="min-w-0">
         <div className="flex items-center gap-1.5">
           <div
             className="truncate font-semibold"
@@ -110,6 +112,7 @@ export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onTo
       {/* Inline quick-actions */}
       <div className="flex items-center gap-1 justify-end">
         <button
+          type="button"
           onClick={(e) => { e.stopPropagation(); onMarkReviewed(); }}
           title="Mark as Reviewed"
           className="cursor-pointer transition-colors hover:bg-green-50"
@@ -122,6 +125,7 @@ export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onTo
           ✓
         </button>
         <button
+          type="button"
           onClick={(e) => { e.stopPropagation(); onDismiss(); }}
           title="Dismiss"
           className="cursor-pointer transition-colors hover:bg-red-50"
