@@ -43,7 +43,7 @@ Respond with valid JSON only. No markdown code fences, no explanation text — j
  * LinkedIn-specific system prompt for LLM scoring.
  * Same scoring intent as SCORING_SYSTEM_PROMPT, but tuned for short social posts.
  */
-export const LINKEDIN_SCORING_SYSTEM_PROMPT = `You are a Business Development intelligence analyst for FlytBase, a drone technology company. Score LinkedIn posts for commercial opportunity relevance and lead strength.
+export const LINKEDIN_SCORING_SYSTEM_PROMPT_LEGACY = `You are a Business Development intelligence analyst for FlytBase, a drone technology company. Score LinkedIn posts for commercial opportunity relevance and lead strength.
 
 CRITICAL TRANSLATION RULE:
 ALL output fields MUST be in English regardless of the original post language. This applies to EVERY text field (summary, company, country, city, use_case, persons.role, persons.organization, entities.name, drop_reason, etc.).
@@ -118,18 +118,20 @@ SIGNAL TYPES (choose exactly one):
 - EXPANSION: New markets, geographies, or verticals added to existing drone operations; growth of existing DSP/SI business
 - OTHER: Relevant but doesn't fit the above
 
-INDUSTRY (choose one, or "Other: [describe]"):
+INDUSTRY: Classify the industry sector of the deployment. Use these as reference examples for naming format and granularity — you are not restricted to them:
 Energy & Utilities | Public Safety & Emergency Response | Oil & Gas / Industrial Assets | Mining & Natural Resources | Construction & Infrastructure | Ports, Maritime & Logistics Hubs | Agriculture & Forestry | Perimeter Security & Smart Facilities | Water & Environmental Utilities
+Name any sector that accurately describes the activity. Set to null only if no industry is identifiable from the content.
 
 CRITICAL RULES:
 1. OEM RULE: DJI, Skydio, Autel, Parrot, senseFly, Zipline, Wing, Joby, Manna, Matternet = OEMs. They must NEVER appear as "company". They must NEVER appear in entities[] except as type "oem".
 2. COMPANY FIELD: Primary DSP/SI/operator. Null if none identifiable.
 3. BUYER: Named end-client goes in entities[] as type "buyer". The company field is always the DSP/SI, never the buyer.
-4. GEOGRAPHY: "country" and "city" = where the operations happen, NOT where the article was published or where the company is headquartered. If operations are offshore or without a specific city, set city to null. Never use a company HQ city unless operations explicitly happen there.
-5. LANGUAGE: All output fields must be in English. Translate if necessary.
-6. FLYTBASE: Set "flytbase_mentioned" to true ONLY if the string "FlytBase" appears explicitly in the article.
-7. DROP REASON: Set to a brief self-explanatory reason only for articles scoring below 25. Set to null for score >= 25.
-8. PERSONS: Extract ALL named individuals who are quoted or identified by name and role/title anywhere in the article.
+4. OPERATOR vs BUYER: "operator" = a company that commercially offers drone services to third-party clients as a business (e.g. a drone inspection firm hired by others). If the company operates drones only for its own internal use (police departments, hospitals, fire services, retailers, food delivery companies, utilities operating their own fleet), classify them as "buyer" instead — they are an end-user, not a potential FlytBase DSP partner.
+5. GEOGRAPHY: "country" and "city" = where the operations happen, NOT where the article was published or where the company is headquartered. If operations are offshore or without a specific city, set city to null. Never use a company HQ city unless operations explicitly happen there.
+6. LANGUAGE: All output fields must be in English. Translate if necessary.
+7. FLYTBASE: Set "flytbase_mentioned" to true ONLY if the string "FlytBase" appears explicitly in the article.
+8. DROP REASON: Set to a brief self-explanatory reason only for articles scoring below 25. Set to null for score >= 25.
+9. PERSONS: Extract ALL named individuals who are quoted or identified by name and role/title anywhere in the article.
 
 Respond with valid JSON only. No markdown code fences, no explanation text — just the raw JSON.
 `.trim();
@@ -148,6 +150,91 @@ Use the same campaign scoring bands, signal types, industry taxonomy, and critic
 
 Respond with valid JSON only. No markdown code fences, no explanation text — just the raw JSON.
 `.trim();
+
+/**
+ * LinkedIn-specific system prompt.
+ * LinkedIn posts are first-person announcements, not news articles.
+ * The scoring criteria and extraction rules differ from GN/NewsAPI.
+ */
+export const LINKEDIN_SCORING_SYSTEM_PROMPT = `
+You are a BD intelligence analyst for FlytBase, a B2B software company that provides drone fleet management and drone-in-a-box (DIAB) operating software.
+
+You are scoring LinkedIn posts (NOT news articles). Each item is a social media post extracted from LinkedIn search results. The content is first-person text written by a professional or company.
+
+FlytBase target customers: Drone Service Providers (DSPs), Systems Integrators (SIs), and commercial drone operators deploying drones at scale — energy/utilities, public safety, construction, mining, ports, agriculture, logistics.
+
+SCORING BANDS (for LinkedIn posts):
+- 75-100 (High Value): Post explicitly announces a drone dock / drone-in-a-box deployment, signed contract, or active operations. Named company + clear commercial context. Example: "We just deployed 3 DJI Dock 2 units at our wind farm clients in Texas."
+- 50-74 (Strong Signal): Post confirms drone operations are underway or imminent at a named organization. May not name the specific hardware. Example: "Our autonomous inspection drone program is now live across 5 sites."
+- 25-49 (Weak Signal): Post discusses drone capabilities, pilot programs, or hiring for drone roles at an identifiable organization. Example: "We're hiring a drone operations lead — expanding our fleet management program."
+- 0-24 (Noise): OEM product marketing, consumer/hobbyist content, vendor promotions, general industry commentary with no specific operator identified, academic posts.
+
+SIGNAL TYPES (choose exactly one):
+- DEPLOYMENT: Active drone operations announced or confirmed live
+- CONTRACT: Signed contracts, purchase orders, awarded bids
+- PARTNERSHIP: Technology integrations, distribution partnerships, channel deals
+- EXPANSION: New markets, sites, or verticals added to existing drone operations
+- OTHER: Relevant but doesn't fit the above
+
+CRITICAL RULES:
+1. SOURCE: The content in "Snippet" IS the full LinkedIn post text. There is no article body. Score based on the Snippet only.
+2. AUTHOR vs COMPANY: The "Publisher" field is the LinkedIn post author's name. Extract the company or organization they represent from the post content. The company field should be their employer/client organization — NOT the author's personal name.
+3. OEM RULE: DJI, Skydio, Autel, Parrot, Zipline, Wing = OEMs (drone manufacturers). Do NOT put them as "company". Extract the OPERATOR using them.
+4. GEOGRAPHY: country/city = where the drone operations happen, not where the author is located.
+5. LANGUAGE: All output in English. Translate if necessary.
+6. DROP REASON: Set to a brief reason only for posts scoring below 25. Null for 25+.
+7. PERSONS: The post author is implicitly a key person — include them if their name and role are inferable. Also extract any other named individuals.
+8. FLYTBASE: true ONLY if "FlytBase" appears explicitly in the post text.
+
+Respond with valid JSON only. No markdown code fences, no explanation text — just the raw JSON.
+`.trim();
+
+/**
+ * Formats a batch of LinkedIn posts into a single user-turn prompt for scoring.
+ * Uses Snippet as the primary signal (no body for LinkedIn posts).
+ */
+export function formatLinkedInBatchPrompt(articles: Article[]): string {
+  const postBlocks = articles.map((article, i) => {
+    const published = article.published_at
+      ? new Date(article.published_at).toDateString()
+      : 'Unknown';
+
+    return [
+      `[POST ${i + 1}]`,
+      `ID: ${article.id}`,
+      `Author: ${article.publisher ?? 'Unknown'}`,
+      `Posted: ${published}`,
+      `Content: ${article.snippet ?? 'No content available.'}`,
+    ].join('\n');
+  }).join('\n\n');
+
+  return `
+Score the following ${articles.length} LinkedIn posts for DSP/SI partner relevance to FlytBase.
+Return a JSON array with exactly ${articles.length} objects in the same order.
+Each object must include the "id" field matching the post ID exactly.
+
+${postBlocks}
+
+Return exactly this JSON array (no extra text, no code fences):
+[
+  {
+    "id": "<post ID>",
+    "relevance_score": <integer 0-100>,
+    "company": <string: employer/client organization of the author, or null>,
+    "country": <string: country where operations happen, or null>,
+    "city": <string: city if mentioned, or null>,
+    "industry": <string: industry sector name (see reference examples in system prompt), or null>,
+    "use_case": <string: e.g. "Wind Farm Inspection", or null>,
+    "signal_type": <"DEPLOYMENT"|"CONTRACT"|"PARTNERSHIP"|"EXPANSION"|"OTHER">,
+    "summary": <string: 1-2 sentences summarizing the commercial signal, or null>,
+    "flytbase_mentioned": <boolean>,
+    "persons": [{"name": "string", "role": "string", "organization": "string"}],
+    "entities": [{"name": "string", "type": "buyer"|"operator"|"regulator"|"partner"|"si"|"oem"}],
+    "drop_reason": <string: brief reason if score < 25, or null>
+  }
+]
+`.trim();
+}
 
 /**
  * Formats a batch of articles into a single user-turn prompt for scoring.
@@ -177,7 +264,7 @@ export function formatBatchScoringPrompt(articles: Article[], bodies: string[], 
     : '"DEPLOYMENT"|"CONTRACT"|"TENDER"|"PARTNERSHIP"|"EXPANSION"|"FUNDING"|"REGULATION"|"OTHER"';
   const dropThreshold = campaignMode ? 25 : 30;
   const industryField = campaignMode
-    ? `\n    "industry": <string: from taxonomy or "Other: description", or null>,`
+    ? `\n    "industry": <string: industry sector name (see reference examples in system prompt), or null>,`
     : '';
 
   return `

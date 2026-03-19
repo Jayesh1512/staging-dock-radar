@@ -113,7 +113,10 @@ export async function POST(req: Request) {
     let entities: Entity[] = [];
 
     try {
-      const parsed = JSON.parse(raw) as { persons?: Person[]; entities?: Entity[] };
+      const parsed = JSON.parse(raw) as {
+        persons?: Person[];
+        entities?: Entity[];
+      };
       persons = Array.isArray(parsed.persons) ? parsed.persons : [];
       entities = Array.isArray(parsed.entities) ? parsed.entities : [];
     } catch {

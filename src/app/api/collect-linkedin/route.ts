@@ -270,7 +270,10 @@ async function fetchLinkedInPosts(
 
         // IMPORTANT: keep snippet bounded so /api/score prompt doesn't explode and fall back to 0s.
         const snippet = content ? truncate(content, 1000) : null;
-        const title = content ? truncate(content, 140) : `${author ?? "LinkedIn User"} post`;
+        // Keep title short but meaningful (helps LLM signal + UI)
+        const title = content
+          ? truncate(content, 140)
+          : (author ? `${author} – LinkedIn post` : "LinkedIn Post");
 
         return {
           id: `li_${runId}_${ts}_${i}`,
@@ -322,9 +325,22 @@ export async function POST(req: NextRequest) {
       allArticles.push(...articles);
     }
 
+    // ── Date filter: filterDays=0 means "All" — skip cutoff entirely ────────
+    // LinkedIn's relevance-ranked search surfaces old posts (>1 month) when they
+    // are the best match; our cutoff is the only thing discarding them.
+    // filterDays=0 trusts LinkedIn's ranking and keeps everything.
+    let dateFiltered: Article[];
+    if (filterDays === 0) {
+      dateFiltered = allArticles;
+      console.log(`[/api/collect-linkedin] Date filter: All (no cutoff) — ${allArticles.length} articles`);
+    } else {
+      const cutoff = new Date(Date.now() - filterDays * 86_400_000);
+      dateFiltered = allArticles.filter(a => a.published_at ? new Date(a.published_at) >= cutoff : false);
+      console.log(`[/api/collect-linkedin] Date filter (${filterDays}d): ${allArticles.length} → ${dateFiltered.length} articles`);
+    }
     // ── Deduplicate by normalized_url before insertion ──────────────────────
     const uniqueMap = new Map<string, Article>();
-    for (const a of allArticles) {
+    for (const a of dateFiltered) {
       if (!uniqueMap.has(a.normalized_url)) {
         uniqueMap.set(a.normalized_url, a);
       }
@@ -361,7 +377,7 @@ export async function POST(req: NextRequest) {
           run,
           stats: {
             totalFetched: allArticles.length,
-            afterDateFilter: allArticles.length,
+            afterDateFilter: dateFiltered.length,
             afterDedup: uniqueArticles.length,
             stored: uniqueArticles.length,
           },

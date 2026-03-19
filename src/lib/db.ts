@@ -7,7 +7,7 @@
 
 import { requireSupabase } from './supabase';
 import { dedupKey } from './url-fingerprint';
-import type { Run, Article, ScoredArticle, ArticleWithScore } from './types';
+import type { Run, Article, ScoredArticle, ArticleWithScore, DspHitListEntry } from './types';
 
 // ─── Supabase Client ─────────────────────────────────────────────────────────
 
@@ -265,7 +265,11 @@ export async function updateEnrichedScoredArticle(
 ): Promise<void> {
   const db = requireSupabase();
   const { error } = await db.from('scored_articles')
-    .update({ persons, entities, enriched_at: new Date().toISOString() })
+    .update({
+      persons,
+      entities,
+      enriched_at: new Date().toISOString(),
+    })
     .eq('article_id', articleId);
   if (error) throw new Error(`[db] updateEnrichedScoredArticle failed: ${error.message}`);
 }
@@ -280,6 +284,168 @@ export async function updateScoredArticle(
     .update(updates)
     .eq('article_id', articleId);
   if (error) console.error(`[db] updateScoredArticle failed: ${error.message}`);
+}
+
+// ─── DSP Hit List ────────────────────────────────────────────────────────────
+
+/** Upsert FlytBase partners (from CSV upload). Upserts on normalized_name conflict. */
+export async function upsertFlytBasePartners(
+  partners: Array<{
+    name: string;
+    normalized_name: string;
+    region: string | null;
+    type: string;
+  }>,
+): Promise<{ added: number; updated: number }> {
+  if (partners.length === 0) return { added: 0, updated: 0 };
+  const db = requireSupabase();
+
+  const rows = partners.map(p => ({
+    name: p.name,
+    normalized_name: p.normalized_name,
+    region: p.region,
+    type: p.type,
+    last_synced_at: new Date().toISOString(),
+  }));
+
+  const { data, error } = await db.from('flytbase_partners')
+    .upsert(rows, { onConflict: 'normalized_name' })
+    .select('id, created_at, last_synced_at');
+
+  if (error) throw new Error(`[db] upsertFlytBasePartners failed: ${error.message}`);
+
+  // Count adds vs updates by comparing created_at and last_synced_at timestamps
+  let added = 0;
+  let updated = 0;
+  for (const row of (data ?? [])) {
+    const createdAt = new Date(row.created_at as string).getTime();
+    const syncedAt = new Date(row.last_synced_at as string).getTime();
+    // If they're within 1 second, it's a new insert; otherwise it's an update
+    if (Math.abs(syncedAt - createdAt) <= 1000) {
+      added++;
+    } else {
+      updated++;
+    }
+  }
+
+  return { added, updated };
+}
+
+/** Load all FlytBase partners, sorted by name */
+export async function loadFlytBasePartners(): Promise<
+  Array<{ id: string; name: string; normalized_name: string; region: string | null; type: string }>
+> {
+  const db = requireSupabase();
+  const { data, error } = await db.from('flytbase_partners')
+    .select('id, name, normalized_name, region, type')
+    .order('name', { ascending: true });
+
+  if (error) throw new Error(`[db] loadFlytBasePartners failed: ${error.message}`);
+  return (data ?? []) as Array<{ id: string; name: string; normalized_name: string; region: string | null; type: string }>;
+}
+
+/** Log a partner CSV upload event */
+export async function logPartnerUpload(entry: {
+  filename: string;
+  added: number;
+  updated: number;
+  skipped: number;
+  total_partners: number;
+}): Promise<void> {
+  const db = requireSupabase();
+  const { error } = await db.from('partner_upload_log').insert({
+    filename: entry.filename,
+    added: entry.added,
+    updated: entry.updated,
+    skipped: entry.skipped,
+    total_partners: entry.total_partners,
+  });
+
+  if (error) throw new Error(`[db] logPartnerUpload failed: ${error.message}`);
+}
+
+/** Load upload history, newest first (capped at 50) */
+export async function loadUploadHistory(): Promise<
+  Array<{
+    id: string;
+    filename: string;
+    uploaded_at: string;
+    added: number;
+    updated: number;
+    skipped: number;
+    total_partners: number;
+  }>
+> {
+  const db = requireSupabase();
+  const { data, error } = await db.from('partner_upload_log')
+    .select('id, filename, uploaded_at, added, updated, skipped, total_partners')
+    .order('uploaded_at', { ascending: false })
+    .limit(50);
+
+  if (error) throw new Error(`[db] loadUploadHistory failed: ${error.message}`);
+  return (data ?? []) as Array<{
+    id: string;
+    filename: string;
+    uploaded_at: string;
+    added: number;
+    updated: number;
+    skipped: number;
+    total_partners: number;
+  }>;
+}
+
+/** Load hit list data: scored articles with score >= 50, not dropped, not duplicate */
+export async function loadHitListData(): Promise<
+  Array<{
+    id: string;
+    article_id: string;
+    relevance_score: number;
+    company: string | null;
+    country: string | null;
+    industry: string | null;
+    signal_type: string;
+    created_at: string;
+    entities: ScoredArticle['entities'];
+    title: string;
+    url: string;
+    published_at: string | null;
+  }>
+> {
+  const db = requireSupabase();
+  const { data, error } = await db.from('scored_articles')
+    .select(`
+      id,
+      article_id,
+      relevance_score,
+      company,
+      country,
+      industry,
+      signal_type,
+      created_at,
+      entities,
+      articles!article_id(title, url, published_at)
+    `)
+    .gte('relevance_score', 50)
+    .is('drop_reason', null)
+    .eq('is_duplicate', false);
+
+  if (error) throw new Error(`[db] loadHitListData failed: ${error.message}`);
+
+  // Map articles FK to flat object
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    article_id: row.article_id,
+    relevance_score: row.relevance_score,
+    company: row.company,
+    country: row.country,
+    industry: row.industry,
+    signal_type: row.signal_type,
+    created_at: row.created_at,
+    entities: (row.entities as ScoredArticle['entities']) ?? [],
+    title: row.articles?.[0]?.title ?? '',
+    url: row.articles?.[0]?.url ?? '',
+    published_at: row.articles?.[0]?.published_at ?? null,
+  }));
 }
 
 // ─── Queries (for D3 — load on startup) ──────────────────────────────────────

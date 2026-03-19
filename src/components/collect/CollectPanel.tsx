@@ -34,7 +34,7 @@ export function CollectPanel({
   onProceedToScoring,
 }: CollectPanelProps) {
   const { isCollecting, stats, error, startCollect } = useCollect();
-  const [sources, setSources] = useState<ArticleSource[]>(['google_news', 'linkedin']);
+  const [sources, setSources] = useState<ArticleSource[]>([]);
   const [regions, setRegions] = useState<string[]>([...CORE_8_REGIONS]);
 
   // NewsAPI doesn't support regions — only show regions selector when Google News or LinkedIn is selected
@@ -58,7 +58,7 @@ export function CollectPanel({
         <KeywordInput keywords={keywords} onAdd={onAddKeyword} onRemove={onRemoveKeyword} />
 
         <div className="flex flex-col gap-4" style={{ marginBottom: 20 }}>
-          <DateFilter days={filterDays} onChange={onFilterDaysChange} />
+          <DateFilter days={filterDays} onChange={onFilterDaysChange} showAll={sources.includes('linkedin')} />
           
           {/* Only show regions if Google News or LinkedIn is selected */}
           {hasGoogleOrLinkedIn && (
