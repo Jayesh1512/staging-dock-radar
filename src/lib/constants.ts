@@ -186,4 +186,28 @@ export const COUNTRY_NAME_TO_REGION_KEY: Record<string, string> = {
   'united arab emirates': 'UAE', 'uae': 'UAE', 'emirates': 'UAE',
   'saudi arabia': 'Saudi Arabia', 'ksa': 'Saudi Arabia',
   'south africa': 'South Africa',
+  // Additional common LLM outputs
+  'north america': 'US',
+  'multiple': 'Multiple',
+  'global': 'Multiple',
 };
+
+/**
+ * Normalize a country string from LLM output to a canonical display name.
+ * Returns the input as-is if not in the known map.
+ */
+export function normalizeCountryName(country: string): string {
+  if (!country) return country;
+  return COUNTRY_NAME_TO_REGION_KEY[country.toLowerCase().trim()] ?? country;
+}
+
+/**
+ * Known drone OEM names — used to force entity type='oem' and prevent
+ * these appearing as operators/SIs in discovered_companies.
+ * Normalized to lowercase for matching.
+ */
+export const OEM_NAMES = new Set([
+  'dji', 'skydio', 'autel', 'autel robotics', 'parrot', 'sensefly',
+  'zipline', 'wing', 'joby', 'joby aviation', 'manna', 'matternet',
+  'ehang', 'flytrex', 'elbit systems', 'aerovironment',
+]);

@@ -122,6 +122,7 @@ export interface DspHitListEntry {
   mention_count: number;
   avg_score: number;
   latest_article_date: string;
+  latest_article_url: string;
   countries: string[];
   industries: string[];
   signal_types: string[];
@@ -129,7 +130,7 @@ export interface DspHitListEntry {
   articles: { id: string; title: string; url: string; score: number; date: string }[];
   website?: string;
   linkedin?: string;
-  isKnown?: boolean; // true if in flytbase_partners
+  isFlytbasePartner?: boolean; // true if in flytbase_partners
 }
 
 export interface HitListData {
