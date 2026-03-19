@@ -5,7 +5,7 @@ import { OEM_NAMES, normalizeCountryName } from '@/lib/constants';
 import type { DspHitListEntry } from '@/lib/types';
 
 // ── Priority Classifications ──
-const PRIORITY_REGIONS = ['Americas', 'Europe', 'USA', 'Canada', 'United States', 'UK', 'Germany', 'France'];
+const PRIORITY_REGIONS = ['Americas', 'Europe', 'US', 'Canada', 'UK', 'Germany', 'France', 'India', 'UAE', 'Saudi Arabia', 'South Africa', 'Australia'];
 const PRIORITY_INDUSTRIES = ['Security', 'Oil & Gas', 'Oil&Gas', 'Utilities', 'Port', 'Mining', 'Solar'];
 
 /**
@@ -151,7 +151,7 @@ export async function GET(req: Request) {
       }
 
       entry.mention_count++;
-      if (article.country) entry.countries.add(article.country);
+      if (article.country) entry.countries.add(normalizeCountryName(article.country));
       if (article.industry) entry.industries.add(article.industry);
       entry.signal_types.add(article.signal_type);
       entry.articles.push({

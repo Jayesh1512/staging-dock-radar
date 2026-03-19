@@ -89,3 +89,24 @@ All manual entity type corrections made to `scored_articles.entities[]` via Clau
 | 2026-03-19 | (activity:7434873603457916928) | Integrated Aerial Systems | company=null | company="Integrated Aerial Systems", added si | SA-based DSP, score=90, LLM missed from post text | Claude Code |
 | 2026-03-19 | (activity:7424114664902508546) | kioniq | company="Planai-Hochwurzen-Bahnen" | company="kioniq", added si:kioniq | SI deploying for ski resort, buyer was in company field | Claude Code |
 | 2026-03-19 | (activity:7440023586699931648) | ABTECH | company=null | company="ABTECH", added si:ABTECH | US-based DSP, post too short for LLM to extract | Claude Code |
+
+## Session 5 — 2026-03-19 (Enrichment + Hitlist cleanup)
+
+### 5a: Discovered companies enrichment (44 upserts via enrich-partners-from-csv.sql)
+Bulk upsert of website, linkedin, linkedin_followers, and industries for 44 companies from manually enriched CSV. See scripts/enrich-partners-from-csv.sql for full list.
+
+### 5b: Buyer reclassification + data normalization (via fix-hitlist-cleanup.sql)
+
+| Date | Article ID | Entity Name | Old Type | New Type | Reason | Changed By |
+|------|-----------|-------------|----------|----------|--------|------------|
+| 2026-03-19 | (all matching) | Anji County | operator/si/partner | buyer | Chinese county government — end-user, not DSP | Claude Code |
+| 2026-03-19 | (all matching) | Austintown Fire Department | operator/si/partner | buyer | US fire department — end-user, not DSP | Claude Code |
+| 2026-03-19 | (all matching) | PHOTOSOL | operator | buyer | French solar PV developer — uses drones internally, not a DSP | Claude Code |
+| 2026-03-19 | (all matching) | Marut Dronetech | entity name variant | Marut Drones | Same company — standardized display name | Claude Code |
+| 2026-03-19 | (all matching) | country: USA/United States | USA, United States | US | Country name normalization to canonical "US" | Claude Code |
+
+### 5c: Code changes
+- hitlist/route.ts: Added normalizeCountryName() to country aggregation (fixes US/USA split in region filter)
+- hitlist/route.ts: Updated PRIORITY_REGIONS to use normalized names
+- scoring-prompt.ts: Added canonical country names to GEOGRAPHY rule
+- campaign-export/route.ts: Updated "Hot Lead" → "High Value" label
