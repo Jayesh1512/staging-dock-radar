@@ -580,7 +580,7 @@ const PartnerDashboard: React.FC = () => {
               </thead>
               <tbody>
                 {sortedTop20.length === 0 && (
-                  <tr><td colSpan={9} style={{ ...sTD, textAlign: 'center', color: '#9CA3AF', padding: 40 }}>No DSPs available for ranking</td></tr>
+                  <tr><td colSpan={10} style={{ ...sTD, textAlign: 'center', color: '#9CA3AF', padding: 40 }}>No DSPs available for ranking</td></tr>
                 )}
                 {sortedTop20.map((dsp, i) => {
                   const key = `top-${dsp.normalized_name}`;
@@ -592,16 +592,15 @@ const PartnerDashboard: React.FC = () => {
                         <td style={{ ...sTD, fontWeight: 700, color: '#15803D', fontSize: 15 }}>{dsp.hit_score.toFixed(2)}</td>
                         <td style={sTD}><RegionPriority countries={dsp.countries} /></td>
                         <td style={sTD}><IndustryPriority industries={dsp.industries} /></td>
+                        <td style={sTD}>{dsp.signal_types.map(s => <SignalBadge key={s} type={s} />)}</td>
                         <td style={sTD} onClick={e => e.stopPropagation()}>
                           {dsp.website
                             ? <a href={dsp.website} target="_blank" rel="noopener noreferrer" style={sLinkBtn}>Website ↗</a>
                             : <span style={{ color: '#D1D5DB' }}>—</span>}
                         </td>
                         <td style={sTD} onClick={e => e.stopPropagation()}>
-                          {dsp.latest_article_url
-                            ? <a href={dsp.latest_article_url} target="_blank" rel="noopener noreferrer" style={sLinkBtnGray}>
-                                {dsp.latest_article_date ? new Date(dsp.latest_article_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ↗' : 'Article ↗'}
-                              </a>
+                          {dsp.linkedin
+                            ? <a href={dsp.linkedin} target="_blank" rel="noopener noreferrer" style={sLinkBtn}>LinkedIn ↗</a>
                             : <span style={{ color: '#D1D5DB' }}>—</span>}
                         </td>
                         <td style={sTD}>
@@ -615,7 +614,12 @@ const PartnerDashboard: React.FC = () => {
                       </tr>
                       {expandedRows[key] && (
                         <tr>
-                          <td colSpan={9} style={sExpandedCell}>
+                          <td colSpan={10} style={sExpandedCell}>
+                            {dsp.latest_article_date && (
+                              <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 12 }}>
+                                Last seen: <span style={{ fontWeight: 600 }}>{new Date(dsp.latest_article_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                              </div>
+                            )}
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', letterSpacing: 0.5, marginBottom: 10, textTransform: 'uppercase' as const }}>
                               Source Articles
                             </div>
@@ -682,13 +686,6 @@ const sLinkBtn: React.CSSProperties = {
   whiteSpace: 'nowrap' as const,
 };
 
-const sLinkBtnGray: React.CSSProperties = {
-  display: 'inline-block', fontSize: 12, fontWeight: 500,
-  color: '#6B7280', textDecoration: 'none',
-  padding: '2px 8px', borderRadius: 6,
-  background: '#F3F4F6', border: '1px solid #E5E7EB',
-  whiteSpace: 'nowrap' as const,
-};
 
 const sClickableRow: React.CSSProperties = {
   borderBottom: '1px solid #F3F4F6', cursor: 'pointer',
