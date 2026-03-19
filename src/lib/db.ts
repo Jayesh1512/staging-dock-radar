@@ -7,6 +7,8 @@
 
 import { requireSupabase } from './supabase';
 import { dedupKey } from './url-fingerprint';
+import { normalizeCountryName, OEM_NAMES } from './constants';
+import { normalizeCompanyName } from './company-normalize';
 import type { Run, Article, ScoredArticle, ArticleWithScore, DspHitListEntry } from './types';
 
 // ─── Supabase Client ─────────────────────────────────────────────────────────
@@ -333,15 +335,15 @@ export async function upsertFlytBasePartners(
 
 /** Load all FlytBase partners, sorted by name */
 export async function loadFlytBasePartners(): Promise<
-  Array<{ id: string; name: string; normalized_name: string; region: string | null; type: string }>
+  Array<{ id: string; name: string; normalized_name: string; region: string | null; type: string; website: string | null; linkedin: string | null }>
 > {
   const db = requireSupabase();
   const { data, error } = await db.from('flytbase_partners')
-    .select('id, name, normalized_name, region, type')
+    .select('id, name, normalized_name, region, type, website, linkedin')
     .order('name', { ascending: true });
 
   if (error) throw new Error(`[db] loadFlytBasePartners failed: ${error.message}`);
-  return (data ?? []) as Array<{ id: string; name: string; normalized_name: string; region: string | null; type: string }>;
+  return (data ?? []) as Array<{ id: string; name: string; normalized_name: string; region: string | null; type: string; website: string | null; linkedin: string | null }>;
 }
 
 /** Log a partner CSV upload event */
@@ -406,6 +408,7 @@ export async function loadHitListData(): Promise<
     signal_type: string;
     created_at: string;
     entities: ScoredArticle['entities'];
+    persons: ScoredArticle['persons'];
     title: string;
     url: string;
     published_at: string | null;
@@ -423,6 +426,7 @@ export async function loadHitListData(): Promise<
       signal_type,
       created_at,
       entities,
+      persons,
       articles!article_id(title, url, published_at)
     `)
     .gte('relevance_score', 50)
@@ -442,6 +446,7 @@ export async function loadHitListData(): Promise<
     signal_type: row.signal_type,
     created_at: row.created_at,
     entities: (row.entities as ScoredArticle['entities']) ?? [],
+    persons: (row.persons as ScoredArticle['persons']) ?? [],
     title: row.articles?.[0]?.title ?? '',
     url: row.articles?.[0]?.url ?? '',
     published_at: row.articles?.[0]?.published_at ?? null,
@@ -575,4 +580,281 @@ function mapScoredArticle(row: Record<string, unknown>): ScoredArticle {
     industry: (row.industry as string) ?? null,
     created_at: row.created_at as string,
   };
+}
+
+// ─── Discovered Companies & Contacts ─────────────────────────────────────────
+
+export interface DiscoveredCompanyRow {
+  normalized_name: string;
+  display_name: string;
+  types: string[];
+  website: string | null;
+  linkedin: string | null;
+  countries: string[];
+  industries: string[];
+  signal_types: string[];
+  mention_count: number;
+  first_seen_at: string;
+  last_seen_at: string;
+  enriched_at: string | null;
+  enriched_by: string | null;
+}
+
+/**
+ * Upsert discovered companies from scored article entities.
+ * Within each article, entities are deduped by normalized name (types merged).
+ * OEM names are forced to type='oem'.
+ * Country names are normalized via COUNTRY_NAME_MAP.
+ */
+export async function upsertDiscoveredFromArticles(
+  articles: Array<{
+    article_id: string;
+    entities: Array<{ name: string; type: string }>;
+    persons: Array<{ name: string; role: string; organization: string }>;
+    country: string | null;
+    industry: string | null;
+    signal_type: string;
+  }>,
+): Promise<{ companiesUpserted: number; contactsUpserted: number }> {
+  const db = requireSupabase();
+  const now = new Date().toISOString();
+
+  // ── Aggregate companies across all articles ──
+  const companyAgg = new Map<string, {
+    display_name: string;
+    types: Set<string>;
+    countries: Set<string>;
+    industries: Set<string>;
+    signal_types: Set<string>;
+    article_ids: Set<string>;
+  }>();
+
+  // ── Aggregate contacts ──
+  const contactAgg = new Map<string, {
+    name: string;
+    name_normalized: string;
+    role: string;
+    organization: string;
+    company_normalized_name: string | null;
+    source_article_id: string;
+  }>();
+
+  for (const article of articles) {
+    // Within-article entity dedup: normalize names, merge types
+    const articleEntities = new Map<string, { display_name: string; types: Set<string> }>();
+
+    for (const entity of (article.entities ?? [])) {
+      if (!entity.name) continue;
+      const norm = normalizeCompanyName(entity.name);
+      if (!norm) continue;
+
+      // OEM check: force type to 'oem' for known manufacturers
+      const entityType = OEM_NAMES.has(norm) ? 'oem' : (entity.type || 'operator');
+
+      const existing = articleEntities.get(norm);
+      if (existing) {
+        existing.types.add(entityType);
+      } else {
+        articleEntities.set(norm, { display_name: entity.name, types: new Set([entityType]) });
+      }
+    }
+
+    // Aggregate into global map
+    const normalizedCountry = article.country ? normalizeCountryName(article.country) : null;
+
+    for (const [norm, entry] of articleEntities) {
+      const existing = companyAgg.get(norm);
+      if (existing) {
+        entry.types.forEach(t => existing.types.add(t));
+        if (normalizedCountry) existing.countries.add(normalizedCountry);
+        if (article.industry) existing.industries.add(article.industry);
+        existing.signal_types.add(article.signal_type);
+        existing.article_ids.add(article.article_id);
+      } else {
+        companyAgg.set(norm, {
+          display_name: entry.display_name,
+          types: new Set(entry.types),
+          countries: new Set(normalizedCountry ? [normalizedCountry] : []),
+          industries: new Set(article.industry ? [article.industry] : []),
+          signal_types: new Set([article.signal_type]),
+          article_ids: new Set([article.article_id]),
+        });
+      }
+    }
+
+    // Aggregate persons → contacts
+    for (const person of (article.persons ?? [])) {
+      if (!person.name) continue;
+      const nameNorm = person.name.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+      if (!nameNorm) continue;
+
+      // Try to link person to a discovered company via their organization
+      let companyNorm: string | null = null;
+      if (person.organization) {
+        const orgNorm = normalizeCompanyName(person.organization);
+        if (orgNorm && companyAgg.has(orgNorm)) {
+          companyNorm = orgNorm;
+        }
+      }
+
+      const dedupKey = `${nameNorm}|${companyNorm ?? ''}`;
+      if (!contactAgg.has(dedupKey)) {
+        contactAgg.set(dedupKey, {
+          name: person.name,
+          name_normalized: nameNorm,
+          role: person.role || '',
+          organization: person.organization || '',
+          company_normalized_name: companyNorm,
+          source_article_id: article.article_id,
+        });
+      }
+    }
+  }
+
+  // ── Upsert companies ──
+  let companiesUpserted = 0;
+  if (companyAgg.size > 0) {
+    const rows = Array.from(companyAgg.entries()).map(([norm, entry]) => ({
+      normalized_name: norm,
+      display_name: entry.display_name,
+      types: JSON.stringify(Array.from(entry.types)),
+      countries: JSON.stringify(Array.from(entry.countries)),
+      industries: JSON.stringify(Array.from(entry.industries)),
+      signal_types: JSON.stringify(Array.from(entry.signal_types)),
+      mention_count: entry.article_ids.size,
+      first_seen_at: now,
+      last_seen_at: now,
+      created_at: now,
+      updated_at: now,
+    }));
+
+    // Upsert in batches of 50
+    for (let i = 0; i < rows.length; i += 50) {
+      const batch = rows.slice(i, i + 50);
+      const { error } = await db.from('discovered_companies').upsert(batch, {
+        onConflict: 'normalized_name',
+        ignoreDuplicates: false,
+      });
+      if (error) {
+        console.error('[db] upsertDiscoveredCompanies batch failed:', error.message);
+      } else {
+        companiesUpserted += batch.length;
+      }
+    }
+
+    // For existing rows: merge arrays and update counts via RPC or manual update
+    // Supabase upsert overwrites — so we need to merge with existing data
+    for (const [norm, entry] of companyAgg) {
+      const { data: existing } = await db.from('discovered_companies')
+        .select('types, countries, industries, signal_types, mention_count, first_seen_at')
+        .eq('normalized_name', norm)
+        .single();
+
+      if (existing) {
+        const mergedTypes = Array.from(new Set([...(existing.types as string[] || []), ...entry.types]));
+        const mergedCountries = Array.from(new Set([...(existing.countries as string[] || []), ...entry.countries]));
+        const mergedIndustries = Array.from(new Set([...(existing.industries as string[] || []), ...entry.industries]));
+        const mergedSignals = Array.from(new Set([...(existing.signal_types as string[] || []), ...entry.signal_types]));
+        const mergedCount = Math.max(existing.mention_count ?? 0, entry.article_ids.size);
+
+        await db.from('discovered_companies')
+          .update({
+            types: mergedTypes,
+            countries: mergedCountries,
+            industries: mergedIndustries,
+            signal_types: mergedSignals,
+            mention_count: mergedCount,
+            last_seen_at: now,
+            updated_at: now,
+          })
+          .eq('normalized_name', norm);
+      }
+    }
+  }
+
+  // ── Upsert contacts ──
+  let contactsUpserted = 0;
+  if (contactAgg.size > 0) {
+    const contactRows = Array.from(contactAgg.values()).map(c => ({
+      company_normalized_name: c.company_normalized_name,
+      name: c.name,
+      name_normalized: c.name_normalized,
+      role: c.role,
+      organization: c.organization,
+      source_article_id: c.source_article_id,
+      enriched_by: 'scoring',
+      created_at: now,
+      updated_at: now,
+    }));
+
+    // Insert contacts, skip on conflict (same name + same company)
+    for (let i = 0; i < contactRows.length; i += 50) {
+      const batch = contactRows.slice(i, i + 50);
+      const { error } = await db.from('discovered_contacts').upsert(batch, {
+        onConflict: 'name_normalized,company_normalized_name',
+        ignoreDuplicates: true,
+      });
+      if (error) {
+        // Partial index conflicts may cause errors for null company — insert one by one
+        for (const row of batch) {
+          const { error: singleErr } = await db.from('discovered_contacts').upsert(row, {
+            onConflict: 'name_normalized,company_normalized_name',
+            ignoreDuplicates: true,
+          });
+          if (!singleErr) contactsUpserted++;
+        }
+      } else {
+        contactsUpserted += batch.length;
+      }
+    }
+  }
+
+  return { companiesUpserted, contactsUpserted };
+}
+
+/** Load all discovered companies for hitlist overlay */
+export async function loadDiscoveredCompanies(): Promise<DiscoveredCompanyRow[]> {
+  const db = requireSupabase();
+  const { data, error } = await db.from('discovered_companies')
+    .select('*')
+    .order('mention_count', { ascending: false });
+
+  if (error) throw new Error(`[db] loadDiscoveredCompanies failed: ${error.message}`);
+  return (data ?? []) as DiscoveredCompanyRow[];
+}
+
+/** Bulk update website/linkedin for discovered companies (Comet enrichment) */
+export async function enrichDiscoveredCompanies(
+  entries: Array<{ name: string; website?: string; linkedin?: string }>,
+): Promise<{ updated: number; not_found: number }> {
+  const db = requireSupabase();
+  const now = new Date().toISOString();
+  let updated = 0;
+  let not_found = 0;
+
+  for (const entry of entries) {
+    const norm = normalizeCompanyName(entry.name);
+    if (!norm) { not_found++; continue; }
+
+    const updateFields: Record<string, unknown> = {
+      enriched_at: now,
+      enriched_by: 'comet',
+      updated_at: now,
+    };
+    if (entry.website) updateFields.website = entry.website;
+    if (entry.linkedin) updateFields.linkedin = entry.linkedin;
+
+    const { data, error } = await db.from('discovered_companies')
+      .update(updateFields)
+      .eq('normalized_name', norm)
+      .select('normalized_name');
+
+    if (error || !data || data.length === 0) {
+      not_found++;
+    } else {
+      updated++;
+    }
+  }
+
+  return { updated, not_found };
 }

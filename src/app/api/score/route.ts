@@ -9,7 +9,7 @@ import {
   formatLinkedInBatchScoringPrompt,
 } from '@/lib/scoring-prompt';
 import { fetchArticleBody } from '@/lib/article-body';
-import { insertScoredArticles, updateArticleResolvedUrl, loadScoredByArticleIds, loadDedupKeysFromScoredArticles, loadEverQueuedArticleIds, markArticlesAsEverQueued } from '@/lib/db';
+import { insertScoredArticles, updateArticleResolvedUrl, loadScoredByArticleIds, loadDedupKeysFromScoredArticles, loadEverQueuedArticleIds, markArticlesAsEverQueued, upsertDiscoveredFromArticles } from '@/lib/db';
 import { gateTwoDedup } from '@/lib/dedup';
 import { urlFingerprint, dedupKey } from '@/lib/url-fingerprint';
 import type { Article, ScoredArticle, ArticleWithScore, SignalType } from '@/lib/types';
@@ -492,6 +492,28 @@ export async function POST(req: Request) {
       if (urlUpdates.length > 0) await Promise.all(urlUpdates);
 
       console.log(`[/api/score] DB: ${freshnessResults.length} scored + ${urlDedupScored.length} url-dedup placeholders + ${urlDedupPreserved.length} preserved (${cached.length} from cache)`);
+
+      // Auto-populate discovered_companies + discovered_contacts from freshly scored articles
+      const qualifiedScored = freshnessResults
+        .map(r => r.scored)
+        .filter(s => s.relevance_score >= 50 && !s.drop_reason && !s.is_duplicate);
+
+      if (qualifiedScored.length > 0) {
+        try {
+          const discoveredInput = qualifiedScored.map(s => ({
+            article_id: s.article_id,
+            entities: s.entities ?? [],
+            persons: s.persons ?? [],
+            country: s.country,
+            industry: s.industry ?? null,
+            signal_type: s.signal_type,
+          }));
+          const dcResult = await upsertDiscoveredFromArticles(discoveredInput);
+          console.log(`[/api/score] Discovered: ${dcResult.companiesUpserted} companies, ${dcResult.contactsUpserted} contacts`);
+        } catch (dcErr) {
+          console.error('[/api/score] Discovered upsert failed (non-fatal):', dcErr instanceof Error ? dcErr.message : dcErr);
+        }
+      }
     } catch (dbErr) {
       // DB write failure is non-fatal — data still returned to client
       console.error('[/api/score] DB write failed (non-fatal):', dbErr instanceof Error ? dbErr.message : dbErr);

@@ -18,6 +18,25 @@ interface ScoringWeights {
   industryWeight: number;
 }
 
+type SortConfig = { key: string; dir: 'asc' | 'desc' } | null;
+
+function toggleSort(config: SortConfig, key: string): SortConfig {
+  if (config?.key === key) return { key, dir: config.dir === 'asc' ? 'desc' : 'asc' };
+  return { key, dir: 'asc' };
+}
+
+function sortRows<T>(rows: T[], config: SortConfig, getValue: (row: T, key: string) => string | number): T[] {
+  if (!config) return rows;
+  return [...rows].sort((a, b) => {
+    const va = getValue(a, config.key);
+    const vb = getValue(b, config.key);
+    const cmp = typeof va === 'number' && typeof vb === 'number'
+      ? va - vb
+      : String(va ?? '').localeCompare(String(vb ?? ''));
+    return config.dir === 'asc' ? cmp : -cmp;
+  });
+}
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function exportCsv(filename: string, rows: string[][], headers: string[]) {
@@ -110,6 +129,31 @@ function ArticleRow({ article, index }: { article: { id: string; title: string; 
   );
 }
 
+function SortHeader({
+  label, sortKey, config, onSort, style,
+}: {
+  label: string;
+  sortKey: string;
+  config: SortConfig;
+  onSort: (key: string) => void;
+  style?: React.CSSProperties;
+}) {
+  const active = config?.key === sortKey;
+  return (
+    <th
+      style={{ ...sTH, ...style, cursor: 'pointer', userSelect: 'none' as const }}
+      onClick={() => onSort(sortKey)}
+    >
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+        {label}
+        <span style={{ fontSize: 8, color: active ? '#15803D' : '#CBD5E1', lineHeight: 1 }}>
+          {active && config!.dir === 'asc' ? '▲' : '▼'}
+        </span>
+      </span>
+    </th>
+  );
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 const PartnerDashboard: React.FC = () => {
@@ -123,6 +167,11 @@ const PartnerDashboard: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [selectedIndustry, setSelectedIndustry] = useState('all');
   const [scoringWeights, setScoringWeights] = useState<ScoringWeights>({ regionWeight: 0.5, industryWeight: 0.5 });
+
+  // ─── Sort State (one per tab) ───────────────────────────────────────────────
+  const [partnerSort, setPartnerSort] = useState<SortConfig>(null);
+  const [dspSort, setDspSort] = useState<SortConfig>({ key: 'mentions', dir: 'desc' });
+  const [top20Sort, setTop20Sort] = useState<SortConfig>({ key: 'score', dir: 'desc' });
 
   // ─── Data Fetching ─────────────────────────────────────────────────────────
 
@@ -159,7 +208,7 @@ const PartnerDashboard: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scoringWeights]);
 
-  // ─── Derived Data ──────────────────────────────────────────────────────────
+  // ─── Derived & Sorted Data ─────────────────────────────────────────────────
 
   const newDsps = hitListData?.new_companies ?? [];
   const top20 = newDsps.slice(0, 20);
@@ -171,6 +220,31 @@ const PartnerDashboard: React.FC = () => {
     const regionOk = selectedRegion === 'all' || d.countries.includes(selectedRegion);
     const industryOk = selectedIndustry === 'all' || d.industries.includes(selectedIndustry);
     return regionOk && industryOk;
+  });
+
+  const sortedPartners = sortRows(partners, partnerSort, (p, key) => {
+    if (key === 'name') return p.name ?? '';
+    if (key === 'region') return p.region ?? '';
+    if (key === 'type') return p.type ?? '';
+    return '';
+  });
+
+  const sortedFilteredDsps = sortRows(filteredNewDsps, dspSort, (d, key) => {
+    if (key === 'name') return d.name ?? '';
+    if (key === 'mentions') return d.mention_count;
+    if (key === 'region') return d.countries[0] ?? '';
+    if (key === 'industry') return d.industries[0] ?? '';
+    if (key === 'signal') return d.signal_types[0] ?? '';
+    return '';
+  });
+
+  const sortedTop20 = sortRows(top20, top20Sort, (d, key) => {
+    if (key === 'name') return d.name ?? '';
+    if (key === 'score') return d.hit_score;
+    if (key === 'region') return d.countries[0] ?? '';
+    if (key === 'industry') return d.industries[0] ?? '';
+    if (key === 'articles') return d.articles.length;
+    return '';
   });
 
   // ─── Actions ───────────────────────────────────────────────────────────────
@@ -206,30 +280,30 @@ const PartnerDashboard: React.FC = () => {
 
   const exportPartners = () => {
     exportCsv('flytbase-partners.csv',
-      partners.map(p => [p.name, p.region ?? '', p.type ?? '', p.website ?? '', p.linkedin ?? '']),
+      sortedPartners.map(p => [p.name, p.region ?? '', p.type ?? '', p.website ?? '', p.linkedin ?? '']),
       ['Name', 'Region', 'Type', 'Website', 'LinkedIn'],
     );
   };
 
   const exportNewDsps = () => {
     exportCsv('new-dsps.csv',
-      filteredNewDsps.map(d => [
+      sortedFilteredDsps.map(d => [
         d.name, d.countries.join('; '), d.industries.join('; '),
         String(d.mention_count), d.signal_types.join('; '),
-        d.website ?? '', d.linkedin ?? '',
+        d.website ?? '', d.latest_article_url ?? '', d.latest_article_date ?? '',
       ]),
-      ['Company', 'Countries', 'Industries', 'Mentions', 'Signals', 'Website', 'LinkedIn'],
+      ['Company', 'Countries', 'Industries', 'Mentions', 'Signals', 'Website', 'Latest Article URL', 'Latest Article Date'],
     );
   };
 
   const exportTop20 = () => {
     exportCsv('top-20-targets.csv',
-      top20.map((d, i) => [
+      sortedTop20.map((d, i) => [
         String(i + 1), d.name, d.hit_score.toFixed(2),
         d.countries.join('; '), d.industries.join('; '),
-        d.website ?? '', d.linkedin ?? '', String(d.articles.length),
+        d.website ?? '', d.latest_article_url ?? '', d.latest_article_date ?? '', String(d.articles.length),
       ]),
-      ['Rank', 'Company', 'Hit Score', 'Countries', 'Industries', 'Website', 'LinkedIn', 'Articles'],
+      ['Rank', 'Company', 'Hit Score', 'Countries', 'Industries', 'Website', 'Latest Article URL', 'Latest Article Date', 'Articles'],
     );
   };
 
@@ -309,15 +383,15 @@ const PartnerDashboard: React.FC = () => {
             <table style={sTable}>
               <thead>
                 <tr style={sTHeadRow}>
-                  <th style={sTH}>NAME</th>
-                  <th style={sTH}>REGION</th>
-                  <th style={sTH}>TYPE</th>
+                  <SortHeader label="NAME"     sortKey="name"   config={partnerSort} onSort={k => setPartnerSort(c => toggleSort(c, k))} />
+                  <SortHeader label="REGION"   sortKey="region" config={partnerSort} onSort={k => setPartnerSort(c => toggleSort(c, k))} />
+                  <SortHeader label="TYPE"     sortKey="type"   config={partnerSort} onSort={k => setPartnerSort(c => toggleSort(c, k))} />
                   <th style={sTH}>WEBSITE</th>
                   <th style={sTH}>LINKEDIN</th>
                 </tr>
               </thead>
               <tbody>
-                {partners.map(p => (
+                {sortedPartners.map(p => (
                   <tr key={p.id} style={sTRow}>
                     <td style={sTD}>{p.name}</td>
                     <td style={sTD}>{p.region || '—'}</td>
@@ -381,21 +455,20 @@ const PartnerDashboard: React.FC = () => {
             <table style={sTable}>
               <thead>
                 <tr style={sTHeadRow}>
-                  <th style={{ ...sTH, width: '20%' }}>COMPANY</th>
-                  <th style={{ ...sTH, width: '14%' }}>REGION</th>
-                  <th style={{ ...sTH, width: '22%' }}>INDUSTRY</th>
-                  <th style={{ ...sTH, width: '8%' }}>MENTIONS</th>
-                  <th style={{ ...sTH, width: '14%' }}>SIGNAL</th>
-                  <th style={{ ...sTH, width: '10%' }}>WEBSITE</th>
-                  <th style={{ ...sTH, width: '10%' }}>LINKEDIN</th>
-                  <th style={{ ...sTH, width: '2%' }}></th>
+                  <SortHeader label="COMPANY"  sortKey="name"     config={dspSort} onSort={k => setDspSort(c => toggleSort(c, k))} style={{ width: '22%' }} />
+                  <SortHeader label="REGION"   sortKey="region"   config={dspSort} onSort={k => setDspSort(c => toggleSort(c, k))} style={{ width: '16%' }} />
+                  <SortHeader label="INDUSTRY" sortKey="industry" config={dspSort} onSort={k => setDspSort(c => toggleSort(c, k))} style={{ width: '20%' }} />
+                  <SortHeader label="SIGNAL"   sortKey="signal"   config={dspSort} onSort={k => setDspSort(c => toggleSort(c, k))} style={{ width: '16%' }} />
+                  <th style={{ ...sTH, width: '11%' }}>WEBSITE</th>
+                  <th style={{ ...sTH, width: '11%' }}>LINKEDIN</th>
+                  <th style={{ ...sTH, width: '4%' }}></th>
                 </tr>
               </thead>
               <tbody>
-                {filteredNewDsps.length === 0 && (
-                  <tr><td colSpan={8} style={{ ...sTD, textAlign: 'center', color: '#9CA3AF', padding: 40 }}>No DSPs match the selected filters</td></tr>
+                {sortedFilteredDsps.length === 0 && (
+                  <tr><td colSpan={7} style={{ ...sTD, textAlign: 'center', color: '#9CA3AF', padding: 40 }}>No DSPs match the selected filters</td></tr>
                 )}
-                {filteredNewDsps.map(dsp => (
+                {sortedFilteredDsps.map(dsp => (
                   <React.Fragment key={dsp.normalized_name}>
                     <tr style={sClickableRow} onClick={() => toggleRow(dsp.normalized_name)}>
                       <td style={{ ...sTD, fontWeight: 600, color: '#111827' }}>{dsp.name}</td>
@@ -407,7 +480,6 @@ const PartnerDashboard: React.FC = () => {
                         </div>
                       </td>
                       <td style={{ ...sTD, fontSize: 13, color: '#4B5563' }}>{dsp.industries.join(', ') || '—'}</td>
-                      <td style={{ ...sTD, textAlign: 'center' as const }}>{dsp.mention_count}</td>
                       <td style={sTD}>{dsp.signal_types.map(s => <SignalBadge key={s} type={s} />)}</td>
                       <td style={sTD} onClick={e => e.stopPropagation()}>
                         {dsp.website
@@ -425,7 +497,12 @@ const PartnerDashboard: React.FC = () => {
                     </tr>
                     {expandedRows[dsp.normalized_name] && (
                       <tr>
-                        <td colSpan={8} style={sExpandedCell}>
+                        <td colSpan={7} style={sExpandedCell}>
+                          {dsp.latest_article_date && (
+                            <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 12 }}>
+                              Last seen: <span style={{ fontWeight: 600 }}>{new Date(dsp.latest_article_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                            </div>
+                          )}
                           <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', letterSpacing: 0.5, marginBottom: 10, textTransform: 'uppercase' as const }}>
                             Source Articles
                           </div>
@@ -489,22 +566,23 @@ const PartnerDashboard: React.FC = () => {
             <table style={sTable}>
               <thead>
                 <tr style={sTHeadRow}>
-                  <th style={{ ...sTH, width: 40 }}>#</th>
-                  <th style={{ ...sTH, width: '20%' }}>COMPANY</th>
-                  <th style={{ ...sTH, width: 80 }}>SCORE</th>
-                  <th style={{ ...sTH, width: '16%' }}>REGION</th>
-                  <th style={{ ...sTH, width: '20%' }}>INDUSTRY</th>
-                  <th style={{ ...sTH, width: 100 }}>WEBSITE</th>
-                  <th style={{ ...sTH, width: 100 }}>LINKEDIN</th>
-                  <th style={{ ...sTH, width: 90 }}>ARTICLES</th>
+                  <th style={{ ...sTH, width: 36 }}>#</th>
+                  <SortHeader label="COMPANY"  sortKey="name"     config={top20Sort} onSort={k => setTop20Sort(c => toggleSort(c, k))} style={{ width: '18%' }} />
+                  <SortHeader label="SCORE"    sortKey="score"    config={top20Sort} onSort={k => setTop20Sort(c => toggleSort(c, k))} style={{ width: 72 }} />
+                  <SortHeader label="REGION"   sortKey="region"   config={top20Sort} onSort={k => setTop20Sort(c => toggleSort(c, k))} style={{ width: '14%' }} />
+                  <SortHeader label="INDUSTRY" sortKey="industry" config={top20Sort} onSort={k => setTop20Sort(c => toggleSort(c, k))} style={{ width: '15%' }} />
+                  <th style={{ ...sTH, width: '13%' }}>SIGNAL</th>
+                  <th style={{ ...sTH, width: 90 }}>WEBSITE</th>
+                  <th style={{ ...sTH, width: 90 }}>LINKEDIN</th>
+                  <SortHeader label="ARTICLES" sortKey="articles" config={top20Sort} onSort={k => setTop20Sort(c => toggleSort(c, k))} style={{ width: 80 }} />
                   <th style={{ ...sTH, width: 28 }}></th>
                 </tr>
               </thead>
               <tbody>
-                {top20.length === 0 && (
-                  <tr><td colSpan={9} style={{ ...sTD, textAlign: 'center', color: '#9CA3AF', padding: 40 }}>No DSPs available for ranking</td></tr>
+                {sortedTop20.length === 0 && (
+                  <tr><td colSpan={10} style={{ ...sTD, textAlign: 'center', color: '#9CA3AF', padding: 40 }}>No DSPs available for ranking</td></tr>
                 )}
-                {top20.map((dsp, i) => {
+                {sortedTop20.map((dsp, i) => {
                   const key = `top-${dsp.normalized_name}`;
                   return (
                     <React.Fragment key={key}>
@@ -514,6 +592,7 @@ const PartnerDashboard: React.FC = () => {
                         <td style={{ ...sTD, fontWeight: 700, color: '#15803D', fontSize: 15 }}>{dsp.hit_score.toFixed(2)}</td>
                         <td style={sTD}><RegionPriority countries={dsp.countries} /></td>
                         <td style={sTD}><IndustryPriority industries={dsp.industries} /></td>
+                        <td style={sTD}>{dsp.signal_types.map(s => <SignalBadge key={s} type={s} />)}</td>
                         <td style={sTD} onClick={e => e.stopPropagation()}>
                           {dsp.website
                             ? <a href={dsp.website} target="_blank" rel="noopener noreferrer" style={sLinkBtn}>Website ↗</a>
@@ -535,7 +614,12 @@ const PartnerDashboard: React.FC = () => {
                       </tr>
                       {expandedRows[key] && (
                         <tr>
-                          <td colSpan={9} style={sExpandedCell}>
+                          <td colSpan={10} style={sExpandedCell}>
+                            {dsp.latest_article_date && (
+                              <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 12 }}>
+                                Last seen: <span style={{ fontWeight: 600 }}>{new Date(dsp.latest_article_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                              </div>
+                            )}
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', letterSpacing: 0.5, marginBottom: 10, textTransform: 'uppercase' as const }}>
                               Source Articles
                             </div>
@@ -601,6 +685,7 @@ const sLinkBtn: React.CSSProperties = {
   background: '#EFF6FF', border: '1px solid #BFDBFE',
   whiteSpace: 'nowrap' as const,
 };
+
 
 const sClickableRow: React.CSSProperties = {
   borderBottom: '1px solid #F3F4F6', cursor: 'pointer',

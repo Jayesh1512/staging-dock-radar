@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { loadFlytBasePartners, loadHitListData, requireSupabase } from '@/lib/db';
+import { loadFlytBasePartners, loadHitListData, loadDiscoveredCompanies, requireSupabase } from '@/lib/db';
 import { normalizeCompanyName, fuzzyMatchCompany } from '@/lib/company-normalize';
 import type { DspHitListEntry } from '@/lib/types';
 
@@ -39,9 +39,18 @@ export async function GET(req: Request) {
     const regionWeight = regionWeightParam ? Math.max(0, Math.min(1, parseFloat(regionWeightParam))) : 0.5;
     const industryWeight = industryWeightParam ? Math.max(0, Math.min(1, parseFloat(industryWeightParam))) : 0.5;
 
-    // ── Load partners and hit list data ──
-    const partners = await loadFlytBasePartners();
-    const articles = await loadHitListData();
+    // ── Load partners, hit list data, and discovered companies ──
+    const [partners, articles, discoveredCompanies] = await Promise.all([
+      loadFlytBasePartners(),
+      loadHitListData(),
+      loadDiscoveredCompanies().catch(() => []),  // graceful if table doesn't exist yet
+    ]);
+
+    // Build lookup: normalized_name → { website, linkedin } from discovered_companies
+    const discoveredMap = new Map<string, { website: string | null; linkedin: string | null }>();
+    for (const dc of discoveredCompanies) {
+      discoveredMap.set(dc.normalized_name, { website: dc.website, linkedin: dc.linkedin });
+    }
 
     if (articles.length === 0) {
       return NextResponse.json({
@@ -157,28 +166,33 @@ export async function GET(req: Request) {
 
       // Check if this company matches a known partner
       const partnerMatch = fuzzyMatchCompany(entry.original_name, normalizedPartners);
-      const isKnown = partnerMatch.match && (partnerMatch.confidence === 'high' || partnerMatch.confidence === 'low');
-      const partnerInfo = isKnown && partnerMatch.match ? partnerMap.get(partnerMatch.match) : null;
+      // Only high confidence (Jaccard >= 0.6) counts as known — prefer false-new over false-known
+      const isFlytbasePartner = partnerMatch.match !== null && partnerMatch.confidence === 'high';
+      const partnerInfo = isFlytbasePartner && partnerMatch.match ? partnerMap.get(partnerMatch.match) : null;
+
+      const sortedArticles = entry.articles
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const latestArticle = sortedArticles[0];
 
       const hitListEntry: DspHitListEntry = {
         name: entry.original_name,
         normalized_name: normalizedName,
         mention_count: entry.mention_count,
         avg_score: 0, // Not used in 2-param scoring, but keep for backward compatibility
-        latest_article_date: '',
+        latest_article_date: latestArticle?.date ?? '',
+        latest_article_url: latestArticle?.url ?? '',
         countries: Array.from(entry.countries).sort(),
         industries: Array.from(entry.industries).sort(),
         signal_types: Array.from(entry.signal_types).sort(),
         hit_score: Math.round(hitScore * 10000) / 10000,
-        articles: entry.articles
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-          .slice(0, 5),
-        website: partnerInfo?.website,
-        linkedin: partnerInfo?.linkedin,
-        isKnown,
+        articles: sortedArticles.slice(0, 5),
+        // Website/LinkedIn: discovered_companies first, then flytbase_partners fallback
+        website: discoveredMap.get(normalizedName)?.website ?? partnerInfo?.website ?? undefined,
+        linkedin: discoveredMap.get(normalizedName)?.linkedin ?? partnerInfo?.linkedin ?? undefined,
+        isFlytbasePartner,
       };
 
-      if (isKnown) {
+      if (isFlytbasePartner) {
         knownCompanies.push(hitListEntry);
       } else {
         newCompanies.push(hitListEntry);
