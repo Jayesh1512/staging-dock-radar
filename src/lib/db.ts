@@ -447,9 +447,11 @@ export async function loadHitListData(): Promise<
     created_at: row.created_at,
     entities: (row.entities as ScoredArticle['entities']) ?? [],
     persons: (row.persons as ScoredArticle['persons']) ?? [],
-    title: row.articles?.[0]?.title ?? '',
-    url: row.articles?.[0]?.url ?? '',
-    published_at: row.articles?.[0]?.published_at ?? null,
+    // Supabase returns many-to-one FK embeds as an object, not an array —
+    // guard against both shapes so this works across SDK versions.
+    title: (Array.isArray(row.articles) ? row.articles[0] : row.articles)?.title ?? '',
+    url: (Array.isArray(row.articles) ? row.articles[0] : row.articles)?.url ?? '',
+    published_at: (Array.isArray(row.articles) ? row.articles[0] : row.articles)?.published_at ?? null,
   }));
 }
 
@@ -590,6 +592,7 @@ export interface DiscoveredCompanyRow {
   types: string[];
   website: string | null;
   linkedin: string | null;
+  linkedin_followers: number | null;
   countries: string[];
   industries: string[];
   signal_types: string[];
@@ -717,10 +720,10 @@ export async function upsertDiscoveredFromArticles(
     const rows = Array.from(companyAgg.entries()).map(([norm, entry]) => ({
       normalized_name: norm,
       display_name: entry.display_name,
-      types: JSON.stringify(Array.from(entry.types)),
-      countries: JSON.stringify(Array.from(entry.countries)),
-      industries: JSON.stringify(Array.from(entry.industries)),
-      signal_types: JSON.stringify(Array.from(entry.signal_types)),
+      types: Array.from(entry.types),
+      countries: Array.from(entry.countries),
+      industries: Array.from(entry.industries),
+      signal_types: Array.from(entry.signal_types),
       mention_count: entry.article_ids.size,
       first_seen_at: now,
       last_seen_at: now,

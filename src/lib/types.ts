@@ -136,7 +136,9 @@ export interface DspHitListEntry {
   articles: { id: string; title: string; url: string; score: number; date: string }[];
   website?: string;
   linkedin?: string;
+  linkedin_followers?: number;
   isFlytbasePartner?: boolean; // true if in flytbase_partners
+  key_contact?: { name: string; role: string; organization: string } | null;
 }
 
 export interface HitListData {

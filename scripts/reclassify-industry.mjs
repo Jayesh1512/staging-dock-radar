@@ -47,7 +47,7 @@ Given a news article title and snippet, classify the primary industry or topic s
 
 Examples of sector names (use these as formatting guidance — you are NOT restricted to them):
 DEPLOYMENT VERTICALS: Energy & Utilities | Public Safety & Emergency Response | Oil & Gas / Industrial Assets | Mining & Natural Resources | Construction & Infrastructure | Ports, Maritime & Logistics Hubs | Agriculture & Forestry | Perimeter Security & Smart Facilities | Water & Environmental Utilities
-CROSS-CUTTING TOPICS: Regulatory & Policy | Defense & Security | Research & Development | Drone Technology | Automotive | Training & Certification | Logistics & Delivery | Market Analysis | Consumer Electronics | Municipal Services
+CROSS-CUTTING TOPICS: Regulatory & Policy | Defense & Security | Research & Development | Drone Technology | Training & Certification | Logistics & Delivery | Tourism & Hospitality | Municipal Services
 
 Rules:
 - Reply with ONLY the sector name — no explanation, no punctuation at the end.

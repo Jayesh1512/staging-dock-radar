@@ -93,10 +93,20 @@ export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onTo
         </div>
       </div>
 
-      {/* Company */}
-      <div className="truncate font-medium" style={{ fontSize: 12.5, color: scored.company ? 'var(--dr-text-secondary)' : 'var(--dr-text-muted)' }}>
-        {scored.company ?? '—'}
-      </div>
+      {/* Company — waterfall: company field → si → operator → partner → buyer */}
+      {(() => {
+        const displayCompany = scored.company
+          || scored.entities?.find(e => e.type === 'si')?.name
+          || scored.entities?.find(e => e.type === 'operator')?.name
+          || scored.entities?.find(e => e.type === 'partner')?.name
+          || scored.entities?.find(e => e.type === 'buyer')?.name
+          || null;
+        return (
+          <div className="truncate font-medium" style={{ fontSize: 12.5, color: displayCompany ? 'var(--dr-text-secondary)' : 'var(--dr-text-muted)' }}>
+            {displayCompany ?? '—'}
+          </div>
+        );
+      })()}
 
       {/* Country */}
       <div className="truncate" style={{ fontSize: 12.5, color: 'var(--dr-text-muted)' }}>

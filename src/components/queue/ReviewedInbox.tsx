@@ -87,7 +87,7 @@ export function ReviewedInbox({ articles, getActions }: ReviewedInboxProps) {
                         {a.article.title}
                       </a>
                     </td>
-                    <td style={{ padding: '11px 12px', fontSize: 12.5, fontWeight: 500 }}>{a.scored.company ?? '—'}</td>
+                    <td style={{ padding: '11px 12px', fontSize: 12.5, fontWeight: 500 }}>{a.scored.company || a.scored.entities?.find(e => e.type === 'si')?.name || a.scored.entities?.find(e => e.type === 'operator')?.name || a.scored.entities?.find(e => e.type === 'partner')?.name || a.scored.entities?.find(e => e.type === 'buyer')?.name || '—'}</td>
                     <td style={{ padding: '11px 12px', fontSize: 12.5, color: 'var(--dr-text-muted)' }}>{a.scored.country ?? '—'}</td>
                     <td style={{ padding: '11px 12px' }}><SignalBadge signal={a.scored.signal_type} /></td>
                     <td style={{ padding: '11px 12px' }}><ScoreBadge score={a.scored.relevance_score} /></td>

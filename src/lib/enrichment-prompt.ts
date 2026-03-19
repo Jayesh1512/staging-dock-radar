@@ -18,17 +18,20 @@ PERSONS — Extract every named individual mentioned in their professional capac
 - For each person: "name" = exact name as written in the article, "role" = their verbatim title or function, "organization" = their employer, agency, or department
 
 ENTITIES — Extract every organization mentioned and classify their relationship to the drone deployment:
-- buyer: organization purchasing, funding, or commissioning the drone program
-- operator: organization running or flying the drones day-to-day
+- buyer: organization purchasing, funding, or commissioning the drone program; or operating drones only for its own internal use (police departments, hospitals, fire departments, utilities, government agencies, city/county agencies)
+- operator: company commercially offering drone services to third-party clients as a business
+- si: system integrator, reseller, drone service provider (DSP), or implementation partner — any company that sells drone-related services or solutions to others
 - regulator: government body approving, certifying, or overseeing operations
-- partner: technology or business collaborator (not the buyer or operator)
-- si: system integrator, reseller, or implementation partner
-- oem: drone hardware or software manufacturer (DJI, Skydio, Autel, etc.)
+- oem: pure drone hardware or software manufacturer with no service arm. Known OEMs include: DJI, Skydio, Autel, Parrot, senseFly, Zipline, Wing, Joby, Manna, Matternet, EHang, Flytrex, Elbit Systems, AeroVironment.
+
+CRITICAL RULES:
+1. MAKER-OPERATOR HYBRID: If a company both manufactures drones AND commercially deploys drone services to third-party clients, classify as "si". Reserve "oem" only for pure hardware manufacturers with no service arm.
+2. FLYTBASE: FlytBase must NEVER appear in "entities[]" — it is our own software platform, not a target DSP or partner. If the article mentions FlytBase being used by an operator, extract the OPERATOR only.
 
 Return valid JSON only — no markdown fences, no explanation:
 {
   "persons": [{"name": "string", "role": "string", "organization": "string"}],
-  "entities": [{"name": "string", "type": "buyer|operator|regulator|partner|si|oem"}]
+  "entities": [{"name": "string", "type": "buyer|operator|regulator|si|oem"}]
 }
 
 If no persons or entities are found, return empty arrays. Never fabricate data.

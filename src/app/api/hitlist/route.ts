@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { loadFlytBasePartners, loadHitListData, loadDiscoveredCompanies, requireSupabase } from '@/lib/db';
 import { normalizeCompanyName, fuzzyMatchCompany } from '@/lib/company-normalize';
+import { OEM_NAMES, normalizeCountryName } from '@/lib/constants';
 import type { DspHitListEntry } from '@/lib/types';
 
 // ── Priority Classifications ──
@@ -46,10 +47,10 @@ export async function GET(req: Request) {
       loadDiscoveredCompanies().catch(() => []),  // graceful if table doesn't exist yet
     ]);
 
-    // Build lookup: normalized_name → { website, linkedin } from discovered_companies
-    const discoveredMap = new Map<string, { website: string | null; linkedin: string | null }>();
+    // Build lookup: normalized_name → enrichment data from discovered_companies
+    const discoveredMap = new Map<string, { website: string | null; linkedin: string | null; linkedin_followers: number | null; countries: string[]; industries: string[] }>();
     for (const dc of discoveredCompanies) {
-      discoveredMap.set(dc.normalized_name, { website: dc.website, linkedin: dc.linkedin });
+      discoveredMap.set(dc.normalized_name, { website: dc.website, linkedin: dc.linkedin, linkedin_followers: dc.linkedin_followers ?? null, countries: dc.countries ?? [], industries: dc.industries ?? [] });
     }
 
     if (articles.length === 0) {
@@ -73,6 +74,9 @@ export async function GET(req: Request) {
     }
     const normalizedPartners = Array.from(partnerMap.keys());
 
+    // ── Buyer keyword patterns: names matching these are end-users, not DSPs ──
+    const BUYER_KEYWORDS = /\b(fire\s*dep|police|sheriff|county|city\s+of|municipality|university|college|school\s+district|hospital|health\s*(system|authority)|department\s+of|ministry|bureau|task\s*force|national\s+guard|air\s+force|army|navy|coast\s+guard)\b/i;
+
     // ── Extract DSP companies with 2-tier fallback ──
     const companyExtractions: Array<{ name: string; role: string; article_id: string }> = [];
 
@@ -81,13 +85,24 @@ export async function GET(req: Request) {
 
       // Tier 1: entities with type operator or si
       if (article.entities && article.entities.length > 0) {
-        const dspEntities = article.entities.filter(e => e.type === 'operator' || e.type === 'si');
+        const dspEntities = article.entities.filter(e =>
+          (e.type === 'operator' || e.type === 'si' || e.type === 'partner') && !OEM_NAMES.has(normalizeCompanyName(e.name))
+        );
         extracted = dspEntities.map(e => ({ name: e.name, role: e.type }));
       }
-      // Tier 2: company field fallback
+      // Tier 2: company field fallback — only if company is NOT a buyer entity in same article
       else if (article.company) {
-        extracted = [{ name: article.company, role: 'operator' }];
+        const companyNorm = normalizeCompanyName(article.company);
+        const isBuyerEntity = (article.entities ?? []).some(
+          e => e.type === 'buyer' && normalizeCompanyName(e.name) === companyNorm
+        );
+        if (!isBuyerEntity) {
+          extracted = [{ name: article.company, role: 'operator' }];
+        }
       }
+
+      // Filter out buyer-pattern names (safety net for misclassified entities)
+      extracted = extracted.filter(e => !BUYER_KEYWORDS.test(e.name));
 
       for (const dsp of extracted) {
         companyExtractions.push({
@@ -99,6 +114,8 @@ export async function GET(req: Request) {
     }
 
     // ── Group by normalized company name ──
+    const PERSON_BLOCKLIST = new Set(['n/a', 'unknown', 'unnamed', 'none', 'na', 'n.a.']);
+
     const companyMap = new Map<
       string,
       {
@@ -108,6 +125,7 @@ export async function GET(req: Request) {
         industries: Set<string>;
         signal_types: Set<string>;
         articles: Array<{ id: string; title: string; url: string; score: number; date: string }>;
+        persons_freq: Map<string, { count: number; data: { name: string; role: string; organization: string } }>;
       }
     >();
 
@@ -127,6 +145,7 @@ export async function GET(req: Request) {
           industries: new Set(),
           signal_types: new Set(),
           articles: [],
+          persons_freq: new Map(),
         };
         companyMap.set(normalized, entry);
       }
@@ -142,6 +161,19 @@ export async function GET(req: Request) {
         score: article.relevance_score,
         date: article.published_at || article.created_at,
       });
+
+      // ── Aggregate persons from this article into frequency map ──
+      for (const person of (article.persons ?? [])) {
+        if (!person.name || person.name.length < 3) continue;
+        const nameNorm = person.name.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+        if (!nameNorm || PERSON_BLOCKLIST.has(nameNorm)) continue;
+        const existing = entry.persons_freq.get(nameNorm);
+        if (existing) {
+          existing.count++;
+        } else {
+          entry.persons_freq.set(nameNorm, { count: 1, data: { name: person.name, role: person.role ?? '', organization: person.organization ?? '' } });
+        }
+      }
     }
 
     // ── Calculate region and industry scores ──
@@ -149,6 +181,18 @@ export async function GET(req: Request) {
     const knownCompanies: DspHitListEntry[] = [];
 
     for (const [normalizedName, entry] of companyMap) {
+      // ── Fallback: if no article-level countries, pull from discovered_companies (HQ-enriched) ──
+      if (entry.countries.size === 0) {
+        const dcCountries = discoveredMap.get(normalizedName)?.countries ?? [];
+        for (const c of dcCountries) entry.countries.add(c);
+      }
+
+      // ── Fallback: if no article-level industries, pull from discovered_companies (manual enrichment) ──
+      if (entry.industries.size === 0) {
+        const dcIndustries = discoveredMap.get(normalizedName)?.industries ?? [];
+        for (const ind of dcIndustries) entry.industries.add(ind);
+      }
+
       // ── Region Priority Score ──
       const hasHighPriorityRegion = Array.from(entry.countries).some(country =>
         PRIORITY_REGIONS.some(pr => country.toLowerCase().includes(pr.toLowerCase()))
@@ -174,6 +218,10 @@ export async function GET(req: Request) {
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       const latestArticle = sortedArticles[0];
 
+      // ── Derive key contact: most-cited person across all articles for this company ──
+      const topPerson = Array.from(entry.persons_freq.values())
+        .sort((a, b) => b.count - a.count)[0] ?? null;
+
       const hitListEntry: DspHitListEntry = {
         name: entry.original_name,
         normalized_name: normalizedName,
@@ -186,10 +234,12 @@ export async function GET(req: Request) {
         signal_types: Array.from(entry.signal_types).sort(),
         hit_score: Math.round(hitScore * 10000) / 10000,
         articles: sortedArticles.slice(0, 5),
-        // Website/LinkedIn: discovered_companies first, then flytbase_partners fallback
+        // Website/LinkedIn/Followers: discovered_companies first, then flytbase_partners fallback
         website: discoveredMap.get(normalizedName)?.website ?? partnerInfo?.website ?? undefined,
         linkedin: discoveredMap.get(normalizedName)?.linkedin ?? partnerInfo?.linkedin ?? undefined,
+        linkedin_followers: discoveredMap.get(normalizedName)?.linkedin_followers ?? undefined,
         isFlytbasePartner,
+        key_contact: topPerson?.data ?? null,
       };
 
       if (isFlytbasePartner) {

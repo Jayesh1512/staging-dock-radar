@@ -21,8 +21,16 @@ export function ArticleDetail({ article, enrichmentStatus = 'idle', enrichedPers
   // Use enriched persons if available, fall back to scoring-time persons
   const displayPersons = enrichedPersons ?? scored.persons;
 
+  // Waterfall: company field → si entity → operator entity → partner entity → buyer entity
+  const displayCompany = scored.company
+    || scored.entities?.find(e => e.type === 'si')?.name
+    || scored.entities?.find(e => e.type === 'operator')?.name
+    || scored.entities?.find(e => e.type === 'partner')?.name
+    || scored.entities?.find(e => e.type === 'buyer')?.name
+    || null;
+
   const metadata = [
-    { label: 'Company', value: scored.company ?? '—' },
+    { label: 'Company', value: displayCompany ?? '—' },
     { label: 'Location', value: [scored.city, scored.country].filter(Boolean).join(', ') || '—' },
     { label: 'Use Case', value: scored.use_case ?? '—' },
     {

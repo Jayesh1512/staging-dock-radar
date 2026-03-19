@@ -290,9 +290,10 @@ const PartnerDashboard: React.FC = () => {
       sortedFilteredDsps.map(d => [
         d.name, d.countries.join('; '), d.industries.join('; '),
         String(d.mention_count), d.signal_types.join('; '),
-        d.website ?? '', d.latest_article_url ?? '', d.latest_article_date ?? '',
+        d.website ?? '', d.linkedin ?? '', String(d.linkedin_followers ?? ''),
+        d.latest_article_url ?? '', d.latest_article_date ?? '',
       ]),
-      ['Company', 'Countries', 'Industries', 'Mentions', 'Signals', 'Website', 'Latest Article URL', 'Latest Article Date'],
+      ['Company', 'Countries', 'Industries', 'Mentions', 'Signals', 'Website', 'LinkedIn', 'LinkedIn Followers', 'Latest Article URL', 'Latest Article Date'],
     );
   };
 
@@ -488,7 +489,14 @@ const PartnerDashboard: React.FC = () => {
                       </td>
                       <td style={sTD} onClick={e => e.stopPropagation()}>
                         {dsp.linkedin
-                          ? <a href={dsp.linkedin} target="_blank" rel="noopener noreferrer" style={sLinkBtn}>LinkedIn ↗</a>
+                          ? <div>
+                              <a href={dsp.linkedin} target="_blank" rel="noopener noreferrer" style={sLinkBtn}>LinkedIn ↗</a>
+                              {dsp.linkedin_followers != null && (
+                                <div style={{ fontSize: 10, color: '#9CA3AF', marginTop: 2 }}>
+                                  {dsp.linkedin_followers >= 1000 ? `${(dsp.linkedin_followers / 1000).toFixed(1).replace(/\.0$/, '')}k` : dsp.linkedin_followers} followers
+                                </div>
+                              )}
+                            </div>
                           : <span style={{ color: '#D1D5DB' }}>—</span>}
                       </td>
                       <td style={{ ...sTD, color: '#CBD5E1', fontSize: 11, paddingLeft: 0 }}>
@@ -501,6 +509,17 @@ const PartnerDashboard: React.FC = () => {
                           {dsp.latest_article_date && (
                             <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 12 }}>
                               Last seen: <span style={{ fontWeight: 600 }}>{new Date(dsp.latest_article_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                            </div>
+                          )}
+                          {dsp.key_contact && (
+                            <div style={{ marginBottom: 14, padding: '8px 12px', background: '#F0FDF4', borderRadius: 6, borderLeft: '3px solid #15803D' }}>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: '#15803D', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' as const }}>Key Contact</div>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>{dsp.key_contact.name}</div>
+                              {(dsp.key_contact.role || dsp.key_contact.organization) && (
+                                <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
+                                  {[dsp.key_contact.role, dsp.key_contact.organization].filter(Boolean).join(' · ')}
+                                </div>
+                              )}
                             </div>
                           )}
                           <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', letterSpacing: 0.5, marginBottom: 10, textTransform: 'uppercase' as const }}>
@@ -618,6 +637,17 @@ const PartnerDashboard: React.FC = () => {
                             {dsp.latest_article_date && (
                               <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 12 }}>
                                 Last seen: <span style={{ fontWeight: 600 }}>{new Date(dsp.latest_article_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                              </div>
+                            )}
+                            {dsp.key_contact && (
+                              <div style={{ marginBottom: 14, padding: '8px 12px', background: '#F0FDF4', borderRadius: 6, borderLeft: '3px solid #15803D' }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: '#15803D', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' as const }}>Key Contact</div>
+                                <div style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>{dsp.key_contact.name}</div>
+                                {(dsp.key_contact.role || dsp.key_contact.organization) && (
+                                  <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
+                                    {[dsp.key_contact.role, dsp.key_contact.organization].filter(Boolean).join(' · ')}
+                                  </div>
+                                )}
                               </div>
                             )}
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', letterSpacing: 0.5, marginBottom: 10, textTransform: 'uppercase' as const }}>

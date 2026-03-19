@@ -5,7 +5,7 @@ import { CAMPAIGN_NAME, CAMPAIGN_WEST_REGIONS } from '@/lib/constants';
 const WEST_SET = new Set<string>(CAMPAIGN_WEST_REGIONS);
 
 function scoreBand(score: number): string {
-  if (score >= 75) return 'Hot Lead (75+)';
+  if (score >= 75) return 'High Value (75+)';
   if (score >= 50) return 'Strong Signal (50-74)';
   if (score >= 25) return 'Weak Signal (25-49)';
   return 'Noise (<25)';

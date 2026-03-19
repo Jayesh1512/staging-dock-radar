@@ -1,15 +1,14 @@
 import type { ArticleSource, SignalType } from './types';
 
 export const SCORE_BANDS = [
-  { min: 90, max: 100, label: 'Hot Lead', bg: '#F0FDF4', text: '#16A34A' },
-  { min: 70, max: 89, label: 'Strong Signal', bg: '#DBEAFE', text: '#2563EB' },
-  { min: 50, max: 69, label: 'Moderate Signal', bg: '#FEFCE8', text: '#CA8A04' },
-  { min: 30, max: 49, label: 'Background Intel', bg: '#F3F4F6', text: '#6B7280' },
-  { min: 0, max: 29, label: 'Noise', bg: '#FEF2F2', text: '#991B1B' },
+  { min: 75, max: 100, label: 'High Value', bg: '#F0FDF4', text: '#16A34A' },
+  { min: 50, max: 74, label: 'Strong Signal', bg: '#DBEAFE', text: '#2563EB' },
+  { min: 25, max: 49, label: 'Weak Signal', bg: '#FEFCE8', text: '#CA8A04' },
+  { min: 0, max: 24, label: 'Noise', bg: '#FEF2F2', text: '#991B1B' },
 ] as const;
 
 export function getScoreBand(score: number) {
-  return SCORE_BANDS.find((b) => score >= b.min && score <= b.max) ?? SCORE_BANDS[4];
+  return SCORE_BANDS.find((b) => score >= b.min && score <= b.max) ?? SCORE_BANDS[3];
 }
 
 export const SIGNAL_BADGE_COLORS: Record<SignalType, { bg: string; text: string }> = {
@@ -146,12 +145,12 @@ export const CAMPAIGNS: readonly CampaignConfig[] = [
   {
     id: 'dsp_op_direct',
     label: 'C2 · Direct Operators',
-    tagline: 'Operator behavior signals — 4 keywords',
-    intent: 'Catches DSPs running autonomous/unattended missions without naming the hardware brand. Focuses on what operators DO rather than which product they use. Expected to surface 40–60% net new companies vs C1.',
-    keywords: ['drone-in-a-box', 'autonomous drone station', 'unattended drone operations', 'remote drone deployment'],
+    tagline: 'Operator behavior signals — 5 keywords',
+    intent: 'Catches DSPs running autonomous/unattended missions without naming the hardware brand. Focuses on what operators DO rather than which product they use. "drone dock" added from C1 to catch hardware-agnostic dock operators (non-DJI). Expected to surface 40–60% net new companies vs C1.',
+    keywords: ['drone-in-a-box', 'autonomous drone station', 'unattended drone operations', 'remote drone deployment', 'drone dock'],
     westRegions: CAMPAIGN_WEST_REGIONS,
     eastRegions: CAMPAIGN_EAST_REGIONS,
-    status: 'active',
+    status: 'completed',
   },
   {
     id: 'dsp_op_adjacent',
@@ -161,7 +160,7 @@ export const CAMPAIGNS: readonly CampaignConfig[] = [
     keywords: ['persistent drone surveillance', 'automated drone patrol', 'drone inspection services', 'drone base station', 'autonomous drone inspection'],
     westRegions: CAMPAIGN_WEST_REGIONS,
     eastRegions: CAMPAIGN_EAST_REGIONS,
-    status: 'planned',
+    status: 'active',
   },
 ] as const;
 
@@ -210,4 +209,8 @@ export const OEM_NAMES = new Set([
   'dji', 'skydio', 'autel', 'autel robotics', 'parrot', 'sensefly',
   'zipline', 'wing', 'joby', 'joby aviation', 'manna', 'matternet',
   'ehang', 'flytrex', 'elbit systems', 'aerovironment',
+  // FlytBase is our own product — must never surface as a DSP target in Tab 2/3
+  'flytbase',
+  // Competitors — excluded from DSP hit list
+  'high-lander', 'high lander', 'highlander',
 ]);
