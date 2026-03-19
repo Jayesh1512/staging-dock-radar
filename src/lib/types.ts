@@ -49,6 +49,10 @@ export interface Person {
   organization: string;
   /** Optional LinkedIn profile URL when available (primarily for LinkedIn sources). */
   linkedin_url?: string;
+  /** Optional email extracted from the content (primarily for social posts). */
+  email?: string;
+  /** Optional website/domain associated with the person (rare; keep as string when present). */
+  website?: string;
 }
 
 export interface Entity {
@@ -56,6 +60,10 @@ export interface Entity {
   type: 'buyer' | 'operator' | 'regulator' | 'partner' | 'si' | 'oem';
   /** Optional LinkedIn/company URL when available (primarily for LinkedIn sources). */
   linkedin_url?: string;
+  /** Optional website extracted from the content (e.g. "www.skybound.tech"). */
+  website?: string;
+  /** Optional contact email if explicitly present and clearly tied to the entity. */
+  email?: string;
 }
 
 export interface ScoredArticle {
