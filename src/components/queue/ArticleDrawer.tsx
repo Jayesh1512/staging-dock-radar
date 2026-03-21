@@ -11,6 +11,7 @@ import { generateSlackMessage, formatDateIST } from '@/lib/utils';
 
 interface ArticleDrawerProps {
   article: ArticleWithScore;
+  isKnownPartner?: boolean;
   actions: ArticleAction[];
   onSlack: () => void;
   onBookmark: () => void;
@@ -18,7 +19,7 @@ interface ArticleDrawerProps {
   onDismiss: () => void;
 }
 
-export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkReviewed, onDismiss }: ArticleDrawerProps) {
+export function ArticleDrawer({ article, isKnownPartner = false, actions, onSlack, onBookmark, onMarkReviewed, onDismiss }: ArticleDrawerProps) {
   // Temporary: disable auto-enrichment on drawer open.
   // Enrichment can be re-enabled later by flipping this flag.
   const AUTO_ENRICH_ON_OPEN = false;
@@ -112,6 +113,35 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
 
   const isSlacked = actions.includes('slack');
   const isBookmarked = actions.includes('bookmarked');
+
+  // ── LinkedIn Reply state ───────────────────────────────────────────────────
+  const [replyStatus, setReplyStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+  const [replyDraft, setReplyDraft] = useState('');
+  const [replyError, setReplyError] = useState<string | null>(null);
+
+  async function handleGenerateReply() {
+    setReplyStatus('loading');
+    setReplyError(null);
+    try {
+      const res = await fetch('/api/linkedin-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company: article.scored.company || null,
+          summary: article.scored.summary || null,
+          use_case: article.scored.use_case || null,
+          signal_type: article.scored.signal_type || null,
+        }),
+      });
+      const data = await res.json() as { reply?: string; error?: string };
+      if (!res.ok || data.error) throw new Error(data.error ?? 'Generation failed');
+      setReplyDraft(data.reply ?? '');
+      setReplyStatus('done');
+    } catch (err) {
+      setReplyError(err instanceof Error ? err.message : 'Failed to generate reply');
+      setReplyStatus('error');
+    }
+  }
 
   // ── Effect 1: Lazy URL resolution (Google News redirect only) ─────────────
   useEffect(() => {
@@ -258,6 +288,11 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
         <span className="font-semibold" style={{ fontSize: 11.5, color: '#fff', letterSpacing: 0.2 }}>
           Article Detail
         </span>
+        {isKnownPartner && (
+          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#DCFCE7', color: '#166534', border: '1px solid #86EFAC', whiteSpace: 'nowrap' }}>
+            Known Partner
+          </span>
+        )}
         <span style={{ fontSize: 11, color: '#BFDBFE' }}>
           ·&nbsp; {article.scored.signal_type}
           {article.scored.industry && <>&nbsp;·&nbsp;{article.scored.industry}</>}
@@ -410,6 +445,74 @@ export function ArticleDrawer({ article, actions, onSlack, onBookmark, onMarkRev
             ✕ {sendError}
           </div>
         )}
+      </div>
+
+      {/* LinkedIn Reply */}
+      <div style={{ padding: '16px 20px 0' }}>
+        <div style={{ background: '#fff', border: '1px solid var(--dr-border)', borderRadius: 8, padding: '12px 14px' }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: replyStatus === 'done' ? 10 : 0 }}>
+            <span className="font-semibold" style={{ fontSize: 12.5, color: 'var(--dr-text)' }}>
+              LinkedIn Reply
+            </span>
+            <div className="flex items-center gap-2">
+              {replyStatus === 'done' && (
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(replyDraft)
+                      .then(() => toast.success('Reply copied'))
+                      .catch(() => toast.error('Copy failed'));
+                  }}
+                  style={{
+                    fontSize: 12, fontWeight: 600, padding: '5px 14px', borderRadius: 6,
+                    background: '#F0FDF4', color: '#166534', border: '1px solid #86EFAC',
+                    cursor: 'pointer',
+                  }}
+                >
+                  ⎘ Copy
+                </button>
+              )}
+              <button
+                onClick={handleGenerateReply}
+                disabled={replyStatus === 'loading'}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  fontSize: 12, fontWeight: 600, padding: '5px 14px', borderRadius: 6,
+                  background: replyStatus === 'loading' ? '#E0E7FF' : '#EEF2FF',
+                  color: '#4338CA', border: '1px solid #C7D2FE',
+                  cursor: replyStatus === 'loading' ? 'default' : 'pointer',
+                  opacity: replyStatus === 'loading' ? 0.7 : 1,
+                }}
+              >
+                {replyStatus === 'loading' ? (
+                  <>
+                    <span style={{ display: 'inline-block', width: 10, height: 10, border: '2px solid #4338CA', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                    Generating…
+                  </>
+                ) : replyStatus === 'done' ? '↺ Regenerate' : '✦ Generate Reply'}
+              </button>
+            </div>
+          </div>
+
+          {replyStatus === 'error' && replyError && (
+            <div style={{ marginTop: 8, padding: '6px 10px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 6, fontSize: 12, color: '#991B1B' }}>
+              ✕ {replyError}
+            </div>
+          )}
+
+          {replyStatus === 'done' && (
+            <textarea
+              value={replyDraft}
+              onChange={(e) => setReplyDraft(e.target.value)}
+              rows={3}
+              style={{
+                width: '100%', fontSize: 13, lineHeight: 1.6, color: 'var(--dr-text)',
+                border: '1px solid var(--dr-border)', borderRadius: 6, padding: '8px 10px',
+                resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box',
+                background: '#FAFAFA',
+              }}
+            />
+          )}
+        </div>
       </div>
 
       {/* Action bar */}

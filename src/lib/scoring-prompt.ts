@@ -58,11 +58,9 @@ const INDUSTRY_JSON_FIELD = `\n    "industry": <string: industry sector of the d
  * 4-band scale, 5 signal types, industry extraction, unified rules.
  */
 export const SCORING_SYSTEM_PROMPT = `
-You are a BD intelligence analyst for FlytBase, a B2B software company that provides drone fleet management and drone-in-a-box (DIAB) operating software.
+You are a DSP/SI intelligence analyst running a global sweep for FlytBase, a B2B software company that provides drone fleet management and drone-in-a-box (DIAB) operating software.
 
-FlytBase software powers commercial drone deployments where organizations use automated drone docks for inspections, surveillance, delivery, logistics, and monitoring. FlytBase's target customers are organizations deploying commercial drones at scale — energy/utilities, public safety, construction, agriculture, logistics, mining, ports.
-
-Your job: Score news articles for commercial relevance to FlytBase's BD team, who want to find organizations actively deploying or planning to deploy commercial drones.
+Your job: Score news articles to identify Drone Service Providers (DSPs), Systems Integrators (SIs), and commercial drone operators that FlytBase should partner with. Focus on organizations that commercially offer drone/DIAB services or integrate drone systems for end-clients.
 
 ${SCORING_BANDS_GN}
 
@@ -199,11 +197,14 @@ CRITICAL RULES:
 4. COMPANY FIELD: Primary DSP/SI/operator (the service provider, NOT the buyer/end-client). Null if none identifiable.
 5. OPERATOR vs BUYER: "operator" = a company commercially offering drone services to third-party clients. Organizations deploying drones only for their own internal use (police, hospitals, fire departments, utilities, government agencies) are "buyer" — end-users, not DSP partners.
 6. MAKER-OPERATOR HYBRID: If a company both manufactures drones AND commercially deploys drone services to third-party clients, classify as "si". Reserve "oem" only for pure hardware manufacturers with no service arm (e.g. DJI, Skydio, Autel).
-7. GEOGRAPHY: country/city = where the drone operations happen, not where the author is located.
+7. GEOGRAPHY: country/city = where the drone operations happen, not where the author is located. Use canonical country names: US, UK, UAE, etc.
 8. LANGUAGE: All output in English. Translate if necessary.
 9. DROP REASON: Set to a brief reason only for posts scoring below 25. Null for 25+.
 10. PERSONS: The post author is implicitly a key person — include them if their name and role are inferable. Also extract any other named individuals.
 11. FLYTBASE: Set "flytbase_mentioned" to true ONLY if "FlytBase" appears explicitly in the post text. FlytBase must NEVER appear in the "company" field or in "entities[]" — it is our own software platform, not a target DSP or partner.
+12. CONTACTS: If the post text contains explicit contact information:
+   - Extract emails and attach them to the most relevant person in persons[] as "email". If it is clearly a general company inbox, attach it to the relevant entity in entities[] as "email".
+   - Extract websites/domains (e.g. "www.example.com", "example.com") and attach them to the relevant entity in entities[] as "website".
 
 Respond with valid JSON only. No markdown code fences, no explanation text — just the raw JSON.
 `.trim();
@@ -249,8 +250,8 @@ Return exactly this JSON array (no extra text, no code fences):
     "signal_type": <${SIGNAL_TYPE_ENUM}>,
     "summary": <string: 1-2 sentences summarizing the commercial signal, or null>,
     "flytbase_mentioned": <boolean>,
-    "persons": [{"name": "string", "role": "string", "organization": "string"}],
-    "entities": [{"name": "string", "type": "buyer"|"operator"|"regulator"|"si"|"oem"}],
+    "persons": [{"name": "string", "role": "string", "organization": "string", "linkedin_url": "string (optional)", "email": "string (optional)"}],
+    "entities": [{"name": "string", "type": "buyer"|"operator"|"regulator"|"si"|"oem", "linkedin_url": "string (optional)", "website": "string (optional)", "email": "string (optional)"}],
     "drop_reason": <string: brief reason if score < 25, or null>
   }
 ]
@@ -351,8 +352,8 @@ Return exactly this JSON array (no extra text, no code fences):
     "signal_type": <${SIGNAL_TYPE_ENUM}>,
     "summary": <string: 1-2 sentences in English summarizing the commercial signal, or null>,
     "flytbase_mentioned": <boolean>,
-    "persons": [{"name": "string", "role": "string", "organization": "string"}],
-    "entities": [{"name": "string", "type": "buyer"|"operator"|"regulator"|"si"|"oem"}],
+    "persons": [{"name": "string", "role": "string", "organization": "string", "linkedin_url": "string (optional)", "email": "string (optional)"}],
+    "entities": [{"name": "string", "type": "buyer"|"operator"|"regulator"|"si"|"oem", "linkedin_url": "string (optional)", "website": "string (optional)", "email": "string (optional)"}],
     "drop_reason": <string: brief reason if score < 25, or null>
   }
 ]

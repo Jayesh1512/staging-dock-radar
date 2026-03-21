@@ -36,15 +36,17 @@ export function CollectPanel({
   const { isCollecting, stats, error, startCollect } = useCollect();
   const [sources, setSources] = useState<ArticleSource[]>([]);
   const [regions, setRegions] = useState<string[]>([...CORE_8_REGIONS]);
+  const [browserTimeoutMs, setBrowserTimeoutMs] = useState<number>(30_000);
 
   // NewsAPI doesn't support regions — only show regions selector when Google News or LinkedIn is selected
   const hasGoogleOrLinkedIn = sources.includes('google_news') || sources.includes('linkedin');
   const onlyNewsAPI = sources.length === 1 && sources.includes('newsapi');
+  const hasLinkedIn = sources.includes('linkedin');
 
   const handleCollect = async () => {
     if (keywords.length === 0) return;
     try {
-      const result = await startCollect(keywords, regions, filterDays, maxArticles, sources);
+      const result = await startCollect(keywords, regions, filterDays, maxArticles, sources, undefined, browserTimeoutMs);
       onCollectComplete(result);
     } catch {
       // error is already set in hook state — displayed below
@@ -63,6 +65,29 @@ export function CollectPanel({
           {/* Only show regions if Google News or LinkedIn is selected */}
           {hasGoogleOrLinkedIn && (
             <RegionSelector selected={regions} onChange={setRegions} />
+          )}
+
+          {/* LinkedIn browser timeout — only when LinkedIn is selected */}
+          {hasLinkedIn && (
+            <div className="flex items-center gap-3">
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--dr-text-secondary)', whiteSpace: 'nowrap' }}>
+                LinkedIn timeout
+              </label>
+              <select
+                value={browserTimeoutMs}
+                onChange={(e) => setBrowserTimeoutMs(Number(e.target.value))}
+                style={{
+                  fontSize: 12, padding: '4px 8px', borderRadius: 6,
+                  border: '1px solid var(--dr-border)', color: 'var(--dr-text)',
+                  background: '#fff', cursor: 'pointer',
+                }}
+              >
+                <option value={30_000}>30 seconds</option>
+                <option value={60_000}>60 seconds</option>
+                <option value={120_000}>2 minutes</option>
+                <option value={180_000}>3 minutes</option>
+              </select>
+            </div>
           )}
 
           {/* Info message when only NewsAPI is selected */}

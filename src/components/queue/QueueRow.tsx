@@ -15,19 +15,20 @@ interface QueueRowProps {
   article: ArticleWithScore;
   isExpanded: boolean;
   isSelected: boolean;
+  isKnownPartner?: boolean;
   onToggleExpand: () => void;
   onToggleSelect: () => void;
   onMarkReviewed: () => void;
   onDismiss: () => void;
 }
 
-export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onToggleSelect, onMarkReviewed, onDismiss }: QueueRowProps) {
+export function QueueRow({ article, isExpanded, isSelected, isKnownPartner = false, onToggleExpand, onToggleSelect, onMarkReviewed, onDismiss }: QueueRowProps) {
   const { article: art, scored } = article;
   return (
     <div
       className="grid items-center"
       style={{
-        gridTemplateColumns: '28px 20px 1fr 120px 68px 148px 56px',
+        gridTemplateColumns: '28px 20px 1fr 120px 68px 148px 80px 56px',
         gap: 12, padding: '11px 16px',
         borderBottom: '1px solid #F3F4F6',
         background: isExpanded ? '#EBF2FE' : '#fff',
@@ -102,8 +103,15 @@ export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onTo
           || scored.entities?.find(e => e.type === 'buyer')?.name
           || null;
         return (
-          <div className="truncate font-medium" style={{ fontSize: 12.5, color: displayCompany ? 'var(--dr-text-secondary)' : 'var(--dr-text-muted)' }}>
-            {displayCompany ?? '—'}
+          <div className="flex items-center gap-1.5 min-w-0">
+            <div className="truncate font-medium" style={{ fontSize: 12.5, color: displayCompany ? 'var(--dr-text-secondary)' : 'var(--dr-text-muted)' }}>
+              {displayCompany ?? '—'}
+            </div>
+            {isKnownPartner && (
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 5px', borderRadius: 4, background: '#DCFCE7', color: '#166534', border: '1px solid #86EFAC', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                Partner
+              </span>
+            )}
           </div>
         );
       })()}
@@ -117,6 +125,17 @@ export function QueueRow({ article, isExpanded, isSelected, onToggleExpand, onTo
       <div className="flex items-center gap-1.5 flex-wrap">
         <SignalBadge signal={scored.signal_type} />
         <ScoreBadge score={scored.relevance_score} size="sm" />
+      </div>
+
+      {/* FlytBase mentioned flag */}
+      <div>
+        {scored.flytbase_mentioned ? (
+          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE', whiteSpace: 'nowrap' }}>
+            FlytBase
+          </span>
+        ) : (
+          <span style={{ fontSize: 10, color: 'var(--dr-text-disabled)' }}>—</span>
+        )}
       </div>
 
       {/* Inline quick-actions */}

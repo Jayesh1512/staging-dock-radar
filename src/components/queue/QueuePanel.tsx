@@ -1,11 +1,12 @@
 "use client";
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { ArticleWithScore, Run, ArticleAction } from '@/lib/types';
 import { BatchDivider } from './BatchDivider';
 import { QueueRow } from './QueueRow';
 import { ArticleDrawer } from './ArticleDrawer';
 import { ReviewedInbox } from './ReviewedInbox';
 import { toast } from 'sonner';
+import { fuzzyMatchCompany } from '@/lib/company-normalize';
 
 interface QueuePanelProps {
   articles: ArticleWithScore[];
@@ -23,6 +24,30 @@ export function QueuePanel({ articles, runs, runArticleMap, getActions, onSlack,
   const [activeTab, setActiveTab] = useState<'active' | 'reviewed'>('active');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Record<string, Set<string>>>({});
+  const [partnerNames, setPartnerNames] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch('/api/partners/list')
+      .then(r => r.json())
+      .then((data: Array<{ normalized_name: string }>) => {
+        if (Array.isArray(data)) setPartnerNames(data.map(p => p.normalized_name));
+      })
+      .catch(() => { /* partner match degraded — badges simply won't show */ });
+  }, []);
+
+  function isKnownPartner(article: ArticleWithScore): boolean {
+    if (partnerNames.length === 0) return false;
+    const { scored } = article;
+    const name = scored.company
+      || scored.entities?.find(e => e.type === 'si')?.name
+      || scored.entities?.find(e => e.type === 'operator')?.name
+      || scored.entities?.find(e => e.type === 'partner')?.name
+      || scored.entities?.find(e => e.type === 'buyer')?.name
+      || null;
+    if (!name) return false;
+    const result = fuzzyMatchCompany(name, partnerNames);
+    return result.match !== null && result.confidence === 'high';
+  }
 
   const queueArticles = articles.filter(a => a.scored.status === 'new');
   const reviewedArticles = articles.filter(a => a.scored.status === 'reviewed');
@@ -132,6 +157,7 @@ export function QueuePanel({ articles, runs, runArticleMap, getActions, onSlack,
                             article={a}
                             isExpanded={expandedId === a.article.id}
                             isSelected={batchSelectedIds.has(a.article.id)}
+                            isKnownPartner={isKnownPartner(a)}
                             onToggleExpand={() => setExpandedId(expandedId === a.article.id ? null : a.article.id)}
                             onToggleSelect={() => toggleSelect(run.id, a.article.id)}
                             onMarkReviewed={() => { onMarkReviewed(a.article.id); setExpandedId(null); }}
@@ -140,6 +166,7 @@ export function QueuePanel({ articles, runs, runArticleMap, getActions, onSlack,
                           {expandedId === a.article.id && (
                             <ArticleDrawer
                               article={a}
+                              isKnownPartner={isKnownPartner(a)}
                               actions={getActions(a.article.id)}
                               onSlack={() => { onSlack(a.article.id); }}
                               onBookmark={() => onBookmark(a.article.id)}

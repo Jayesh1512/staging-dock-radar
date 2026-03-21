@@ -284,6 +284,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen" style={{ background: '#F3F4F6' }}>
       <Navbar
+        onHome={() => { setShowAnalytics(false); setShowCampaign(false); setShowDspHitList(false); }}
         onAnalytics={() => { setShowAnalytics(v => !v); setShowCampaign(false); setShowDspHitList(false); }}
         analyticsActive={showAnalytics}
         onCampaign={() => { setShowCampaign(v => !v); setShowAnalytics(false); setShowDspHitList(false); }}

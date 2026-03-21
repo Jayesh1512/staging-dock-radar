@@ -1,0 +1,17 @@
+### Enhancements
+- A flag to showcase DJI in the tab2 and tab3 of hit list
+- Reasoning for higher scoring of the data on tab2
+- Approval one top list
+- AI scoring to be corrected, could be more hard
+
+### Optimize partner search
+- Using the right keyword, no matter if the data is coming less. Only using DJI Docs.
+- Creating a one time database for all historical records with these keyword
+- A scheduler that can fetch data every day from identified different sources and update the database
+- An agent that can read through this database for any intel
+
+### Data sourcing agent
+- A separate search functionality that can use DJI Enterprise customers and their resellers across different regions and identify who they are partnered with from a drone service providing perspective
+- Criteria to rank them
+- store them in the database
+

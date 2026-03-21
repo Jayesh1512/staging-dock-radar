@@ -48,9 +48,10 @@ function parseLinkedInRelativeDate(timeStr: string): string {
 async function fetchLinkedInPosts(
   keyword: string,
   runId: string,
-  scrollSeconds: number
+  scrollSeconds: number,
+  browserTimeoutMs: number = 30_000,
 ): Promise<Article[]> {
-  return withBrowserPage(async (page) => {
+  const browserWork = withBrowserPage(async (page) => {
     await loadServiceCookies(page, "linkedin");
 
     const searchUrl = `https://www.linkedin.com/search/results/content/?keywords=${encodeURIComponent(
@@ -294,6 +295,19 @@ async function fetchLinkedInPosts(
 
     return articles;
   });
+
+  // Race the browser work against a timeout — returns [] if browser exceeds the limit
+  try {
+    return await Promise.race([
+      browserWork,
+      new Promise<Article[]>((_, reject) =>
+        setTimeout(() => reject(new Error(`Browser timeout after ${browserTimeoutMs}ms`)), browserTimeoutMs)
+      ),
+    ]);
+  } catch (err) {
+    console.warn(`[collect-linkedin] ${(err as Error).message} for keyword "${keyword}" — returning empty`);
+    return [];
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -307,6 +321,7 @@ export async function POST(req: NextRequest) {
     const filterDays: number = typeof body.filterDays === 'number' ? body.filterDays : 7;
     const maxArticles: number = typeof body.maxArticles === 'number' ? body.maxArticles : 40;
     const scrollSeconds: number = typeof body.scrollSeconds === "number" ? body.scrollSeconds : 25;
+    const browserTimeoutMs: number = typeof body.browserTimeoutMs === "number" ? body.browserTimeoutMs : 30_000;
 
     if (keywords.length === 0) {
       return NextResponse.json(
@@ -321,7 +336,7 @@ export async function POST(req: NextRequest) {
     for (const k of keywords) {
       if (!k.trim()) continue;
       console.log(`[/api/collect-linkedin] Fetching for keyword: ${k.trim()}`);
-      const articles = await fetchLinkedInPosts(k.trim(), runId, scrollSeconds);
+      const articles = await fetchLinkedInPosts(k.trim(), runId, scrollSeconds, browserTimeoutMs);
       allArticles.push(...articles);
     }
 

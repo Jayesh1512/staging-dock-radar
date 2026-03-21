@@ -14,6 +14,7 @@ export function useCollect() {
     maxArticles: number,
     sources: ArticleSource[],
     options?: { start_date?: string; end_date?: string; campaign?: string },
+    browserTimeoutMs?: number,
   ): Promise<CollectResult> => {
     setIsCollecting(true);
     setStats(null);
@@ -66,7 +67,7 @@ export function useCollect() {
           fetch('/api/collect-linkedin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ keywords, filterDays, maxArticles }),
+            body: JSON.stringify({ keywords, filterDays, maxArticles, ...(browserTimeoutMs !== undefined && { browserTimeoutMs }) }),
           }),
         );
       }

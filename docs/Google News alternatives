@@ -21,6 +21,8 @@ Dock Radar | Last updated: 2026-03-18
 
 These should be implemented before any scraping. RSS-accessible, enterprise-focused, directly name DSPs and SIs.
 
+##fireworld.at - added by Ravi
+
 **1. DroneLife (dronelife.com)**
 - RSS: `https://dronelife.com/feed/`
 - Focus: Commercial drone deployments, partnerships, contracts, operator announcements

@@ -105,8 +105,22 @@ Bulk upsert of website, linkedin, linkedin_followers, and industries for 44 comp
 | 2026-03-19 | (all matching) | Marut Dronetech | entity name variant | Marut Drones | Same company — standardized display name | Claude Code |
 | 2026-03-19 | (all matching) | country: USA/United States | USA, United States | US | Country name normalization to canonical "US" | Claude Code |
 
-### 5c: Code changes
+### 5c: DB cleanup applied directly (via Node.js script)
+
+| Date | Entity Name | Old | New | Reason | Changed By |
+|------|-------------|-----|-----|--------|------------|
+| 2026-03-20 | country: USA/United States | USA, United States | US | Country normalization — 12 rows updated | Claude Code |
+| 2026-03-20 | Marut Dronetech | entity name "Marut Dronetech" | "Marut Drones" | Same company, standardized name — 1 row | Claude Code |
+| 2026-03-20 | Importadora Lillo SpA / Heliboss Chile | entity name | "Heliboss Chile" | Duplicate of Heliboss Chile — 1 row | Claude Code |
+| 2026-03-20 | PHOTOSOL | operator | buyer | French solar PV developer, internal drone use — 4 rows | Claude Code |
+| 2026-03-20 | DroneBase | no website/linkedin | enriched | Added website + linkedin to discovered_companies | Claude Code |
+| 2026-03-20 | Aerial Prospex | no website/linkedin | enriched | Added website + linkedin to discovered_companies | Claude Code |
+| 2026-03-20 | Heliboss Mexico | no website | enriched | Added website to discovered_companies | Claude Code |
+
+**Result: 50 → 46 companies in hitlist (3 buyers removed, 2 duplicates merged, 1 OEM filtered)**
+
+### 5d: Code changes
 - hitlist/route.ts: Added normalizeCountryName() to country aggregation (fixes US/USA split in region filter)
 - hitlist/route.ts: Updated PRIORITY_REGIONS to use normalized names
-- scoring-prompt.ts: Added canonical country names to GEOGRAPHY rule
+- scoring-prompt.ts: Added canonical country names to GEOGRAPHY rule; resolved 5 merge conflicts
 - campaign-export/route.ts: Updated "Hot Lead" → "High Value" label

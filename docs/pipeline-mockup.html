@@ -1,0 +1,2570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dock Radar — Pipeline Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── RESET ───────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 14px; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding: 40px 24px 80px;
+    }
+
+    /* ─── DESIGN TOKENS ───────────────────────────────────────────────── */
+    :root {
+      --indigo:        #6366f1;
+      --indigo-light:  #eef2ff;
+      --green:         #16a34a;
+      --green-light:   #f0fdf4;
+      --amber:         #d97706;
+      --amber-light:   #fffbeb;
+      --blue:          #2563eb;
+      --blue-light:    #eff6ff;
+      --orange:        #ea580c;
+      --orange-light:  #fff7ed;
+      --purple:        #7c3aed;
+      --purple-light:  #f5f3ff;
+      --red:           #dc2626;
+      --red-light:     #fef2f2;
+      --teal:          #0d9488;
+      --teal-light:    #f0fdfa;
+      --text:          #111827;
+      --text-muted:    #6b7280;
+      --border:        #e5e7eb;
+      --surface:       #f9fafb;
+      --bg:            #ffffff;
+    }
+
+    /* ─── SCREEN WRAPPER ──────────────────────────────────────────────── */
+    .screen-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      padding: 0 0 10px 2px;
+    }
+
+    .screen {
+      background: var(--bg);
+      max-width: 1280px;
+      margin: 0 auto 48px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 20px rgba(0,0,0,.04);
+    }
+
+    .screen-divider {
+      max-width: 1280px;
+      margin: 48px auto;
+      border: none;
+      border-top: 2px dashed #d1d5db;
+    }
+
+    /* ─── NAVBAR ──────────────────────────────────────────────────────── */
+    .navbar {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 12px 20px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .logomark {
+      width: 28px;
+      height: 28px;
+      background: var(--indigo);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    .brand-text { display: flex; flex-direction: column; gap: 1px; }
+    .brand-name { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1; }
+    .brand-sub  { font-size: 11px; color: var(--text-muted); line-height: 1; }
+
+    .navbar-center {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* ─── TABS ────────────────────────────────────────────────────────── */
+    .tabs-bar {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      gap: 0;
+      background: var(--bg);
+    }
+
+    .tabs-list {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex: 1;
+    }
+
+    .tab {
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      white-space: nowrap;
+      transition: color .15s;
+    }
+
+    .tab.active {
+      color: var(--indigo);
+      border-bottom-color: var(--indigo);
+      font-weight: 600;
+    }
+
+    .tab-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 18px;
+      padding: 0 5px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-muted);
+      margin-left: 6px;
+    }
+
+    .tab.active .tab-count {
+      background: var(--indigo-light);
+      border-color: #c7d2fe;
+      color: var(--indigo);
+    }
+
+    .tabs-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+    }
+
+    /* ─── FILTER BAR ──────────────────────────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .filter-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .filter-select {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 4px 8px;
+      cursor: pointer;
+      appearance: none;
+      padding-right: 20px;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 6px center;
+    }
+
+    .filter-sep {
+      width: 1px;
+      height: 16px;
+      background: var(--border);
+    }
+
+    .filter-count {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    /* ─── TABLE ───────────────────────────────────────────────────────── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table thead th {
+      padding: 10px 14px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: left;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .data-table tbody tr:hover > td {
+      background: #fafafa;
+    }
+
+    .data-table tbody td {
+      padding: 11px 14px;
+      font-size: 13px;
+      color: var(--text);
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr.expanded-row-header > td {
+      background: #fafafa;
+    }
+
+    /* ─── BADGES / PILLS ──────────────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-indigo  { background: var(--indigo-light); color: var(--indigo); }
+    .badge-green   { background: var(--green-light);  color: var(--green); }
+    .badge-amber   { background: var(--amber-light);  color: var(--amber); }
+    .badge-blue    { background: var(--blue-light);   color: var(--blue); }
+    .badge-orange  { background: var(--orange-light); color: var(--orange); }
+    .badge-purple  { background: var(--purple-light); color: var(--purple); }
+    .badge-grey    { background: var(--surface);      color: var(--text-muted); border: 1px solid var(--border); }
+    .badge-teal    { background: var(--teal-light);   color: var(--teal); }
+
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--amber-light);
+      color: var(--amber);
+    }
+
+    .score-pill.high  { background: var(--amber-light); color: var(--amber); }
+    .score-pill.med   { background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); }
+
+    /* ─── LINKS ───────────────────────────────────────────────────────── */
+    a { color: inherit; text-decoration: none; }
+
+    .link-blue {
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .link-blue:hover { text-decoration: underline; }
+
+    .link-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+
+    .link-icon:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* ─── BUTTONS ─────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background .15s, border-color .15s, color .15s;
+      white-space: nowrap;
+    }
+
+    .btn-indigo-solid {
+      background: var(--indigo);
+      color: #fff;
+      border-color: var(--indigo);
+    }
+    .btn-indigo-solid:hover { background: #4f46e5; border-color: #4f46e5; }
+
+    .btn-indigo-outline {
+      background: var(--bg);
+      color: var(--indigo);
+      border-color: #c7d2fe;
+    }
+    .btn-indigo-outline:hover { background: var(--indigo-light); }
+
+    .btn-green-outline {
+      background: var(--bg);
+      color: var(--green);
+      border-color: #86efac;
+    }
+    .btn-green-outline:hover { background: var(--green-light); }
+
+    .btn-green-solid {
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+    }
+    .btn-green-solid:hover { background: #15803d; }
+
+    .btn-red-outline {
+      background: var(--bg);
+      color: var(--red);
+      border-color: #fca5a5;
+    }
+    .btn-red-outline:hover { background: var(--red-light); }
+
+    .btn-grey-outline {
+      background: var(--bg);
+      color: var(--text-muted);
+      border-color: var(--border);
+    }
+    .btn-grey-outline:hover { background: var(--surface); }
+
+    .btn-lg {
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* ─── NAVBAR PILLS ────────────────────────────────────────────────── */
+    .nav-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* ─── RANK NUMBER ─────────────────────────────────────────────────── */
+    .rank {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+      min-width: 20px;
+    }
+
+    /* ─── COMPANY CELL ────────────────────────────────────────────────── */
+    .company-link {
+      font-weight: 600;
+      color: var(--blue);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .company-link:hover { text-decoration: underline; }
+
+    /* ─── EXPANDED ROW ────────────────────────────────────────────────── */
+    .expanded-panel {
+      background: #fafafa;
+      border-left: 3px solid var(--indigo);
+      padding: 16px 20px;
+    }
+
+    .expanded-grid {
+      display: grid;
+      gap: 24px;
+    }
+
+    .expanded-grid-3 {
+      grid-template-columns: 28% 20% 1fr;
+    }
+
+    .expanded-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    /* ─── ARTICLE ROWS ────────────────────────────────────────────────── */
+    .article-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .article-row:last-of-type { border-bottom: none; }
+
+    .article-score {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      height: 22px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .article-score.high { background: var(--green-light); color: var(--green); }
+    .article-score.med  { background: var(--amber-light); color: var(--amber); }
+
+    .article-title {
+      flex: 1;
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .article-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ─── SCREEN 2: DRAWER ────────────────────────────────────────────── */
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .breadcrumb-sep {
+      color: #d1d5db;
+    }
+
+    .drawer-body {
+      display: grid;
+      grid-template-columns: 60% 1fr;
+      gap: 0;
+    }
+
+    .drawer-left {
+      padding: 20px;
+      border-right: 1px solid var(--border);
+    }
+
+    .drawer-right {
+      padding: 20px;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .summary-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 20px;
+      margin-bottom: 16px;
+    }
+
+    .meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .meta-key  { font-size: 10.5px; color: var(--text-muted); font-weight: 500; }
+    .meta-val  { font-size: 12.5px; font-weight: 500; color: var(--text); }
+
+    /* ─── SCORE BREAKDOWN ─────────────────────────────────────────────── */
+    .score-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .score-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .score-big {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--green);
+      line-height: 1;
+    }
+
+    .score-card-header-labels {
+      flex: 1;
+    }
+
+    .score-card-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .score-breakdown-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .score-breakdown-table tr:nth-child(even) td {
+      background: var(--surface);
+    }
+
+    .score-breakdown-table td {
+      padding: 8px 16px;
+      font-size: 12px;
+      border: none;
+      vertical-align: middle;
+    }
+
+    .score-breakdown-table td:first-child {
+      font-weight: 500;
+      color: var(--text);
+      width: 40%;
+    }
+
+    .score-breakdown-table td:nth-child(2) {
+      color: var(--text-muted);
+      width: 45%;
+    }
+
+    .score-breakdown-table td:last-child {
+      text-align: right;
+      font-weight: 700;
+      font-size: 13px;
+      width: 15%;
+      white-space: nowrap;
+    }
+
+    .impact-high   { color: var(--green); }
+    .impact-med    { color: var(--amber); }
+
+    .score-card-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    .partner-score-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+    }
+
+    .partner-score-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .partner-score-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--amber);
+    }
+
+    .partner-score-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .partner-breakdown {
+      padding: 0 16px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .partner-breakdown-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+    }
+
+    .dot.amber { background: var(--amber); }
+
+    .backlog-note {
+      padding: 8px 16px 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* ─── PERSON CARD ─────────────────────────────────────────────────── */
+    .person-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    .person-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--indigo-light), #c7d2fe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--indigo);
+      flex-shrink: 0;
+    }
+
+    .person-name  { font-size: 13px; font-weight: 600; color: var(--text); }
+    .person-role  { font-size: 11.5px; color: var(--text-muted); }
+
+    /* ─── SOURCE BOX ──────────────────────────────────────────────────── */
+    .source-box {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .source-box-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .linkedin-icon {
+      width: 20px;
+      height: 20px;
+      background: #0077b5;
+      border-radius: 3px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      font-style: italic;
+      flex-shrink: 0;
+    }
+
+    .contact-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--blue);
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+
+    .contact-row:hover { text-decoration: underline; }
+
+    .contact-icon {
+      font-size: 13px;
+      color: var(--text-muted);
+      width: 16px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    /* ─── BOTTOM ACTION BAR ───────────────────────────────────────────── */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+
+    .action-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .link-dismiss {
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .link-dismiss:hover { color: var(--text); }
+
+    /* ─── SCREEN 3: PIPELINE ──────────────────────────────────────────── */
+    .page-header {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .page-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .pipeline-summary {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .pipeline-summary strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ─── STAGE PILLS ─────────────────────────────────────────────────── */
+    .stage-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .stage-outreach  { background: var(--blue-light);  color: var(--blue); }
+    .stage-interested{ background: var(--amber-light); color: var(--amber); }
+    .stage-crm       { background: var(--green-light); color: var(--green); }
+
+    /* ─── EXPANDED PIPELINE ROW ───────────────────────────────────────── */
+    .pipeline-expanded {
+      background: #fafafa;
+      border-left: 3px solid var(--indigo);
+    }
+
+    .pipeline-expanded-inner {
+      display: grid;
+      grid-template-columns: 55% 1fr;
+      gap: 0;
+      padding: 0;
+    }
+
+    .pipeline-exp-left {
+      padding: 18px 20px;
+      border-right: 1px solid var(--border);
+    }
+
+    .pipeline-exp-right {
+      padding: 18px 20px;
+    }
+
+    .company-row-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .company-big {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .linkedin-reply-box {
+      background: var(--blue-light);
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      font-style: italic;
+      color: #1e40af;
+      line-height: 1.6;
+    }
+
+    .pipeline-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .label-teal  { color: var(--teal); }
+    .label-grey  { color: var(--text-muted); }
+
+    .note-textarea {
+      width: 100%;
+      font-family: inherit;
+      font-size: 12.5px;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      resize: none;
+      min-height: 70px;
+      margin-bottom: 10px;
+    }
+
+    .note-textarea::placeholder { color: var(--text-muted); }
+
+    /* ─── TOAST ───────────────────────────────────────────────────────── */
+    .toast-wrapper {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+    }
+
+    .toast {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--green);
+      border-radius: 6px;
+      padding: 12px 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.12);
+      font-size: 13px;
+      color: var(--text);
+      min-width: 280px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .toast-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: var(--green);
+      border-radius: 0 0 0 3px;
+      animation: toast-shrink 4s linear forwards;
+      width: 100%;
+    }
+
+    @keyframes toast-shrink {
+      from { width: 100%; }
+      to   { width: 0%; }
+    }
+
+    /* ─── DIVIDERS ────────────────────────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 14px 0;
+    }
+
+    /* ─── UTILITY ─────────────────────────────────────────────────────── */
+    .text-muted  { color: var(--text-muted); }
+    .text-xs     { font-size: 11px; }
+    .text-sm     { font-size: 12px; }
+    .font-mono   { font-family: 'Courier New', monospace; }
+    .flex        { display: flex; }
+    .flex-center { display: flex; align-items: center; }
+    .gap-4       { gap: 4px; }
+    .gap-6       { gap: 6px; }
+    .gap-8       { gap: 8px; }
+    .gap-12      { gap: 12px; }
+    .mt-2        { margin-top: 2px; }
+    .mt-4        { margin-top: 4px; }
+    .mt-8        { margin-top: 8px; }
+    .mt-12       { margin-top: 12px; }
+    .mt-14       { margin-top: 14px; }
+    .mb-4        { margin-bottom: 4px; }
+    .mb-8        { margin-bottom: 8px; }
+    .mb-10       { margin-bottom: 10px; }
+    .mb-12       { margin-bottom: 12px; }
+    .w-full      { width: 100%; }
+
+    /* Small check icon */
+    .check-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--green-light);
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Tooltip simulation */
+    .tooltip-wrap {
+      position: relative;
+    }
+    .tooltip-wrap:hover .tooltip-text {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .tooltip-text {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      right: 0;
+      background: #1f2937;
+      color: #fff;
+      font-size: 11px;
+      padding: 5px 9px;
+      border-radius: 5px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .15s;
+      z-index: 10;
+    }
+    .tooltip-text::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      right: 14px;
+      border: 5px solid transparent;
+      border-top-color: #1f2937;
+    }
+
+    /* ─── VIEW TOGGLE ─────────────────────────────────────────────────── */
+    .view-toggle {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .view-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 11px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: var(--bg);
+      color: var(--text-muted);
+      line-height: 1;
+    }
+
+    .view-toggle-btn.active {
+      background: var(--indigo);
+      color: #fff;
+    }
+
+    /* ─── PIPELINE PAGE HEADER ────────────────────────────────────────── */
+    .pipe-header {
+      padding: 20px 24px 0;
+      background: var(--bg);
+    }
+
+    .pipe-header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 4px;
+    }
+
+    .pipe-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .pipe-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .pipe-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* ─── STATS BAR ───────────────────────────────────────────────────── */
+    .stats-bar {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0;
+      margin: 16px 24px;
+      overflow: hidden;
+    }
+
+    .stat-block {
+      flex: 1;
+      padding: 13px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      border-right: 1px solid var(--border);
+      min-width: 0;
+    }
+
+    .stat-block:last-child { border-right: none; }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .stat-value.indigo { color: var(--indigo); }
+    .stat-value.blue   { color: var(--blue); }
+    .stat-value.amber  { color: var(--amber); }
+    .stat-value.green  { color: var(--green); }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .stat-name {
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    /* ─── PIPELINE FILTER BAR ─────────────────────────────────────────── */
+    .pipe-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 24px 16px;
+      background: var(--bg);
+    }
+
+    .pipe-search {
+      font-family: inherit;
+      font-size: 12.5px;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px 6px 28px;
+      width: 200px;
+      background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='6' cy='6' r='4.5' stroke='%236b7280' stroke-width='1.4'/%3E%3Cpath d='M9.5 9.5l2.5 2.5' stroke='%236b7280' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 8px center;
+      outline: none;
+    }
+
+    .pipe-search::placeholder { color: #9ca3af; }
+
+    .pipe-filter-spacer { flex: 1; }
+
+    /* ─── KANBAN BOARD ────────────────────────────────────────────────── */
+    .kanban-outer {
+      padding: 0 24px 24px;
+      background: var(--bg);
+    }
+
+    .kanban-board {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 16px;
+      align-items: flex-start;
+    }
+
+    .kanban-board::-webkit-scrollbar { height: 5px; }
+    .kanban-board::-webkit-scrollbar-track { background: transparent; }
+    .kanban-board::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+
+    .kanban-col {
+      flex-shrink: 0;
+      width: 185px;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 10px;
+      min-height: 200px;
+    }
+
+    /* ─── COLUMN HEADER ───────────────────────────────────────────────── */
+    .kcol-header {
+      padding: 4px 2px 10px;
+      border-bottom: 1px solid #e5e7eb;
+      margin-bottom: 10px;
+    }
+
+    .kcol-title-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 6px;
+    }
+
+    .kcol-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .kcol-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .kcol-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 18px;
+      padding: 0 5px;
+      font-size: 10.5px;
+      font-weight: 600;
+      background: #e5e7eb;
+      border-radius: 10px;
+      color: var(--text-muted);
+    }
+
+    .kcol-collapse {
+      font-size: 12px;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 0 2px;
+    }
+
+    .kcol-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .kcol-stat-line {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    /* ─── DEAL CARD ───────────────────────────────────────────────────── */
+    .kcard {
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.1);
+      border: 1px solid #f0f0f0;
+      cursor: grab;
+      position: relative;
+    }
+
+    .kcard:last-child { margin-bottom: 0; }
+    .kcard:active { cursor: grabbing; }
+
+    /* TOP ROW: deal name + checkbox */
+    .kcard-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 9px;
+    }
+
+    .kcard-deal-link {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--blue);
+      flex: 1;
+      line-height: 1.3;
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .kcard-deal-link:hover { text-decoration: underline; }
+
+    .kcard-pencil {
+      font-size: 11px;
+      color: #9ca3af;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 1px;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .kcard:hover .kcard-pencil { opacity: 1; }
+    .kcard-pencil:hover { color: var(--text-muted); }
+
+    .kcard-checkbox {
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 3px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      cursor: pointer;
+    }
+
+    /* Deal name inline edit state */
+    .kcard-deal-input {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      border: 1.5px solid var(--indigo);
+      border-radius: 4px;
+      padding: 3px 7px;
+      width: 100%;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+      background: #fff;
+    }
+
+    .kcard-edit-hint {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: 3px;
+      font-style: italic;
+      display: block;
+    }
+
+    /* BODY ROWS */
+    .kcard-body {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 9px;
+    }
+
+    .kcard-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+    }
+
+    .kcard-row-label {
+      color: #9ca3af;
+      font-weight: 500;
+      flex-shrink: 0;
+      min-width: 42px;
+    }
+
+    /* Score pills in cards */
+    .kscore-high {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 7px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .kscore-med {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 7px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    .ksignal-partnership {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 7px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--orange-light);
+      color: var(--orange);
+    }
+
+    .ksignal-deployment {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 7px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--blue-light);
+      color: var(--blue);
+    }
+
+    .ksignal-product {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 7px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--purple-light);
+      color: var(--purple);
+    }
+
+    /* FOOTER ROW */
+    .kcard-footer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-top: 8px;
+      border-top: 1px solid #f3f4f6;
+    }
+
+    .kcard-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .kcard-owner {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .kcard-age {
+      flex: 1;
+      font-size: 11px;
+      color: #9ca3af;
+      text-align: center;
+    }
+
+    .kcard-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kcard-icon-btn {
+      font-size: 13px;
+      color: #9ca3af;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .kcard-icon-btn:hover { color: var(--text-muted); }
+
+    /* AI SDR pill */
+    .ai-sdr-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      background: #fef3c7;
+      color: #b45309;
+      margin-top: 7px;
+    }
+
+    /* AI SDR badge in column header */
+    .kcol-ai-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      background: #fef3c7;
+      color: #b45309;
+      flex-shrink: 0;
+    }
+
+    /* Empty column state */
+    .kanban-empty {
+      border: 1.5px dashed #d1d5db;
+      border-radius: 8px;
+      padding: 20px 12px;
+      text-align: center;
+    }
+
+    .kanban-empty-text {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+
+    .kanban-empty-link {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .kanban-empty-link:hover { color: var(--indigo); text-decoration: underline; }
+
+    /* ─── INLINE EDIT ICONS ──────────────────────────────────────────── */
+    .edit-icon {
+      font-size: 10px;
+      color: #9ca3af;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity .15s;
+      flex-shrink: 0;
+      line-height: 1;
+      margin-left: 3px;
+    }
+
+    .kcard:hover .edit-icon {
+      opacity: 1;
+    }
+
+    /* Stage row with edit icon — needs relative positioning for dropdown */
+    .kcard-stage-row {
+      position: relative;
+    }
+
+    /* ─── STAGE DROPDOWN (DroneBase open state) ───────────────────────── */
+    .kstage-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      min-width: 180px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.10);
+      padding: 4px 0;
+      z-index: 10;
+    }
+
+    .kstage-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .kstage-option:hover { background: var(--surface); }
+
+    .kstage-option.selected {
+      color: var(--indigo);
+      font-weight: 600;
+    }
+
+    .kstage-dot {
+      font-size: 8px;
+      flex-shrink: 0;
+    }
+
+    /* known partner badge inline small */
+    .kbadge-partner {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 5px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      background: var(--green-light);
+      color: var(--green);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SCREEN 1 — Partner Hit List (Potential Partners)
+     ════════════════════════════════════════════════════════════════════ -->
+<p class="screen-label">SCREEN 1 — Partner Hit List (Potential Partners)</p>
+<div class="screen">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <div class="logomark">DR</div>
+      <div class="brand-text">
+        <span class="brand-name">Dock Radar</span>
+        <span class="brand-sub">FlytBase BD Intelligence</span>
+      </div>
+    </div>
+
+    <div class="navbar-center">
+      <span class="nav-pill badge-indigo">DJI Dock</span>
+      <span class="text-muted text-sm">Mar 20</span>
+      <span class="text-muted text-sm">17 signals</span>
+    </div>
+
+    <div class="navbar-right">
+      <button class="btn btn-green-outline">Mark All Reviewed</button>
+      <button class="btn btn-red-outline">Bulk Dismiss</button>
+    </div>
+  </nav>
+
+  <!-- TABS -->
+  <div class="tabs-bar">
+    <div class="tabs-list">
+      <div class="tab">FlytBase Partners</div>
+      <div class="tab active">Potential Partners</div>
+    </div>
+    <div class="tabs-right">
+      <button class="btn btn-grey-outline">Export CSV</button>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <span class="filter-label">Score:</span>
+      <select class="filter-select">
+        <option>All</option>
+        <option>HIGH (≥0.8)</option>
+        <option>MED (≥0.5)</option>
+      </select>
+      <div class="filter-sep"></div>
+      <span class="filter-label">Region:</span>
+      <select class="filter-select"><option>All</option></select>
+      <div class="filter-sep"></div>
+      <span class="filter-label">Industry:</span>
+      <select class="filter-select"><option>All</option></select>
+      <div class="filter-sep"></div>
+      <span class="filter-label">Signal:</span>
+      <select class="filter-select"><option>All</option></select>
+    </div>
+    <span class="filter-count">25 companies</span>
+  </div>
+
+  <!-- TABLE -->
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width:36px">#</th>
+        <th>Company</th>
+        <th style="color:var(--indigo);">Hit Score <span style="font-size:11px; font-weight:700; color:var(--indigo);">↓</span></th>
+        <th>Region</th>
+        <th>Industry</th>
+        <th>Signal</th>
+        <th>Articles</th>
+        <th>Website</th>
+        <th>LinkedIn</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- ROW 1 — EXPANDED -->
+      <tr class="expanded-row-header">
+        <td><span class="rank">1</span></td>
+        <td>
+          <span class="company-link">DroneBase</span>
+          <span class="badge badge-green" style="margin-left:6px; font-size:10px; padding:1px 6px;">Known Partner</span>
+        </td>
+        <td><span class="score-pill high">HIGH <span style="font-weight:400; font-size:11px; opacity:.7">1.0</span></span></td>
+        <td class="text-muted">EMEA</td>
+        <td class="text-muted" style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Security &amp; Inspection</td>
+        <td><span class="badge badge-orange">PARTNERSHIP</span></td>
+        <td class="text-muted text-sm">3 articles</td>
+        <td><span class="link-icon">↗</span></td>
+        <td><span class="link-icon" style="font-style:italic; font-weight:700; font-size:10px; color:#0077b5;">in</span></td>
+      </tr>
+
+      <!-- EXPANDED PANEL -->
+      <tr>
+        <td colspan="9" style="padding:0; border-bottom:1px solid var(--border);">
+          <div class="expanded-panel">
+
+            <!-- TOP 3-COLUMN GRID -->
+            <div class="expanded-grid expanded-grid-3">
+
+              <!-- A: KEY CONTACT -->
+              <div>
+                <div class="expanded-section-label">Key Contact</div>
+                <div style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:2px;">Marco Rossi</div>
+                <div class="text-muted text-sm mb-8">Head of Operations · DroneBase</div>
+                <span class="link-icon" style="font-style:italic; font-weight:700; font-size:10px; color:#0077b5;">in</span>
+              </div>
+
+              <!-- B: LAST SEEN -->
+              <div>
+                <div class="expanded-section-label">Last Seen</div>
+                <div style="font-size:15px; font-weight:600; color:var(--text); margin-bottom:2px;">305 days ago</div>
+                <div class="text-muted text-xs">May 19, 2025</div>
+              </div>
+
+              <!-- C: SOURCE ARTICLES -->
+              <div>
+                <div class="expanded-section-label">Source Articles</div>
+
+                <div class="article-row">
+                  <span class="article-score high">100</span>
+                  <span class="article-title">"We've been working closely with our partner DroneBase in Italy..."</span>
+                  <span class="article-meta">LinkedIn · May 2025</span>
+                  <span class="link-blue">View Detail →</span>
+                </div>
+
+                <div class="article-row">
+                  <span class="article-score high">87</span>
+                  <span class="article-title">"DroneBase expands DJI Dock 3 deployments across Italian..."</span>
+                  <span class="article-meta">Google News · Mar 2025</span>
+                  <span class="link-blue">View Detail →</span>
+                </div>
+
+                <div class="article-row">
+                  <span class="article-score med">74</span>
+                  <span class="article-title">"Critical infrastructure monitoring pilot with DJI Dock..."</span>
+                  <span class="article-meta">LinkedIn · Jan 2025</span>
+                  <span class="link-blue">View Detail →</span>
+                </div>
+
+                <div class="flex-center gap-8 mt-8">
+                  <span class="text-muted text-xs">+ 0 more articles</span>
+                </div>
+              </div>
+
+            </div><!-- /expanded-grid-3 -->
+
+            <!-- ASK RADAR SECTION -->
+            <div style="border-top:1px solid var(--border); margin-top:16px; padding-top:14px;">
+
+              <!-- Label row -->
+              <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:4px;">
+                <span style="font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--indigo);">✦ Ask Radar</span>
+                <span style="font-size:12px; color:var(--text-muted); font-style:italic;">Ask anything about this company from collected signals</span>
+              </div>
+
+              <!-- Input row -->
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                <input
+                  type="text"
+                  placeholder="e.g. What markets does DroneBase operate in? What use cases have they deployed?"
+                  style="flex:1; font-family:inherit; font-size:12.5px; color:var(--text); background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:7px 11px; outline:none;"
+                />
+                <button class="btn btn-indigo-solid" style="font-size:12px; padding:6px 12px; white-space:nowrap;">Ask →</button>
+              </div>
+
+              <!-- Pre-filled example answer -->
+              <div style="margin-bottom:10px;">
+                <div style="font-size:11.5px; color:var(--text-muted); font-style:italic; margin-bottom:6px;">
+                  "What deployment use cases has DroneBase shown?"
+                </div>
+                <div style="background:var(--indigo-light); border:1px solid #c7d2fe; border-radius:8px; padding:12px; font-size:12.5px; color:#312e81; line-height:1.65;">
+                  Based on 3 collected articles, DroneBase has demonstrated DJI Dock 3 deployments in two primary use cases:
+                  (1) <strong>Critical infrastructure monitoring</strong> — partnered with FlytBase Pro in Italy for 24/7 perimeter surveillance at industrial sites;
+                  (2) <strong>Security inspection</strong> — autonomous patrol routes for access control.
+                  All signals originate from EMEA (Italy). Latest signal: 305 days ago.
+                </div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">
+                  Based on 3 articles &nbsp;·&nbsp; Sources: LinkedIn (2), Google News (1)
+                </div>
+              </div>
+
+            </div><!-- /ask-radar -->
+
+            <!-- ADD TO PIPELINE — right-aligned, below full panel -->
+            <div style="display:flex; justify-content:flex-end; margin-top:4px;">
+              <div class="tooltip-wrap">
+                <button class="btn btn-indigo-outline" style="font-size:11px; padding:4px 10px;">+ Add to Pipeline</button>
+                <span class="tooltip-text">Add DroneBase to qualification pipeline</span>
+              </div>
+            </div>
+
+          </div><!-- /expanded-panel -->
+        </td>
+      </tr>
+
+      <!-- ROW 2 -->
+      <tr>
+        <td><span class="rank">2</span></td>
+        <td><span class="company-link">Percepto</span></td>
+        <td><span class="score-pill high">HIGH <span style="font-weight:400; font-size:11px; opacity:.7">1.0</span></span></td>
+        <td class="text-muted">EMEA</td>
+        <td class="text-muted">Critical Infrastructure</td>
+        <td><span class="badge badge-blue">DEPLOYMENT</span></td>
+        <td class="text-muted text-sm">2 articles</td>
+        <td><span class="link-icon">↗</span></td>
+        <td><span class="link-icon" style="font-style:italic; font-weight:700; font-size:10px; color:#0077b5;">in</span></td>
+      </tr>
+
+      <!-- ROW 3 -->
+      <tr>
+        <td><span class="rank">3</span></td>
+        <td><span class="company-link">SkyGrid</span></td>
+        <td><span class="score-pill high">HIGH <span style="font-weight:400; font-size:11px; opacity:.7">1.0</span></span></td>
+        <td class="text-muted">Americas</td>
+        <td class="text-muted">Aviation &amp; UTM</td>
+        <td><span class="badge badge-blue">DEPLOYMENT</span></td>
+        <td class="text-muted text-sm">4 articles</td>
+        <td><span class="link-icon">↗</span></td>
+        <td><span class="link-icon" style="font-style:italic; font-weight:700; font-size:10px; color:#0077b5;">in</span></td>
+      </tr>
+
+      <!-- ROW 4 -->
+      <tr>
+        <td><span class="rank">4</span></td>
+        <td><span class="company-link">Asylon</span></td>
+        <td><span class="score-pill high">HIGH <span style="font-weight:400; font-size:11px; opacity:.7">1.0</span></span></td>
+        <td class="text-muted">Americas</td>
+        <td class="text-muted">Perimeter Security</td>
+        <td><span class="badge badge-blue">DEPLOYMENT</span></td>
+        <td class="text-muted text-sm">2 articles</td>
+        <td><span class="link-icon">↗</span></td>
+        <td><span class="text-muted text-sm">—</span></td>
+      </tr>
+
+      <!-- ROW 5 -->
+      <tr>
+        <td><span class="rank">5</span></td>
+        <td><span class="company-link">Avitas Systems</span></td>
+        <td><span class="score-pill med">MED <span style="font-weight:400; font-size:11px; opacity:.7">0.7</span></span></td>
+        <td class="text-muted">APAC</td>
+        <td class="text-muted">Energy &amp; Utilities</td>
+        <td><span class="badge badge-purple">PRODUCT</span></td>
+        <td class="text-muted text-sm">1 article</td>
+        <td><span class="link-icon">↗</span></td>
+        <td><span class="link-icon" style="font-style:italic; font-weight:700; font-size:10px; color:#0077b5;">in</span></td>
+      </tr>
+
+      <!-- ROW 6 -->
+      <tr style="border-bottom:none;">
+        <td><span class="rank">6</span></td>
+        <td><span class="company-link">Skydio</span></td>
+        <td><span class="score-pill high">HIGH <span style="font-weight:400; font-size:11px; opacity:.7">1.0</span></span></td>
+        <td class="text-muted">Americas</td>
+        <td class="text-muted">Public Safety</td>
+        <td><span class="badge badge-blue">DEPLOYMENT</span></td>
+        <td class="text-muted text-sm">5 articles</td>
+        <td><span class="link-icon">↗</span></td>
+        <td><span class="link-icon" style="font-style:italic; font-weight:700; font-size:10px; color:#0077b5;">in</span></td>
+      </tr>
+
+    </tbody>
+  </table>
+
+</div><!-- /screen 1 -->
+
+<hr class="screen-divider" />
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SCREEN 2 — Article Drawer
+     ════════════════════════════════════════════════════════════════════ -->
+<p class="screen-label">SCREEN 2 — Article Drawer (after clicking 'View Detail →' on top article)</p>
+<div class="screen">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <div class="logomark">DR</div>
+      <div class="brand-text">
+        <span class="brand-name">Dock Radar</span>
+        <span class="brand-sub">FlytBase BD Intelligence</span>
+      </div>
+    </div>
+    <div class="navbar-center">
+      <span class="nav-pill badge-indigo">DJI Dock</span>
+      <span class="text-muted text-sm">Mar 20</span>
+      <span class="text-muted text-sm">17 signals</span>
+    </div>
+    <div class="navbar-right">
+      <button class="btn btn-green-outline">Mark All Reviewed</button>
+      <button class="btn btn-red-outline">Bulk Dismiss</button>
+    </div>
+  </nav>
+
+  <!-- DRAWER HEADER -->
+  <div class="drawer-header">
+    <div class="breadcrumb">
+      <span>Article Detail</span>
+      <span class="breadcrumb-sep">·</span>
+      <span class="badge badge-orange" style="font-size:11px;">PARTNERSHIP</span>
+      <span class="breadcrumb-sep">·</span>
+      <span>Perimeter Security &amp; Smart Facilities</span>
+      <span class="breadcrumb-sep">·</span>
+      <span style="font-weight:600; color:var(--green);">Score 100</span>
+    </div>
+    <div class="flex-center gap-8">
+      <div class="flex-center gap-6">
+        <div class="linkedin-icon">in</div>
+        <span class="text-sm font-weight:600">LinkedIn</span>
+      </div>
+      <button class="btn btn-grey-outline" style="padding:4px 8px; font-size:13px;">✕</button>
+    </div>
+  </div>
+
+  <!-- BODY: TWO COLUMNS -->
+  <div class="drawer-body">
+
+    <!-- LEFT COLUMN -->
+    <div class="drawer-left">
+
+      <!-- SUMMARY -->
+      <div class="section-label">Summary</div>
+      <div class="summary-box">
+        FlytBase partnered with DroneBase in Italy to test DJI Dock 3 with FlytBase Pro, demonstrating rapid autonomous docked drone deployments for 24/7 visibility at critical infrastructure.
+      </div>
+
+      <!-- METADATA GRID -->
+      <div class="meta-grid">
+        <div class="meta-item">
+          <span class="meta-key">Company</span>
+          <span class="meta-val">DroneBase</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-key">Location</span>
+          <span class="meta-val">Italy</span>
+        </div>
+        <div class="meta-item" style="grid-column:1/-1;">
+          <span class="meta-key">Use Case</span>
+          <span class="meta-val">Security, Inspection, Critical Infrastructure Monitoring</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-key">Signal</span>
+          <span><span class="badge badge-orange" style="margin-top:2px;">PARTNERSHIP</span></span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-key">FlytBase</span>
+          <span class="flex-center gap-4 mt-2">
+            <span class="check-icon">✓</span>
+            <span class="text-sm" style="color:var(--green); font-weight:600;">Mentioned</span>
+          </span>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- SCORE BREAKDOWN CARD — centerpiece -->
+      <div class="score-card">
+
+        <!-- Header row -->
+        <div class="score-card-header">
+          <div class="score-card-header-labels">
+            <div class="score-card-label">Article Score</div>
+            <div style="font-size:11px; color:var(--text-muted);">Relevance to FlytBase BD</div>
+          </div>
+          <div class="score-big">100</div>
+          <span class="badge badge-green" style="padding:3px 9px; font-size:11.5px;">TOP MATCH</span>
+          <span style="color:var(--text-muted); font-size:16px; cursor:pointer;">▾</span>
+        </div>
+
+        <!-- Breakdown table -->
+        <table class="score-breakdown-table">
+          <thead style="display:none;"></thead>
+          <tbody>
+            <tr>
+              <td>Named DSP confirmed</td>
+              <td style="color:var(--text-muted);">DroneBase identified as SI/Operator</td>
+              <td class="impact-high">+++</td>
+            </tr>
+            <tr>
+              <td>Active deployment evidence</td>
+              <td style="color:var(--text-muted);">DJI Dock 3 in production use</td>
+              <td class="impact-high">+++</td>
+            </tr>
+            <tr>
+              <td>Use case clarity</td>
+              <td style="color:var(--text-muted);">Security + Critical Infrastructure</td>
+              <td class="impact-med">++</td>
+            </tr>
+            <tr>
+              <td>Named end client</td>
+              <td style="color:var(--text-muted);">Italian infrastructure site referenced</td>
+              <td class="impact-med">++</td>
+            </tr>
+            <tr>
+              <td>FlytBase mentioned</td>
+              <td style="color:var(--text-muted);">Directly mentioned in post</td>
+              <td class="impact-high">+++</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr class="score-card-divider" />
+
+        <!-- Partner score row -->
+        <div class="partner-score-row">
+          <div>
+            <div class="partner-score-label">Partner Score</div>
+          </div>
+          <div class="partner-score-value">HIGH</div>
+          <span class="partner-score-meta">EMEA · Americas</span>
+        </div>
+
+        <div class="partner-breakdown">
+          <div class="partner-breakdown-row">
+            <span class="dot"></span>
+            <span style="color:var(--text-muted);">Region weight: EMEA = 1.0 (Americas/Europe tier)</span>
+            <span class="badge badge-amber" style="font-size:10px; padding:1px 6px;">HIGH</span>
+          </div>
+          <div class="partner-breakdown-row">
+            <span class="dot"></span>
+            <span style="color:var(--text-muted);">Signal count: 3 articles found</span>
+            <span class="badge badge-green" style="font-size:10px; padding:1px 6px;">Active</span>
+          </div>
+        </div>
+
+        <div class="backlog-note">
+          Backlog parameters: signal quality avg, FlytBase proximity, recency decay
+        </div>
+
+      </div><!-- /score-card -->
+
+      <!-- PEOPLE MENTIONED -->
+      <div class="section-label">People Mentioned</div>
+      <div class="person-card">
+        <div class="person-avatar">MR</div>
+        <div style="flex:1;">
+          <div class="person-name">Marco Rossi</div>
+          <div class="person-role">Head of Operations — DroneBase</div>
+        </div>
+        <span class="link-icon" style="font-style:italic; font-weight:700; font-size:10px; color:#0077b5;">in</span>
+      </div>
+      <div class="text-xs text-muted mt-8" style="font-style:italic; padding-left:2px;">Phase 2: email / LinkedIn profile</div>
+
+    </div><!-- /drawer-left -->
+
+    <!-- RIGHT COLUMN -->
+    <div class="drawer-right">
+
+      <!-- INDUSTRY -->
+      <div class="section-label">Industry</div>
+      <span class="badge badge-indigo mb-12" style="font-size:12px; padding:4px 10px; margin-bottom:12px; display:inline-flex;">Perimeter Security &amp; Smart Facilities</span>
+
+      <!-- ORGANIZATIONS -->
+      <div class="section-label mt-12" style="margin-top:14px;">Organizations</div>
+      <div class="flex-center gap-6 mb-12" style="flex-wrap:wrap; margin-bottom:12px;">
+        <span class="badge badge-purple" style="font-size:12px; padding:4px 9px;">DroneBase <span style="font-weight:400; opacity:.6; margin-left:3px;">SI</span></span>
+        <span class="badge badge-grey" style="font-size:12px; padding:4px 9px;">DJI <span style="font-weight:400; opacity:.6; margin-left:3px;">OEM</span></span>
+      </div>
+
+      <!-- SOURCE BOX -->
+      <div class="section-label mt-12" style="margin-top:14px;">Source</div>
+      <div class="source-box mb-12">
+        <div class="source-box-header">
+          <div class="linkedin-icon">in</div>
+          LinkedIn
+        </div>
+        <div class="text-sm text-muted mb-8">Published May 19, 2025</div>
+        <a href="#" class="link-blue" style="font-size:13px;">↗ Open original article</a>
+      </div>
+
+      <!-- CONTACT -->
+      <div class="section-label mt-12" style="margin-top:14px;">Contact</div>
+      <div class="contact-row">
+        <span class="contact-icon">🌐</span>
+        <a href="#" class="link-blue">dronebase.it ↗</a>
+      </div>
+      <div class="contact-row">
+        <span class="contact-icon" style="font-style:italic; font-weight:700; font-size:11px; color:#0077b5;">in</span>
+        <a href="#" class="link-blue">linkedin.com/in/dronebase ↗</a>
+      </div>
+
+    </div><!-- /drawer-right -->
+
+  </div><!-- /drawer-body -->
+
+  <!-- BOTTOM ACTION BAR -->
+  <div class="action-bar">
+    <div>
+      <button class="btn btn-grey-outline" style="font-size:12px; color:var(--text-muted);">💬 Slack Preview ▸</button>
+    </div>
+    <div class="action-bar-right">
+      <span class="link-dismiss">Dismiss</span>
+      <button class="btn btn-grey-outline">Mark Reviewed ✓</button>
+      <button class="btn btn-indigo-solid btn-lg">+ Add to Pipeline →</button>
+    </div>
+  </div>
+
+</div><!-- /screen 2 -->
+
+<hr class="screen-divider" />
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SCREEN 3 — Pipeline Board (Kanban)
+     ════════════════════════════════════════════════════════════════════ -->
+<p class="screen-label">SCREEN 3 — Pipeline Board (Kanban view)</p>
+<div class="screen">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <div class="logomark">DR</div>
+      <div class="brand-text">
+        <span class="brand-name">Dock Radar</span>
+        <span class="brand-sub">FlytBase BD Intelligence</span>
+      </div>
+    </div>
+    <div class="navbar-center">
+      <span class="nav-pill badge-indigo">DJI Dock</span>
+      <span class="text-muted text-sm">Mar 20</span>
+      <span class="text-muted text-sm">17 signals</span>
+    </div>
+    <div class="navbar-right">
+      <button class="btn btn-grey-outline" style="font-size:12px; gap:4px;">⚙ Settings</button>
+    </div>
+  </nav>
+
+  <!-- TABS -->
+  <div class="tabs-bar">
+    <div class="tabs-list">
+      <div class="tab">Partner Hit List <span class="tab-count">38</span></div>
+      <div class="tab active">Pipeline <span class="tab-count">6</span></div>
+    </div>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <div class="pipe-header" style="padding-bottom:16px; border-bottom:1px solid var(--border);">
+    <div class="pipe-header-top">
+      <div>
+        <div class="pipe-title">Pipeline</div>
+        <div class="pipe-subtitle">All Deals</div>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
+        <div class="pipe-header-actions">
+          <button class="btn btn-grey-outline" style="gap:5px;">↺ Refresh</button>
+          <button class="btn btn-grey-outline" style="gap:5px;">↓ Export CSV</button>
+          <button class="btn btn-indigo-solid" style="gap:5px;">+ From Hit List →</button>
+        </div>
+        <div class="view-toggle">
+          <button class="view-toggle-btn">☰ List</button>
+          <button class="view-toggle-btn active">⊞ Kanban</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div style="padding:16px 24px 0;">
+    <div class="stats-bar">
+
+      <div class="stat-block">
+        <div class="stat-name">Total Leads</div>
+        <div class="stat-value">6</div>
+        <div class="stat-label">401 signals collected</div>
+      </div>
+
+      <div class="stat-block">
+        <div class="stat-name">In Prospect</div>
+        <div class="stat-value indigo">2</div>
+        <div class="stat-label">newly added</div>
+      </div>
+
+      <div class="stat-block">
+        <div class="stat-name">Active Outreach</div>
+        <div class="stat-value blue">3</div>
+        <div class="stat-label">LinkedIn + Email</div>
+      </div>
+
+      <div class="stat-block">
+        <div class="stat-name">AI SDR Active</div>
+        <div class="stat-value amber" style="display:flex; align-items:center; gap:5px;">1 <span style="font-size:14px; line-height:1;">⚡</span></div>
+        <div class="stat-label">scheduling meetings</div>
+      </div>
+
+      <div class="stat-block">
+        <div class="stat-name">Sent to CRM</div>
+        <div class="stat-value green">1</div>
+        <div class="stat-label">this month</div>
+      </div>
+
+      <div class="stat-block">
+        <div class="stat-name">Avg. Days in Stage</div>
+        <div class="stat-value">8.3</div>
+        <div class="stat-label">days per stage</div>
+      </div>
+
+      <div class="stat-block" style="border-right:none;">
+        <div class="stat-name">Lost / Archived</div>
+        <div class="stat-value" style="color:#ef4444;">0</div>
+        <div class="stat-label">excluded from pipeline</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="pipe-filter-bar" style="padding-top:14px;">
+    <input class="pipe-search" type="text" placeholder="Search deals..." />
+    <select class="filter-select">
+      <option>Region ▼</option>
+    </select>
+    <select class="filter-select">
+      <option>Signal ▼</option>
+    </select>
+    <div class="pipe-filter-spacer"></div>
+    <button class="btn btn-grey-outline" style="font-size:12px; gap:4px;">⚙ Stages</button>
+  </div>
+
+  <!-- TABLE (hidden — List view, kept in DOM) -->
+  <table class="data-table" style="display:none;">
+    <thead>
+      <tr>
+        <th>Company</th><th>Region</th><th>Industry</th><th>Stage</th><th>Last Note</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="company-link">SkyGrid</span></td><td class="text-muted">Americas</td><td class="text-muted">Aviation &amp; UTM</td><td><span class="stage-pill stage-outreach">Connecting LinkedIn ▾</span></td><td class="text-muted text-sm">Reached out via LinkedIn</td><td><button class="btn btn-grey-outline" style="font-size:12px; padding:4px 10px;">View ▾</button></td></tr>
+      <tr><td><span class="company-link">Percepto</span></td><td class="text-muted">EMEA</td><td class="text-muted">Critical Infrastructure</td><td><span class="stage-pill stage-interested">Scheduling Meeting ▾</span></td><td class="text-muted text-sm">Responded positively</td><td><button class="btn btn-grey-outline" style="font-size:12px; padding:4px 10px;">View ▾</button></td></tr>
+      <tr><td><span class="company-link">Asylon</span></td><td class="text-muted">Americas</td><td class="text-muted">Perimeter Security</td><td><span class="stage-pill stage-outreach">Connecting LinkedIn ▾</span></td><td class="text-muted text-sm">Sent intro email</td><td><button class="btn btn-grey-outline" style="font-size:12px; padding:4px 10px;">View ▾</button></td></tr>
+      <tr><td><span class="company-link">Avitas Systems</span></td><td class="text-muted">APAC</td><td class="text-muted">Energy &amp; Utilities</td><td><span class="stage-pill stage-crm">Prospect ▾</span></td><td class="text-muted text-sm">Confirmed interest</td><td><button class="btn btn-grey-outline" style="font-size:12px; padding:4px 10px;">View ▾</button></td></tr>
+      <tr><td><span class="company-link">DroneBase</span><span class="badge badge-green" style="margin-left:6px; font-size:10px; padding:1px 6px;">Known Partner</span></td><td class="text-muted">EMEA</td><td class="text-muted">Security &amp; Inspection</td><td><span class="stage-pill stage-outreach">Connecting Email ▾</span></td><td class="text-muted text-sm">Identified via LinkedIn</td><td><button class="btn btn-grey-outline" style="font-size:12px; padding:4px 10px;">View ▾</button></td></tr>
+      <tr><td><span class="company-link">Skydio</span></td><td class="text-muted">Americas</td><td class="text-muted">Public Safety</td><td><span class="stage-pill stage-outreach">Prospect ▾</span></td><td class="text-muted text-sm">Following up</td><td><button class="btn btn-grey-outline" style="font-size:12px; padding:4px 10px;">View ▾</button></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─── KANBAN BOARD ──────────────────────────────────────────────── -->
+  <div class="kanban-outer">
+    <div class="kanban-board">
+
+      <!-- ── COL 1: Prospect ─────────────────────────────────────────── -->
+      <div class="kanban-col">
+        <div class="kcol-header">
+          <div class="kcol-title-row">
+            <span class="kcol-dot" style="background:#9ca3af;"></span>
+            <span class="kcol-name">Prospect</span>
+            <span class="kcol-count">2</span>
+            <span class="kcol-collapse">‹</span>
+          </div>
+          <div class="kcol-stats">
+            <span class="kcol-stat-line">Added: 2 leads</span>
+            <span class="kcol-stat-line">Avg: 2 days in stage</span>
+          </div>
+        </div>
+
+        <!-- Card: Avitas Systems -->
+        <div class="kcard">
+          <div class="kcard-top">
+            <span class="kcard-deal-link">DJI Dock – Avitas Systems</span>
+            <span class="kcard-pencil">✏</span>
+            <span class="kcard-checkbox"></span>
+          </div>
+          <div class="kcard-body">
+            <div class="kcard-row">
+              <span class="kcard-row-label">Score:</span>
+              <span class="kscore-med">MED</span>
+            </div>
+            <div class="kcard-row">
+              <span class="kcard-row-label">Region:</span>
+              <span style="color:var(--text); font-size:12px;">APAC</span>
+            </div>
+            <div class="kcard-row">
+              <span class="kcard-row-label">Signal:</span>
+              <span class="ksignal-product">PRODUCT</span>
+            </div>
+          </div>
+          <div class="kcard-footer">
+            <span class="kcard-avatar" style="background:#7c3aed;">AV</span>
+
+            <span class="kcard-age">3 days ago</span>
+            <div class="kcard-actions">
+              <span class="kcard-icon-btn" title="Mark done">✓</span>
+              <span class="kcard-icon-btn" title="Notes">📄</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Skydio -->
+        <div class="kcard">
+          <div class="kcard-top">
+            <span class="kcard-deal-link">DJI Dock – Skydio</span>
+            <span class="kcard-pencil">✏</span>
+            <span class="kcard-checkbox"></span>
+          </div>
+          <div class="kcard-body">
+            <div class="kcard-row">
+              <span class="kcard-row-label">Score:</span>
+              <span class="kscore-high">HIGH</span>
+            </div>
+            <div class="kcard-row">
+              <span class="kcard-row-label">Region:</span>
+              <span style="color:var(--text); font-size:12px;">Americas</span>
+            </div>
+            <div class="kcard-row">
+              <span class="kcard-row-label">Signal:</span>
+              <span class="ksignal-deployment">DEPLOYMENT</span>
+            </div>
+          </div>
+          <div class="kcard-footer">
+            <span class="kcard-avatar" style="background:#0d9488;">SK</span>
+
+            <span class="kcard-age">1 day ago</span>
+            <div class="kcard-actions">
+              <span class="kcard-icon-btn" title="Mark done">✓</span>
+              <span class="kcard-icon-btn" title="Notes">📄</span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /col 1 -->
+
+      <!-- ── COL 2: Connecting LinkedIn ──────────────────────────────── -->
+      <div class="kanban-col">
+        <div class="kcol-header">
+          <div class="kcol-title-row">
+            <span class="kcol-dot" style="background:#3b82f6;"></span>
+            <span class="kcol-name">Connecting LinkedIn</span>
+            <span class="kcol-count">2</span>
+            <span class="kcol-collapse">‹</span>
+          </div>
+          <div class="kcol-stats">
+            <span class="kcol-stat-line">Added: 2 leads</span>
+            <span class="kcol-stat-line">Avg: 18 days in stage</span>
+          </div>
+        </div>
+
+        <!-- Card: SkyGrid -->
+        <div class="kcard">
+          <div class="kcard-top">
+            <span class="kcard-deal-link">DJI Dock – SkyGrid</span>
+            <span class="kcard-pencil">✏</span>
+            <span class="kcard-checkbox"></span>
+          </div>
+          <div class="kcard-body">
+            <div class="kcard-row">
+              <span class="kcard-row-label">Score:</span>
+              <span class="kscore-high">HIGH</span>
+            </div>
+            <div class="kcard-row">
+              <span class="kcard-row-label">Region:</span>
+              <span style="color:var(--text); font-size:12px;">Americas</span>
+            </div>
+            <div class="kcard-row">
+              <span class="kcard-row-label">Signal:</span>
+              <span class="ksignal-deployment">DEPLOYMENT</span>
+            </div>
+          </div>
+          <div class="kcard-footer">
+            <span class="kcard-avatar" style="background:#2563eb;">SG</span>
+
+            <span class="kcard-age">12 days ago</span>
+            <div class="kcard-actions">
+              <span class="kcard-icon-btn">✓</span>
+              <span class="kcard-icon-btn">📄</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Asylon -->
+        <div class="kcard">
+          <div class="kcard-top">
+            <span class="kcard-deal-link">DJI Dock – Asylon</span>
+            <span class="kcard-pencil">✏</span>
+            <span class="kcard-checkbox"></span>
+          </div>
+          <div class="kcard-body">
+            <div class="kcard-row">
+              <span class="kcard-row-label">Score:</span>
+              <span class="kscore-high">HIGH</span>
+            </div>
+            <div class="kcard-row">
+              <span class="kcard-row-label">Region:</span>
+              <span style="color:var(--text); font-size:12px;">Americas</span>
+            </div>
+            <div class="kcard-row">
+              <span class="kcard-row-label">Signal:</span>
+              <span class="ksignal-deployment">DEPLOYMENT</span>
+            </div>
+          </div>
+          <div class="kcard-footer">
+            <span class="kcard-avatar" style="background:#ea580c;">AS</span>
+
+            <span class="kcard-age">28 days ago</span>
+            <div class="kcard-actions">
+              <span class="kcard-icon-btn">✓</span>
+              <span class="kcard-icon-btn">📄</span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /col 2 -->
+
+      <!-- ── COL 3: Connecting Email ─────────────────────────────────── -->
+      <div class="kanban-col">
+        <div class="kcol-header">
+          <div class="kcol-title-row">
+            <span class="kcol-dot" style="background:#6366f1;"></span>
+            <span class="kcol-name">Connecting Email</span>
+            <span class="kcol-count">1</span>
+            <span class="kcol-collapse">‹</span>
+          </div>
+          <div class="kcol-stats">
+            <span class="kcol-stat-line">Added: 1 lead</span>
+            <span class="kcol-stat-line">Avg: 5 days in stage</span>
+          </div>
+        </div>
+
+        <!-- Card: DroneBase — EDIT MODE -->
+        <div class="kcard">
+          <div class="kcard-top" style="flex-direction:column; align-items:stretch; gap:4px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <input class="kcard-deal-input" type="text" value="DJI Dock – DroneBase" />
+              <span class="kcard-checkbox" style="flex-shrink:0;"></span>
+            </div>
+            <span class="kcard-edit-hint">Press Enter to save</span>
+          </div>
+          <div class="kcard-body" style="margin-top:4px;">
+            <div class="kcard-row" style="flex-wrap:wrap; gap:4px;">
+              <span class="kcard-row-label">Score:</span>
+              <span class="kscore-high">HIGH</span>
+              <span class="kbadge-partner">Known Partner</span>
+            </div>
+            <div class="kcard-row">
+              <span class="kcard-row-label">Region:</span>
+              <span style="color:var(--text); font-size:12px;">EMEA</span>
+            </div>
+            <div class="kcard-row">
+              <span class="kcard-row-label">Signal:</span>
+              <span class="ksignal-partnership">PARTNERSHIP</span>
+            </div>
+          </div>
+          <div class="kcard-footer">
+            <span class="kcard-avatar" style="background:#16a34a;">DR</span>
+
+            <span class="kcard-age">5 days ago</span>
+            <div class="kcard-actions">
+              <span class="kcard-icon-btn">✓</span>
+              <span class="kcard-icon-btn">📄</span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /col 3 -->
+
+      <!-- ── COL 4: Scheduling Meeting ──────────────────────────────── -->
+      <div class="kanban-col">
+        <div class="kcol-header">
+          <div class="kcol-title-row">
+            <span class="kcol-dot" style="background:#f59e0b;"></span>
+            <span class="kcol-name">Scheduling Meeting</span>
+            <span class="kcol-count">1</span>
+            <span class="kcol-ai-badge">⚡ AI SDR</span>
+            <span class="kcol-collapse">‹</span>
+          </div>
+          <div class="kcol-stats">
+            <span class="kcol-stat-line">Added: 1 lead</span>
+            <span class="kcol-stat-line">Avg: 19 days in stage</span>
+          </div>
+        </div>
+
+        <!-- Card: Percepto -->
+        <div class="kcard">
+          <div class="kcard-top">
+            <span class="kcard-deal-link">DJI Dock – Percepto</span>
+            <span class="kcard-pencil">✏</span>
+            <span class="kcard-checkbox"></span>
+          </div>
+          <div class="kcard-body">
+            <div class="kcard-row">
+              <span class="kcard-row-label">Score:</span>
+              <span class="kscore-high">HIGH</span>
+            </div>
+            <div class="kcard-row">
+              <span class="kcard-row-label">Region:</span>
+              <span style="color:var(--text); font-size:12px;">EMEA</span>
+            </div>
+            <div class="kcard-row">
+              <span class="kcard-row-label">Signal:</span>
+              <span class="ksignal-partnership">PARTNERSHIP</span>
+            </div>
+          </div>
+          <div class="kcard-footer">
+            <span class="kcard-avatar" style="background:#d97706;">PE</span>
+
+            <span class="kcard-age">19 days ago</span>
+            <div class="kcard-actions">
+              <span class="kcard-icon-btn">✓</span>
+              <span class="kcard-icon-btn">📄</span>
+            </div>
+          </div>
+          <div class="ai-sdr-pill">⚡ AI SDR handling</div>
+        </div>
+      </div><!-- /col 4 -->
+
+      <!-- ── COL 5: Sent to CRM ─────────────────────────────────────── -->
+      <div class="kanban-col">
+        <div class="kcol-header">
+          <div class="kcol-title-row">
+            <span class="kcol-dot" style="background:#16a34a;"></span>
+            <span class="kcol-name">Sent to CRM</span>
+            <span class="kcol-count">0</span>
+            <span class="kcol-collapse">‹</span>
+          </div>
+          <div class="kcol-stats">
+            <span class="kcol-stat-line">Added: 0 leads</span>
+            <span class="kcol-stat-line">Avg: — days in stage</span>
+          </div>
+        </div>
+
+        <div class="kanban-empty">
+          <div class="kanban-empty-text">No deals yet</div>
+          <a href="#" class="kanban-empty-link">+ Add from Hit List</a>
+        </div>
+      </div><!-- /col 5 -->
+
+      <!-- ── COL 6: Lost / Archived ──────────────────────────────────── -->
+      <div class="kanban-col" style="background:#f5f5f5;">
+        <div class="kcol-header" style="border-bottom-color:#e0e0e0;">
+          <div class="kcol-title-row">
+            <span class="kcol-dot" style="background:#ef4444;"></span>
+            <span class="kcol-name" style="color:#6b7280;">Lost / Archived</span>
+            <span class="kcol-count">0</span>
+            <span class="kcol-collapse">‹</span>
+          </div>
+          <div class="kcol-stats">
+            <span class="kcol-stat-line">Added: 0 leads</span>
+            <span class="kcol-stat-line">Avg: — days in stage</span>
+          </div>
+        </div>
+
+        <div class="kanban-empty" style="border-color:#e0e0e0;">
+          <div class="kanban-empty-text">No lost deals</div>
+        </div>
+        <p style="font-size:11px; color:#9ca3af; font-style:italic; margin-top:8px; text-align:center; line-height:1.5; padding:0 4px;">Leads moved here are excluded from active pipeline metrics</p>
+      </div><!-- /col 6 -->
+
+    </div><!-- /kanban-board -->
+  </div><!-- /kanban-outer -->
+
+</div><!-- /screen 3 -->
+
+<!-- ─── TOAST (fixed bottom-right) ────────────────────────────────── -->
+<div class="toast-wrapper">
+  <div class="toast">
+    ✓ Avitas Systems → CRM Ready &nbsp;·&nbsp; Slack notified
+    <div class="toast-progress"></div>
+  </div>
+</div>
+
+</body>
+</html>

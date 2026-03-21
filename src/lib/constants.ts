@@ -200,6 +200,60 @@ export function normalizeCountryName(country: string): string {
   return COUNTRY_NAME_TO_REGION_KEY[country.toLowerCase().trim()] ?? country;
 }
 
+/** Maps canonical country name → macro-region for hit-score calculation */
+export const COUNTRY_TO_MACRO_REGION: Record<string, string> = {
+  // Americas
+  'US': 'Americas', 'Canada': 'Americas', 'Brazil': 'Americas', 'Mexico': 'Americas', 'Chile': 'Americas', 'North America': 'Americas',
+  // Europe
+  'UK': 'Europe', 'Germany': 'Europe', 'France': 'Europe', 'Italy': 'Europe', 'Spain': 'Europe',
+  'Austria': 'Europe', 'Turkey': 'Europe', 'Lithuania': 'Europe', 'Netherlands': 'Europe',
+  'Switzerland': 'Europe', 'Belgium': 'Europe', 'Sweden': 'Europe', 'Norway': 'Europe',
+  'Denmark': 'Europe', 'Finland': 'Europe', 'Poland': 'Europe', 'Portugal': 'Europe',
+  'Czech Republic': 'Europe', 'Ireland': 'Europe', 'Greece': 'Europe', 'Romania': 'Europe',
+  // MEA
+  'UAE': 'MEA', 'Saudi Arabia': 'MEA', 'South Africa': 'MEA', 'Qatar': 'MEA', 'Bahrain': 'MEA',
+  'Oman': 'MEA', 'Kuwait': 'MEA', 'Kenya': 'MEA', 'Nigeria': 'MEA', 'Egypt': 'MEA',
+  // APAC
+  'Singapore': 'APAC', 'Japan': 'APAC', 'Australia': 'APAC', 'South Korea': 'APAC',
+  'China': 'APAC', 'Indonesia': 'APAC', 'Malaysia': 'APAC', 'Thailand': 'APAC',
+  'Vietnam': 'APAC', 'Philippines': 'APAC', 'New Zealand': 'APAC', 'Taiwan': 'APAC',
+  // Others
+  'India': 'Others',
+};
+
+/** Macro-region weights for hit-score ranking */
+export const MACRO_REGION_WEIGHTS: Record<string, number> = {
+  'Americas': 1.0,
+  'Europe': 1.0,
+  'MEA': 0.8,
+  'APAC': 0.7,
+  'Others': 0.5,
+};
+
+/** Default weight for countries not in COUNTRY_TO_MACRO_REGION */
+export const DEFAULT_REGION_WEIGHT = 0.3;
+
+/** Get the best macro-region weight for a list of countries */
+export function getMacroRegionWeight(countries: string[]): number {
+  let best = DEFAULT_REGION_WEIGHT;
+  for (const c of countries) {
+    const macro = COUNTRY_TO_MACRO_REGION[c];
+    const w = macro ? (MACRO_REGION_WEIGHTS[macro] ?? DEFAULT_REGION_WEIGHT) : DEFAULT_REGION_WEIGHT;
+    if (w > best) best = w;
+  }
+  return best;
+}
+
+/** Get the macro-region label for a list of countries (returns the best one) */
+export function getMacroRegionLabel(countries: string[]): string {
+  const order = ['Americas', 'Europe', 'MEA', 'APAC', 'Others'];
+  for (const c of countries) {
+    const macro = COUNTRY_TO_MACRO_REGION[c];
+    if (macro) return macro;
+  }
+  return 'Unknown';
+}
+
 /**
  * Known drone OEM names — used to force entity type='oem' and prevent
  * these appearing as operators/SIs in discovered_companies.

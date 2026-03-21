@@ -1,25 +1,16 @@
 import { NextResponse } from 'next/server';
 import { loadFlytBasePartners, loadHitListData, loadDiscoveredCompanies, requireSupabase } from '@/lib/db';
 import { normalizeCompanyName, fuzzyMatchCompany } from '@/lib/company-normalize';
-import { OEM_NAMES, normalizeCountryName } from '@/lib/constants';
+import { OEM_NAMES, normalizeCountryName, getMacroRegionWeight } from '@/lib/constants';
 import type { DspHitListEntry } from '@/lib/types';
-
-// ── Priority Classifications ──
-const PRIORITY_REGIONS = ['Americas', 'Europe', 'US', 'Canada', 'UK', 'Germany', 'France', 'India', 'UAE', 'Saudi Arabia', 'South Africa', 'Australia'];
-const PRIORITY_INDUSTRIES = ['Security', 'Oil & Gas', 'Oil&Gas', 'Utilities', 'Port', 'Mining', 'Solar'];
 
 /**
  * GET /api/hitlist
  * Returns hit list data: new DSPs extracted from articles, matched against FlytBase partners.
  *
- * Query params:
- * - regionWeight: 0-1 (default 0.5) — weight for region priority scoring
- * - industryWeight: 0-1 (default 0.5) — weight for industry priority scoring
- *
  * Scoring:
- * Region Score: 1.0 if country ∈ Americas/Europe, else 0.5
- * Industry Score: 1.0 if industry ∈ [Security, Oil & Gas, Utilities, Port, Mining, Solar], else 0.3
- * Hit Score = (region_score × region_weight) + (industry_score × industry_weight)
+ * Hit Score = macro-region weight based on COUNTRY_TO_MACRO_REGION mapping
+ * Americas/Europe = 1.0, MEA = 0.8, APAC = 0.7, Others (India) = 0.5, Unknown = 0.3
  *
  * Flow:
  * 1. Load FlytBase partners and normalize their names
@@ -27,18 +18,11 @@ const PRIORITY_INDUSTRIES = ['Security', 'Oil & Gas', 'Oil&Gas', 'Utilities', 'P
  * 3. Extract DSP companies with 2-tier fallback (entities → company)
  * 4. Group articles by normalized company name
  * 5. Fuzzy-match each company against partner list
- * 6. Compute hit scores (2-param: region + industry) and split into new vs known
+ * 6. Compute hit scores from macro-region and split into new vs known
  * 7. Return HitListData
  */
 export async function GET(req: Request) {
   try {
-    // ── Parse query params ──
-    const url = new URL(req.url);
-    const regionWeightParam = url.searchParams.get('regionWeight');
-    const industryWeightParam = url.searchParams.get('industryWeight');
-
-    const regionWeight = regionWeightParam ? Math.max(0, Math.min(1, parseFloat(regionWeightParam))) : 0.5;
-    const industryWeight = industryWeightParam ? Math.max(0, Math.min(1, parseFloat(industryWeightParam))) : 0.5;
 
     // ── Load partners, hit list data, and discovered companies ──
     const [partners, articles, discoveredCompanies] = await Promise.all([
@@ -193,20 +177,8 @@ export async function GET(req: Request) {
         for (const ind of dcIndustries) entry.industries.add(ind);
       }
 
-      // ── Region Priority Score ──
-      const hasHighPriorityRegion = Array.from(entry.countries).some(country =>
-        PRIORITY_REGIONS.some(pr => country.toLowerCase().includes(pr.toLowerCase()))
-      );
-      const regionScore = hasHighPriorityRegion ? 1.0 : 0.5;
-
-      // ── Industry Priority Score ──
-      const hasHighPriorityIndustry = Array.from(entry.industries).some(ind =>
-        PRIORITY_INDUSTRIES.some(pi => ind.toLowerCase().includes(pi.toLowerCase()))
-      );
-      const industryScore = hasHighPriorityIndustry ? 1.0 : 0.3;
-
-      // ── 2-Parameter Hit Score ──
-      const hitScore = (regionScore * regionWeight) + (industryScore * industryWeight);
+      // ── Hit Score: macro-region weight ──
+      const hitScore = getMacroRegionWeight(Array.from(entry.countries));
 
       // Check if this company matches a known partner
       const partnerMatch = fuzzyMatchCompany(entry.original_name, normalizedPartners);
