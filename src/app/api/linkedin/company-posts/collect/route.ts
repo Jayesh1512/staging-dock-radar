@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { Page } from "puppeteer";
 import { normalizeUrl } from "@/lib/google-news-rss";
-import { insertArticles, insertRun } from "@/lib/db";
+import { insertArticles, insertRun, requireSupabase } from "@/lib/db";
 import type { Article, Run } from "@/lib/types";
 import {
   withBrowserPage,
@@ -51,8 +51,10 @@ async function safeScrollPage(page: Page, seconds: number, delayMs: number): Pro
   const loops = Math.max(0, Math.floor(seconds));
   for (let i = 0; i < loops; i++) {
     try {
+      // Randomize scroll distance (70-130% of viewport) to look human
       await page.evaluate(() => {
-        window.scrollBy(0, window.innerHeight);
+        const jitter = 0.7 + Math.random() * 0.6;
+        window.scrollBy(0, Math.floor(window.innerHeight * jitter));
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -66,7 +68,9 @@ async function safeScrollPage(page: Page, seconds: number, delayMs: number): Pro
         throw err;
       }
     }
-    await new Promise((r) => setTimeout(r, delayMs));
+    // Random delay between scrolls (0.8x-1.5x of base delay)
+    const jitteredDelay = Math.floor(delayMs * (0.8 + Math.random() * 0.7));
+    await new Promise((r) => setTimeout(r, jitteredDelay));
   }
 }
 
@@ -74,6 +78,7 @@ async function fetchCompanyPosts(
   companySlug: string,
   maxPostsPerCompany: number,
   scrollSeconds: number,
+  headless: boolean = true,
 ): Promise<RawCompanyPost[]> {
   return withBrowserPage(async (page) => {
     await loadServiceCookies(page, "linkedin");
@@ -184,7 +189,7 @@ async function fetchCompanyPosts(
     return rawPosts
       .filter((p) => p.postUrl && p.postContent)
       .slice(0, Math.max(1, maxPostsPerCompany));
-  });
+  }, { headless });
 }
 
 export async function POST(req: NextRequest) {
@@ -196,13 +201,21 @@ export async function POST(req: NextRequest) {
         ? [body.companySlug]
         : [];
     const filterDays: number = typeof body.filterDays === "number" ? body.filterDays : 0;
-    const maxArticles: number = typeof body.maxArticles === "number" ? body.maxArticles : 40;
+    const maxArticles: number = typeof body.maxArticles === "number" ? body.maxArticles : 60;
     const maxPostsPerCompany: number =
-      typeof body.maxPostsPerCompany === "number" ? body.maxPostsPerCompany : 25;
-    const scrollSeconds: number = typeof body.scrollSeconds === "number" ? body.scrollSeconds : 35;
+      typeof body.maxPostsPerCompany === "number" ? body.maxPostsPerCompany : 30;
+    const scrollSeconds: number = typeof body.scrollSeconds === "number" ? body.scrollSeconds : 45;
+    const headless: boolean = body.headless !== false;
+    const batchTag: string = typeof body._batchTag === "string" ? body._batchTag : "";
 
     const cleanSlugs = companySlugs
-      .map((s) => String(s || "").trim().replace(/^\/+|\/+$/g, ""))
+      .map((s) => {
+        const raw = String(s || "").trim();
+        // Accept full LinkedIn URLs — extract just the company slug
+        const urlMatch = raw.match(/linkedin\.com\/company\/([^/?#]+)/i);
+        if (urlMatch?.[1]) return decodeURIComponent(urlMatch[1]).toLowerCase();
+        return raw.replace(/^\/+|\/+$/g, "").toLowerCase();
+      })
       .filter(Boolean);
 
     if (cleanSlugs.length === 0) {
@@ -216,10 +229,28 @@ export async function POST(req: NextRequest) {
     const ts = Date.now();
     const createdAt = new Date().toISOString();
 
+    const RE_DJI = /\bdji\b/i;
+    const RE_DJI_DOCK = /dji\s*dock/i;
+    const RE_DOCK = /\bdock\b/i;
+    const RE_DIAB = /drone.in.a.box/i;
     const allRaw: RawCompanyPost[] = [];
-    for (const slug of cleanSlugs) {
-      const posts = await fetchCompanyPosts(slug, maxPostsPerCompany, scrollSeconds);
+    type CompanyStat = { slug: string; postsFound: number; dockMatches: number; djiCount: number; dockCount: number; diabCount: number };
+    const perCompany: CompanyStat[] = [];
+    for (let ci = 0; ci < cleanSlugs.length; ci++) {
+      const slug = cleanSlugs[ci];
+      const posts = await fetchCompanyPosts(slug, maxPostsPerCompany, scrollSeconds, headless);
       allRaw.push(...posts);
+      const texts = posts.map((p) => p.postContent);
+      const dockMatches = texts.filter((t) => RE_DJI_DOCK.test(t)).length;
+      const djiCount = texts.filter((t) => RE_DJI.test(t)).length;
+      const dockCount = texts.filter((t) => RE_DOCK.test(t)).length;
+      const diabCount = texts.filter((t) => RE_DIAB.test(t)).length;
+      perCompany.push({ slug, postsFound: posts.length, dockMatches, djiCount, dockCount, diabCount });
+      // Random 3-8s delay between companies to mimic human browsing
+      if (ci < cleanSlugs.length - 1) {
+        const delay = 3000 + Math.floor(Math.random() * 5000);
+        await new Promise((r) => setTimeout(r, delay));
+      }
     }
 
     const allArticles: Article[] = allRaw.map((post, i) => {
@@ -227,7 +258,7 @@ export async function POST(req: NextRequest) {
       const normalized = post.postUrl ? normalizeUrl(post.postUrl) : `linkedin_${runId}_${ts}_${i}`.toLowerCase();
       const content = collapseWhitespace(post.postContent || "");
       const author = collapseWhitespace(post.authorName || "") || null;
-      const snippet = content ? truncate(content, 1000) : null;
+      const snippet = content ? truncate(content, 3000) : null;
       const title = content ? truncate(content, 140) : author ? `${author} - LinkedIn post` : "LinkedIn Post";
 
       return {
@@ -290,6 +321,49 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // ── Save scan log (non-fatal) ──
+    try {
+      const db = requireSupabase();
+      const logTs = new Date().toISOString();
+
+      // Try full insert first, then progressively strip missing columns
+      const baseRows = perCompany.map(({ slug, postsFound }) => ({
+        slug,
+        posts_scraped: postsFound,
+        run_id: runId,
+        scanned_at: logTs,
+      }));
+
+      // Build extra fields that may not exist yet
+      const extraFields: Record<string, unknown>[] = perCompany.map((pc) => ({
+        dock_matches: pc.dockMatches,
+        dji_count: pc.djiCount,
+        dock_count: pc.dockCount,
+        diab_count: pc.diabCount,
+        batch: batchTag || null,
+      }));
+
+      // Attempt with all columns
+      const fullRows = baseRows.map((row, i) => ({ ...row, ...extraFields[i] }));
+      const { error: err1 } = await db.from("dji_resellers_linkedin_scan_log").insert(fullRows);
+
+      if (err1) {
+        console.error("[scan-log] full insert failed:", err1.message, "— trying minimal insert");
+        // Fallback: just the base columns (slug, posts_scraped, run_id, scanned_at)
+        const { error: err2 } = await db.from("dji_resellers_linkedin_scan_log").insert(baseRows);
+        if (err2) {
+          console.error("[scan-log] minimal insert also failed:", err2.message);
+        } else {
+          console.log("[scan-log] saved with minimal columns (run ALTER TABLE to add dock_matches + batch)");
+        }
+      }
+    } catch (logErr) {
+      console.error(
+        "[/api/linkedin/company-posts/collect] scan-log write failed (non-fatal):",
+        logErr instanceof Error ? logErr.message : logErr,
+      );
+    }
+
     return NextResponse.json({
       companySlugs: cleanSlugs,
       count: finalArticles.length,
@@ -304,6 +378,7 @@ export async function POST(req: NextRequest) {
         dedupRemoved: allArticles.length - uniqueArticles.length,
         scoreFilterRemoved: 0,
       },
+      perCompany,
       keywords: cleanSlugs.map((slug) => `company:${slug}`),
       regions: [],
       filterDays,

@@ -1,0 +1,35 @@
+=== LinkedIn Auto-Scanner ===
+Started: 2026-03-21T20:24:56.083Z
+Target batches: BFP, B1, B2, B3, B4, B5, B6, B7
+Mode: LIVE | Resume: true
+Scroll: 56s | Posts/company: 38 | Max articles: 75
+Group size: 3 | Delay: 45-75s
+
+FlytBase partners (BFP): 23 with LinkedIn
+Excluded 12 FlytBase partners from reseller batches
+
+Total: 144 companies to scan
+  B1: 8 companies
+  B2: 9 companies
+  B3: 9 companies
+  B4: 23 companies
+  B5: 24 companies
+  B6: 24 companies
+  B7: 24 companies
+  BFP: 23 companies
+
+Already scanned: 4 | Remaining: 140
+
+48 groups | Est. time: ~204 min (~3.4 hours)
+
+=== Starting scans ===
+
+
+[01:54:56] Group 1/48 [BFP]: droprise, wolf-avionic, droneland
+  droprise: 36 posts | DJI:16 DJI-Dock:5 Dock:6 DIaB:0 *** DOCK SIGNAL ***
+  wolf-avionic: 5 posts | DJI:1 DJI-Dock:1 Dock:2 DIaB:0 *** DOCK SIGNAL ***
+  droneland: 34 posts | DJI:31 DJI-Dock:13 Dock:13 DIaB:1 *** DOCK SIGNAL ***
+  Completed in 222s | Total articles: 72
+  [2%] Waiting 57s before next group...
+
+[01:59:35] Group 2/48 [BFP]: droniq, dronestars-b-v, geodirect-bv

@@ -1,0 +1,26 @@
+=== LinkedIn Auto-Scanner ===
+Started: 2026-03-21T20:18:57.325Z
+Target batches: BFP, B1, B2, B3, B4, B5, B6, B7
+Mode: LIVE | Resume: false
+Scroll: 56s | Posts/company: 38 | Max articles: 75
+Group size: 3 | Delay: 45-75s
+
+FlytBase partners (BFP): 23 with LinkedIn
+Excluded 12 FlytBase partners from reseller batches
+
+Total: 144 companies to scan
+  B1: 8 companies
+  B2: 9 companies
+  B3: 9 companies
+  B4: 23 companies
+  B5: 24 companies
+  B6: 24 companies
+  B7: 24 companies
+  BFP: 23 companies
+
+49 groups | Est. time: ~209 min (~3.5 hours)
+
+=== Starting scans ===
+
+
+[01:48:58] Group 1/49 [BFP]: dronebasesrl, droprise, wolf-avionic
