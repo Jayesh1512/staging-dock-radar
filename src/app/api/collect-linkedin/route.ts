@@ -68,8 +68,7 @@ async function fetchLinkedInPosts(
     }
 
     // Scroll down to load more results
-    const seconds = 30
-    await scrollPage(page, seconds, 1000);
+    await scrollPage(page, Math.max(0, scrollSeconds), 1000);
 
     // Expand all "see more" buttons in posts
     await page.$$eval("button, span", (elements) => {
@@ -320,8 +319,12 @@ export async function POST(req: NextRequest) {
         : [];
     const filterDays: number = typeof body.filterDays === 'number' ? body.filterDays : 7;
     const maxArticles: number = typeof body.maxArticles === 'number' ? body.maxArticles : 40;
+<<<<<<< HEAD
     const scrollSeconds: number = typeof body.scrollSeconds === "number" ? body.scrollSeconds : 25;
     const browserTimeoutMs: number = typeof body.browserTimeoutMs === "number" ? body.browserTimeoutMs : 30_000;
+=======
+    const scrollSeconds: number = typeof body.scrollSeconds === "number" ? body.scrollSeconds : 180;
+>>>>>>> 99165a93643604e30f3e1cdd9c62062b34943176
 
     if (keywords.length === 0) {
       return NextResponse.json(
