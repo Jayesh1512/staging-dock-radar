@@ -8,6 +8,8 @@ if (!OPENAI_KEY) {
 }
 const db = createClient('https://lxubuceipdmpovtbukmb.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4dWJ1Y2VpcGRtcG92dGJ1a21iIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzQ3NTMxNiwiZXhwIjoyMDg5MDUxMzE2fQ.X7j1G7JX3YtXNWTCJQpjCTVJrp81cIAvoLf-vCefrss', { auth: { persistSession: false } });
 
+
+
 const batches = JSON.parse(fs.readFileSync('/tmp/dji-translate-batches.json', 'utf-8'));
 
 const SYSTEM_PROMPT = `You are a translator. Translate ALL non-English text to English in the JSON array. Keep English text unchanged. For Chinese place names use standard English names (广州市→Guangzhou, 广东省→Guangdong Province). For store names translate fully. Return JSON object with key "results" containing array of {id, name, address, city, state}. Keep IDs unchanged.`;
