@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { EnrichmentTestAgent } from './EnrichmentTestAgent';
 import { CometImportPanel } from '../import/CometImportPanel';
 import { DjiPartnersScraper } from '../utilities/DjiPartnersScraper';
-import { LinkedinCompanyPostsUtility } from '../utilities/LinkedinCompanyPostsUtility';
 
 export function Navbar({
   onAnalytics,
@@ -108,9 +108,28 @@ export function Navbar({
                 <div style={{ width: '100%' }}>
                   <DjiPartnersScraper mode="menuItem" />
                 </div>
-                <div style={{ width: '100%' }}>
-                  <LinkedinCompanyPostsUtility mode="menuItem" />
-                </div>
+                <Link
+                  role="menuitem"
+                  href="/utilities/linkedin-company-posts"
+                  onClick={() => setUtilitiesOpen(false)}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    border: '1px solid #E5E7EB',
+                    background: '#fff',
+                    color: '#374151',
+                    cursor: 'pointer',
+                    letterSpacing: 0.1,
+                    textDecoration: 'none',
+                    display: 'block',
+                  }}
+                >
+                  🏢 LinkedIn Company Posts
+                </Link>
 
                 <button
                   role="menuitem"
