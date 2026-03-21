@@ -11,7 +11,7 @@ interface ImportStats {
   dedupRemoved: number;
 }
 
-export function CometImportPanel() {
+export function CometImportPanel({ mode = 'button' }: { mode?: 'button' | 'menuItem' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [jsonInput, setJsonInput] = useState('');
   const [phase, setPhase] = useState<'input' | 'importing' | 'imported' | 'scoring' | 'scored'>('input');
@@ -20,7 +20,6 @@ export function CometImportPanel() {
   const [runId, setRunId] = useState('');
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<string>('');
-  const [scoreResults, setScoreResults] = useState<any[]>([]);
   const [articlesScored, setArticlesScored] = useState(0);
 
   const handleImport = async () => {
@@ -94,7 +93,6 @@ export function CometImportPanel() {
       ).length;
 
       setArticlesScored(aboveThreshold);
-      setScoreResults(results);
       setPhase('scored');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Scoring failed');
@@ -109,7 +107,6 @@ export function CometImportPanel() {
     setRunId('');
     setError('');
     setValidationErrors('');
-    setScoreResults([]);
     setArticlesScored(0);
     setJsonInput('');
   };
@@ -118,16 +115,31 @@ export function CometImportPanel() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        style={{
-          fontSize: 12,
-          fontWeight: 600,
-          padding: '5px 14px',
-          borderRadius: 7,
-          border: '1px solid #E5E7EB',
-          background: '#F9FAFB',
-          color: '#374151',
-          cursor: 'pointer',
-        }}
+        style={
+          mode === 'menuItem'
+            ? {
+              width: '100%',
+              textAlign: 'left',
+              fontSize: 12,
+              fontWeight: 700,
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: '1px solid #E5E7EB',
+              background: '#fff',
+              color: '#374151',
+              cursor: 'pointer',
+            }
+            : {
+              fontSize: 12,
+              fontWeight: 600,
+              padding: '5px 14px',
+              borderRadius: 7,
+              border: '1px solid #E5E7EB',
+              background: '#F9FAFB',
+              color: '#374151',
+              cursor: 'pointer',
+            }
+        }
       >
         📥 Import Articles
       </button>

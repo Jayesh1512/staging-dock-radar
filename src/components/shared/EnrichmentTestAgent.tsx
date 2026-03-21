@@ -15,7 +15,7 @@ const WORKFLOW_STEPS = [
   { icon: '🔎', label: 'Contact Discovery', detail: 'Orgs with domain but no extracted persons → Apollo People Search → 2 contacts with LinkedIn (no credits)' },
 ];
 
-export function EnrichmentTestAgent() {
+export function EnrichmentTestAgent({ mode = 'button' }: { mode?: 'button' | 'menuItem' }) {
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState<Status>('idle');
@@ -137,7 +137,33 @@ export function EnrichmentTestAgent() {
     <>
       <button
         onClick={() => setOpen(true)}
-        style={{ fontSize: 11.5, fontWeight: 600, padding: '4px 11px', borderRadius: 6, border: '1px solid #E5E7EB', background: '#F9FAFB', color: '#374151', cursor: 'pointer', letterSpacing: 0.1 }}
+        style={
+          mode === 'menuItem'
+            ? {
+              width: '100%',
+              textAlign: 'left',
+              fontSize: 12,
+              fontWeight: 700,
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: '1px solid #E5E7EB',
+              background: '#fff',
+              color: '#374151',
+              cursor: 'pointer',
+              letterSpacing: 0.1,
+            }
+            : {
+              fontSize: 11.5,
+              fontWeight: 600,
+              padding: '4px 11px',
+              borderRadius: 6,
+              border: '1px solid #E5E7EB',
+              background: '#F9FAFB',
+              color: '#374151',
+              cursor: 'pointer',
+              letterSpacing: 0.1,
+            }
+        }
       >
         ⚗ Enrichment Test
       </button>
