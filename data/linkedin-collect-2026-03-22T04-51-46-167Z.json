@@ -1,0 +1,66 @@
+{
+  "run": {
+    "id": "run_li_202603220448243",
+    "keywords": [
+      "DJI Dock",
+      "DJI Dock 3"
+    ],
+    "sources": [
+      "linkedin"
+    ],
+    "regions": [],
+    "filter_days": 1,
+    "min_score": 40,
+    "max_articles": 50,
+    "status": "completed",
+    "articles_fetched": 105,
+    "articles_stored": 3,
+    "dedup_removed": 102,
+    "created_at": "2026-03-22T04:51:46.167Z",
+    "completed_at": "2026-03-22T04:51:46.167Z"
+  },
+  "stats": {
+    "totalFetched": 105,
+    "afterDateFilter": 3,
+    "afterDedup": 3,
+    "stored": 3
+  },
+  "articles": [
+    {
+      "id": "li_run_li_202603220448243_1774155003495_44",
+      "run_id": "run_li_202603220448243",
+      "source": "linkedin",
+      "title": "From platform to sky in under 11 seconds ⏲️ DJI Dock 3",
+      "url": "https://www.linkedin.com/",
+      "normalized_url": "linkedin_run_li_202603220448243_1774155003495_44",
+      "snippet": "From platform to sky in under 11 seconds ⏲️ DJI Dock 3",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-22T04:50:03.500Z",
+      "created_at": "2026-03-22T04:50:03.496Z"
+    },
+    {
+      "id": "li_run_li_202603220448243_1774155003495_55",
+      "run_id": "run_li_202603220448243",
+      "source": "linkedin",
+      "title": "Deploying DJI Dock 3 from a Pickup Truck 🛻",
+      "url": "https://www.linkedin.com/",
+      "normalized_url": "linkedin_run_li_202603220448243_1774155003495_55",
+      "snippet": "Deploying DJI Dock 3 from a Pickup Truck 🛻",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-22T04:50:03.501Z",
+      "created_at": "2026-03-22T04:50:03.496Z"
+    },
+    {
+      "id": "li_run_li_202603220448243_1774155105965_40",
+      "run_id": "run_li_202603220448243",
+      "source": "linkedin",
+      "title": "DJI Dock 3 Vlog 3",
+      "url": "https://www.linkedin.com/",
+      "normalized_url": "linkedin_run_li_202603220448243_1774155105965_40",
+      "snippet": "DJI Dock 3 Vlog 3",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-22T04:51:45.966Z",
+      "created_at": "2026-03-22T04:51:45.965Z"
+    }
+  ]
+}

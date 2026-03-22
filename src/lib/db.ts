@@ -207,18 +207,25 @@ export interface DedupKeys {
  */
 export async function loadDedupKeysFromScoredArticles(): Promise<DedupKeys> {
   const db = requireSupabase();
-  const { data, error } = await db.from('scored_articles')
-    .select('url_fingerprint, company, country, city');
-  if (error) throw new Error(`[db] loadDedupKeysFromScoredArticles failed: ${error.message}`);
-  const rows = (data ?? []) as { url_fingerprint?: string | null; company?: string | null; country?: string | null; city?: string | null }[];
+  const PAGE_SIZE = 1000;
   const existingUrlFingerprints = new Set<string>();
   const existingDedupKeys = new Set<string>();
-  for (const r of rows) {
-    const fp = r.url_fingerprint;
-    if (typeof fp === 'string' && fp.length > 0) {
-      existingUrlFingerprints.add(fp);
-      existingDedupKeys.add(dedupKey(fp, r.company ?? null, r.country ?? null, r.city ?? null));
+  let page = 0;
+  while (true) {
+    const { data, error } = await db.from('scored_articles')
+      .select('url_fingerprint, company, country, city')
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    if (error) throw new Error(`[db] loadDedupKeysFromScoredArticles failed: ${error.message}`);
+    if (!data?.length) break;
+    for (const r of data as { url_fingerprint?: string | null; company?: string | null; country?: string | null; city?: string | null }[]) {
+      const fp = r.url_fingerprint;
+      if (typeof fp === 'string' && fp.length > 0) {
+        existingUrlFingerprints.add(fp);
+        existingDedupKeys.add(dedupKey(fp, r.company ?? null, r.country ?? null, r.city ?? null));
+      }
     }
+    if (data.length < PAGE_SIZE) break;
+    page++;
   }
   return { existingUrlFingerprints, existingDedupKeys };
 }
@@ -415,28 +422,38 @@ export async function loadHitListData(): Promise<
   }>
 > {
   const db = requireSupabase();
-  const { data, error } = await db.from('scored_articles')
-    .select(`
-      id,
-      article_id,
-      relevance_score,
-      company,
-      country,
-      industry,
-      signal_type,
-      created_at,
-      entities,
-      persons,
-      articles!article_id(title, url, published_at)
-    `)
-    .gte('relevance_score', 50)
-    .is('drop_reason', null)
-    .eq('is_duplicate', false);
+  const PAGE_SIZE = 1000;
+  const allRows: any[] = [];
+  let page = 0;
+  while (true) {
+    const { data, error } = await db.from('scored_articles')
+      .select(`
+        id,
+        article_id,
+        relevance_score,
+        company,
+        country,
+        industry,
+        signal_type,
+        created_at,
+        entities,
+        persons,
+        articles!article_id(title, url, published_at)
+      `)
+      .gte('relevance_score', 50)
+      .is('drop_reason', null)
+      .eq('is_duplicate', false)
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
-  if (error) throw new Error(`[db] loadHitListData failed: ${error.message}`);
+    if (error) throw new Error(`[db] loadHitListData failed: ${error.message}`);
+    if (!data?.length) break;
+    allRows.push(...data);
+    if (data.length < PAGE_SIZE) break;
+    page++;
+  }
 
   // Map articles FK to flat object
-  return (data ?? []).map((row: any) => ({
+  return allRows.map((row: any) => ({
     id: row.id,
     article_id: row.article_id,
     relevance_score: row.relevance_score,
@@ -491,30 +508,25 @@ export async function loadRunArticles(runId: string): Promise<ArticleWithScore[]
 }
 
 /** Load recent scored articles across all runs (for Step 3 queue restoration).
- *  Capped at 500 to prevent memory explosion on large datasets. */
+ *  Queries scored_articles directly (not articles) so unscored rows never
+ *  consume slots in the limit — fixes queue disappearing after large scrapes. */
 export async function loadAllScoredArticles(): Promise<ArticleWithScore[]> {
   const db = requireSupabase();
 
-  const { data, error } = await db.from('articles')
-    .select('*, scored_articles(*)')
+  const { data, error } = await db.from('scored_articles')
+    .select('*, articles!inner(*)')
     .order('created_at', { ascending: false })
     .limit(500);
 
   if (error) throw new Error(`[db] loadAllScoredArticles failed: ${error.message}`);
 
-  return (data ?? [])
-    .filter((row: Record<string, unknown>) => {
-      const sa = row.scored_articles;
-      return Array.isArray(sa) ? sa.length > 0 : sa != null;
-    })
-    .map((row: Record<string, unknown>) => ({
-      article: mapArticle(row),
-      scored: mapScoredArticle(
-        Array.isArray(row.scored_articles)
-          ? row.scored_articles[0] as Record<string, unknown>
-          : row.scored_articles as Record<string, unknown>,
-      ),
-    }));
+  return (data ?? []).map((row: Record<string, unknown>) => {
+    const articleRow = (Array.isArray(row.articles) ? row.articles[0] : row.articles) as Record<string, unknown>;
+    return {
+      article: mapArticle(articleRow),
+      scored: mapScoredArticle(row),
+    };
+  });
 }
 
 // ─── Row mappers ─────────────────────────────────────────────────────────────
@@ -818,12 +830,21 @@ export async function upsertDiscoveredFromArticles(
 /** Load all discovered companies for hitlist overlay */
 export async function loadDiscoveredCompanies(): Promise<DiscoveredCompanyRow[]> {
   const db = requireSupabase();
-  const { data, error } = await db.from('discovered_companies')
-    .select('*')
-    .order('mention_count', { ascending: false });
-
-  if (error) throw new Error(`[db] loadDiscoveredCompanies failed: ${error.message}`);
-  return (data ?? []) as DiscoveredCompanyRow[];
+  const PAGE_SIZE = 1000;
+  const all: DiscoveredCompanyRow[] = [];
+  let page = 0;
+  while (true) {
+    const { data, error } = await db.from('discovered_companies')
+      .select('*')
+      .order('mention_count', { ascending: false })
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    if (error) throw new Error(`[db] loadDiscoveredCompanies failed: ${error.message}`);
+    if (!data?.length) break;
+    all.push(...(data as DiscoveredCompanyRow[]));
+    if (data.length < PAGE_SIZE) break;
+    page++;
+  }
+  return all;
 }
 
 /** Bulk update website/linkedin for discovered companies (Comet enrichment) */

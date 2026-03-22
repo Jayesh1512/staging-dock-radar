@@ -93,21 +93,26 @@ export async function GET(request: NextRequest) {
   try {
     const db = requireSupabase();
 
-    // Uncapped query — analytics needs all data, not just 500 rows
-    const { data, error } = await db
-      .from('scored_articles')
-      .select('country, signal_type, flytbase_mentioned, relevance_score, drop_reason, is_duplicate')
-      .gte('relevance_score', DEFAULTS.minScore)
-      .is('drop_reason', null)
-      .eq('is_duplicate', false);
+    // Paginated query — analytics needs all data
+    const PAGE_SIZE = 1000;
+    const allData: { country: string | null; signal_type: string; flytbase_mentioned: boolean }[] = [];
+    let page = 0;
+    while (true) {
+      const { data, error } = await db
+        .from('scored_articles')
+        .select('country, signal_type, flytbase_mentioned, relevance_score, drop_reason, is_duplicate')
+        .gte('relevance_score', DEFAULTS.minScore)
+        .is('drop_reason', null)
+        .eq('is_duplicate', false)
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+      if (error) throw new Error(error.message);
+      if (!data?.length) break;
+      allData.push(...(data as typeof allData));
+      if (data.length < PAGE_SIZE) break;
+      page++;
+    }
 
-    if (error) throw new Error(error.message);
-
-    const rows = (data ?? []) as {
-      country: string | null;
-      signal_type: string;
-      flytbase_mentioned: boolean;
-    }[];
+    const rows = allData;
 
     // ── Stat cards ────────────────────────────────────────────────────────
     const total = rows.length;

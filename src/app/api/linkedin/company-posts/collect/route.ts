@@ -291,6 +291,14 @@ export async function POST(req: NextRequest) {
     }
     const uniqueArticles = Array.from(uniqueMap.values()).slice(0, maxArticles);
 
+    // Only store articles that mention relevant keywords — prevents DB bloat
+    // from irrelevant company posts (birthday celebrations, hiring, etc.)
+    const RELEVANCE_RE = /\b(dji|dock|drone.in.a.box|bvlos|flighthub|autonomous\s*drone|remote\s*ops|remote\s*operation)\b/i;
+    const articlesToStore = uniqueArticles.filter((a) => {
+      const text = [a.title, a.snippet].filter(Boolean).join(" ");
+      return RELEVANCE_RE.test(text);
+    });
+
     const run: Run = {
       id: runId,
       keywords: cleanSlugs.map((slug) => `company:${slug}`),
@@ -301,7 +309,7 @@ export async function POST(req: NextRequest) {
       max_articles: maxArticles,
       status: "completed",
       articles_fetched: allArticles.length,
-      articles_stored: uniqueArticles.length,
+      articles_stored: articlesToStore.length,
       dedup_removed: allArticles.length - uniqueArticles.length,
       created_at: new Date().toISOString(),
       completed_at: new Date().toISOString(),
@@ -310,7 +318,7 @@ export async function POST(req: NextRequest) {
     let finalArticles = uniqueArticles;
     try {
       await insertRun(run);
-      const { idMap } = await insertArticles(uniqueArticles);
+      const { idMap } = await insertArticles(articlesToStore);
       if (idMap.size > 0) {
         finalArticles = uniqueArticles.map((a) => ({ ...a, id: idMap.get(a.id) ?? a.id }));
       }
