@@ -22,177 +22,236 @@ export function Navbar({
   partnerHitListActive?: boolean;
   onHome?: () => void;
 }) {
-  const [utilitiesOpen, setUtilitiesOpen] = useState(false);
-  const utilitiesRef = useRef<HTMLDivElement | null>(null);
+  const [campaignsOpen, setCampaignsOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const campaignsRef = useRef<HTMLDivElement | null>(null);
+  const toolsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     function onDocMouseDown(e: MouseEvent) {
-      const el = utilitiesRef.current;
-      if (!el) return;
-      if (e.target instanceof Node && el.contains(e.target)) return;
-      setUtilitiesOpen(false);
+      if (campaignsRef.current && e.target instanceof Node && !campaignsRef.current.contains(e.target)) {
+        setCampaignsOpen(false);
+      }
+      if (toolsRef.current && e.target instanceof Node && !toolsRef.current.contains(e.target)) {
+        setToolsOpen(false);
+      }
     }
-
     document.addEventListener('mousedown', onDocMouseDown);
     return () => document.removeEventListener('mousedown', onDocMouseDown);
   }, []);
 
+  const dropdownStyle: React.CSSProperties = {
+    position: 'absolute',
+    right: 0,
+    top: 'calc(100% + 8px)',
+    width: 270,
+    background: '#fff',
+    border: '1px solid var(--dr-border)',
+    borderRadius: 10,
+    boxShadow: '0 18px 40px rgba(0,0,0,0.10)',
+    zIndex: 1000,
+    padding: 8,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+  };
+
+  const menuItemStyle = (active?: boolean, color?: string): React.CSSProperties => ({
+    width: '100%',
+    textAlign: 'left',
+    fontSize: 12,
+    fontWeight: 700,
+    padding: '8px 12px',
+    borderRadius: 8,
+    cursor: 'pointer',
+    border: 'none',
+    letterSpacing: 0.1,
+    background: active ? (color ?? 'var(--dr-blue)') : '#fff',
+    color: active ? '#fff' : (color ?? '#374151'),
+  });
+
+  const menuSubtitle: React.CSSProperties = {
+    fontSize: 10,
+    color: '#9CA3AF',
+    fontWeight: 400,
+    marginTop: 2,
+    lineHeight: 1.3,
+  };
+
   return (
     <header className="sticky top-0 z-[100] bg-white border-b" style={{ borderColor: 'var(--dr-border)', height: 53 }}>
       <div className="flex items-center justify-between h-full px-8" style={{ maxWidth: 'var(--dr-max-w)', margin: '0 auto' }}>
-        <button
-          onClick={onHome}
-          className="flex items-center gap-3 cursor-pointer"
-          style={{ background: 'none', border: 'none', padding: 0 }}
-        >
-          <div className="flex items-center justify-center rounded-md text-white font-bold" style={{ width: 28, height: 28, fontSize: 11, letterSpacing: 0.3, background: 'var(--dr-blue)' }}>
-            DR
-          </div>
-          <div className="flex flex-col text-left">
-            <span className="font-bold leading-tight" style={{ fontSize: 15, color: 'var(--dr-blue)' }}>Dock Radar</span>
-            <span className="leading-tight" style={{ fontSize: 11, color: 'var(--dr-text-disabled)' }}>Social Listening & BD Intelligence</span>
-          </div>
-        </button>
+        {onHome ? (
+          <button
+            onClick={onHome}
+            className="flex items-center gap-3 cursor-pointer"
+            style={{ background: 'none', border: 'none', padding: 0 }}
+            title="Collect, Score & Queue pipeline"
+          >
+            <div className="flex items-center justify-center rounded-md text-white font-bold" style={{ width: 28, height: 28, fontSize: 11, letterSpacing: 0.3, background: 'var(--dr-blue)' }}>
+              DR
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="font-bold leading-tight" style={{ fontSize: 15, color: 'var(--dr-blue)' }}>Dock Radar</span>
+              <span className="leading-tight" style={{ fontSize: 11, color: 'var(--dr-text-disabled)' }}>Social Listening & BD Intelligence</span>
+            </div>
+          </button>
+        ) : (
+          <Link href="/" className="flex items-center gap-3" style={{ textDecoration: 'none' }} title="Collect, Score & Queue pipeline">
+            <div className="flex items-center justify-center rounded-md text-white font-bold" style={{ width: 28, height: 28, fontSize: 11, letterSpacing: 0.3, background: 'var(--dr-blue)' }}>
+              DR
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="font-bold leading-tight" style={{ fontSize: 15, color: 'var(--dr-blue)' }}>Dock Radar</span>
+              <span className="leading-tight" style={{ fontSize: 11, color: 'var(--dr-text-disabled)' }}>Social Listening & BD Intelligence</span>
+            </div>
+          </Link>
+        )}
+
         <div className="flex items-center gap-3">
-          <div ref={utilitiesRef} className="relative">
+
+          {/* ── Campaigns Dropdown ── */}
+          <div ref={campaignsRef} className="relative">
             <button
-              onClick={() => setUtilitiesOpen(o => !o)}
+              onClick={() => { setCampaignsOpen(o => !o); setToolsOpen(false); }}
+              title="DSP campaigns and LinkedIn scans"
               style={{
                 fontSize: 12,
                 fontWeight: 700,
                 padding: '5px 12px',
                 borderRadius: 7,
                 cursor: 'pointer',
-                background: utilitiesOpen ? 'var(--dr-blue)' : 'var(--dr-blue-light)',
-                color: utilitiesOpen ? '#fff' : 'var(--dr-blue)',
+                background: campaignsOpen || campaignActive ? '#C2410C' : '#FFF7ED',
+                color: campaignsOpen || campaignActive ? '#fff' : '#C2410C',
                 border: 'none',
                 letterSpacing: 0.1,
               }}
-              aria-haspopup="menu"
-              aria-expanded={utilitiesOpen}
             >
-              Utilities ▾
+              Campaigns ▾
             </button>
 
-            {utilitiesOpen && (
-              <div
-                role="menu"
-                aria-label="Utilities"
-                style={{
-                  position: 'absolute',
-                  right: 0,
-                  top: 'calc(100% + 8px)',
-                  width: 270,
-                  background: '#fff',
-                  border: `1px solid var(--dr-border)`,
-                  borderRadius: 10,
-                  boxShadow: '0 18px 40px rgba(0,0,0,0.10)',
-                  zIndex: 1000,
-                  padding: 8,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 6,
-                }}
-                onClick={(e) => {
-                  // Prevent document handler from closing the dropdown
-                  // before the click reaches React handlers.
-                  e.stopPropagation();
-                }}
-              >
-                <div style={{ width: '100%' }}>
-                  <EnrichmentTestAgent mode="menuItem" />
-                </div>
-                <div style={{ width: '100%' }}>
-                  <CometImportPanel mode="menuItem" />
-                </div>
-                <div style={{ width: '100%' }}>
-                  <DjiPartnersScraper mode="menuItem" />
-                </div>
+            {campaignsOpen && (
+              <div role="menu" aria-label="Campaigns" style={dropdownStyle} onClick={(e) => e.stopPropagation()}>
+                {onCampaign ? (
+                  <button
+                    role="menuitem"
+                    onClick={() => { onCampaign(); setCampaignsOpen(false); }}
+                    style={menuItemStyle(campaignActive, '#C2410C')}
+                  >
+                    <div>DSP Campaign</div>
+                    <div style={menuSubtitle}>Run C1/C2/C3 historical sweeps across regions</div>
+                  </button>
+                ) : (
+                  <Link role="menuitem" href="/" onClick={() => setCampaignsOpen(false)} style={{ ...menuItemStyle(false, '#C2410C'), textDecoration: 'none', display: 'block' }}>
+                    <div>DSP Campaign</div>
+                    <div style={menuSubtitle}>Run C1/C2/C3 historical sweeps across regions</div>
+                  </Link>
+                )}
+
                 <Link
                   role="menuitem"
                   href="/utilities/linkedin-company-posts"
-                  onClick={() => setUtilitiesOpen(false)}
-                  style={{
-                    width: '100%',
-                    textAlign: 'left',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    border: '1px solid #E5E7EB',
-                    background: '#fff',
-                    color: '#374151',
-                    cursor: 'pointer',
-                    letterSpacing: 0.1,
-                    textDecoration: 'none',
-                    display: 'block',
-                  }}
+                  onClick={() => setCampaignsOpen(false)}
+                  style={{ ...menuItemStyle(false), textDecoration: 'none', display: 'block' }}
                 >
-                  🏢 LinkedIn Company Posts
+                  <div>LinkedIn Company Scan</div>
+                  <div style={menuSubtitle}>Scan company pages for DJI Dock signals + keyword match</div>
                 </Link>
 
-                <button
+                <Link
                   role="menuitem"
-                  onClick={() => { onCampaign?.(); setUtilitiesOpen(false); }}
-                  style={{
-                    width: '100%',
-                    textAlign: 'left',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    cursor: 'pointer',
-                    background: campaignActive ? '#C2410C' : '#FFF7ED',
-                    color: campaignActive ? '#fff' : '#C2410C',
-                    border: 'none',
-                    letterSpacing: 0.1,
-                  }}
+                  href="/utilities/linkedin-scan-results"
+                  onClick={() => setCampaignsOpen(false)}
+                  style={{ ...menuItemStyle(false), textDecoration: 'none', display: 'block' }}
                 >
-                  DSP Campaign
-                </button>
-
-                <button
-                  role="menuitem"
-                  onClick={() => { onPartnerHitList?.(); setUtilitiesOpen(false); }}
-                  style={{
-                    width: '100%',
-                    textAlign: 'left',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    cursor: 'pointer',
-                    background: partnerHitListActive ? '#15803D' : '#DCFCE7',
-                    color: partnerHitListActive ? '#fff' : '#15803D',
-                    border: 'none',
-                    letterSpacing: 0.1,
-                  }}
-                >
-                  Partners Hit List ↗
-                </button>
-
-                <button
-                  role="menuitem"
-                  onClick={() => { onAnalytics?.(); setUtilitiesOpen(false); }}
-                  style={{
-                    width: '100%',
-                    textAlign: 'left',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    cursor: 'pointer',
-                    background: analyticsActive ? 'var(--dr-blue)' : 'var(--dr-blue-light)',
-                    color: analyticsActive ? '#fff' : 'var(--dr-blue)',
-                    border: 'none',
-                    letterSpacing: 0.1,
-                  }}
-                >
-                  Radar Analytics ↗
-                </button>
+                  <div>LinkedIn Scan Results</div>
+                  <div style={menuSubtitle}>Dashboard with batch signals, dock matches, progress</div>
+                </Link>
               </div>
             )}
           </div>
+
+          {/* ── Partners Pipeline (top-level) ── */}
+          {onPartnerHitList ? (
+            <button
+              onClick={onPartnerHitList}
+              title="DSP hit list and partner pipeline"
+              style={{
+                fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 7, cursor: 'pointer',
+                background: partnerHitListActive ? '#15803D' : '#DCFCE7',
+                color: partnerHitListActive ? '#fff' : '#15803D',
+                border: 'none', letterSpacing: 0.1,
+              }}
+            >
+              Partners Pipeline
+            </button>
+          ) : (
+            <Link href="/" title="DSP hit list and partner pipeline" style={{
+              fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 7,
+              background: '#DCFCE7', color: '#15803D', textDecoration: 'none', letterSpacing: 0.1,
+            }}>
+              Partners Pipeline
+            </Link>
+          )}
+
+          {/* ── Analytics (top-level) ── */}
+          {onAnalytics ? (
+            <button
+              onClick={onAnalytics}
+              title="Signal trends, country breakdown, score distribution"
+              style={{
+                fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 7, cursor: 'pointer',
+                background: analyticsActive ? 'var(--dr-blue)' : 'var(--dr-blue-light)',
+                color: analyticsActive ? '#fff' : 'var(--dr-blue)',
+                border: 'none', letterSpacing: 0.1,
+              }}
+            >
+              Analytics
+            </button>
+          ) : (
+            <Link href="/" title="Signal trends, country breakdown, score distribution" style={{
+              fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 7,
+              background: 'var(--dr-blue-light)', color: 'var(--dr-blue)', textDecoration: 'none', letterSpacing: 0.1,
+            }}>
+              Analytics
+            </Link>
+          )}
+
+          {/* ── Tools Dropdown ── */}
+          <div ref={toolsRef} className="relative">
+            <button
+              onClick={() => { setToolsOpen(o => !o); setCampaignsOpen(false); }}
+              title="Internal tools and data imports"
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                padding: '5px 12px',
+                borderRadius: 7,
+                cursor: 'pointer',
+                background: toolsOpen ? '#6B7280' : '#F3F4F6',
+                color: toolsOpen ? '#fff' : '#6B7280',
+                border: 'none',
+                letterSpacing: 0.1,
+              }}
+            >
+              Tools ▾
+            </button>
+
+            {toolsOpen && (
+              <div role="menu" aria-label="Tools" style={dropdownStyle} onClick={(e) => e.stopPropagation()}>
+                <div style={{ width: '100%' }} title="Test company enrichment lookups">
+                  <EnrichmentTestAgent mode="menuItem" />
+                </div>
+                <div style={{ width: '100%' }} title="Import partner data from Comet CSV">
+                  <CometImportPanel mode="menuItem" />
+                </div>
+                <div style={{ width: '100%' }} title="Scrape DJI where-to-buy reseller pages">
+                  <DjiPartnersScraper mode="menuItem" />
+                </div>
+              </div>
+            )}
+          </div>
+
           <span className="font-semibold rounded-full" style={{ fontSize: 11, padding: '3px 10px', background: 'var(--dr-blue-light)', color: 'var(--dr-blue)' }}>Phase 1</span>
           <span className="font-medium" style={{ fontSize: 13, color: 'var(--dr-text-disabled)' }}>FlytBase</span>
         </div>

@@ -129,6 +129,75 @@ export function LinkedinCompanyPostsUtility() {
   const [sourceCompanyCount, setSourceCompanyCount] = useState(0);
   const [companyResults, setCompanyResults] = useState<CompanyResult[]>([]);
 
+  // ── AI Scoring ──
+  const [scoringStatus, setScoringStatus] = useState<'idle' | 'scoring' | 'done' | 'error'>('idle');
+  const [scoringProgress, setScoringProgress] = useState(0);
+  const [scoringTotal, setScoringTotal] = useState(0);
+  const [scoringResult, setScoringResult] = useState<{ scored: number; queued: number; alreadyQueued: number; runId: string } | null>(null);
+  const [scoringError, setScoringError] = useState('');
+
+  async function runAiScoring() {
+    const matched = visibleArticles;
+    if (matched.length === 0) return;
+
+    setScoringStatus('scoring');
+    setScoringProgress(0);
+    setScoringTotal(matched.length);
+    setScoringError('');
+    setScoringResult(null);
+
+    try {
+      // Create a synthetic run ID for grouping in Step 3
+      const bridgeRunId = `run_bridge_li_${new Date().toISOString().replace(/[:.TZ-]/g, '').slice(0, 15)}`;
+
+      // Score in batches of 40 (same as main pipeline)
+      const BATCH_SIZE = 40;
+      let totalScored = 0;
+      let totalQueued = 0;
+      let totalAlreadyQueued = 0;
+
+      for (let i = 0; i < matched.length; i += BATCH_SIZE) {
+        const batch = matched.slice(i, i + BATCH_SIZE);
+
+        const res = await fetch('/api/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            articles: batch,
+            minScore: 50,
+          }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || `Scoring failed (HTTP ${res.status})`);
+        }
+
+        const data = await res.json();
+        const results = data.results ?? [];
+
+        for (const r of results) {
+          if (r.scored.relevance_score >= 50 && !r.scored.drop_reason && !r.scored.is_duplicate) {
+            if (r.article.ever_queued) {
+              totalAlreadyQueued++;
+            } else {
+              totalQueued++;
+            }
+          }
+          totalScored++;
+        }
+
+        setScoringProgress(Math.min(i + batch.length, matched.length));
+      }
+
+      setScoringResult({ scored: totalScored, queued: totalQueued, alreadyQueued: totalAlreadyQueued, runId: bridgeRunId });
+      setScoringStatus('done');
+    } catch (e) {
+      setScoringError(e instanceof Error ? e.message : 'AI scoring failed');
+      setScoringStatus('error');
+    }
+  }
+
   // ── Scan History ──
   const [scanLog, setScanLog] = useState<ScanLogEntry[]>([]);
   const [scanLogSearch, setScanLogSearch] = useState('');
@@ -323,6 +392,11 @@ export function LinkedinCompanyPostsUtility() {
     setKeywordMatchedArticles(0);
     setSourceCompanyCount(0);
     setCompanyResults([]);
+    setScoringStatus('idle');
+    setScoringProgress(0);
+    setScoringTotal(0);
+    setScoringResult(null);
+    setScoringError('');
   }
 
   const signalCount = companyResults.filter((r) => r.signal).length;
@@ -353,6 +427,15 @@ export function LinkedinCompanyPostsUtility() {
               <div style={{ marginBottom: 10, fontSize: 12.5, color: '#475569', lineHeight: 1.5 }}>
                 Paste LinkedIn company URLs or slugs, scrape posts, and detect DJI Dock signals via keyword match (no LLM).
               </div>
+              <details style={{ marginBottom: 12, fontSize: 11.5, color: '#6B7280', lineHeight: 1.6, background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '0 12px' }}>
+                <summary style={{ cursor: 'pointer', padding: '8px 0', fontWeight: 700, color: '#475569' }}>How to use</summary>
+                <ul style={{ margin: '0 0 10px', paddingLeft: 18 }}>
+                  <li>Paste <strong>3-5 company URLs</strong> per run to stay within LinkedIn rate limits.</li>
+                  <li>For bulk campaigns (20+ companies), run from terminal: <code style={{ fontSize: 10, background: '#E2E8F0', padding: '1px 4px', borderRadius: 3 }}>node scripts/auto-scan-linkedin.mjs</code></li>
+                  <li>Use pipe <code style={{ fontSize: 10, background: '#E2E8F0', padding: '1px 4px', borderRadius: 3 }}>|</code> for multiple keywords: <code style={{ fontSize: 10, background: '#E2E8F0', padding: '1px 4px', borderRadius: 3 }}>DJI Dock|Dock 3</code></li>
+                  <li>After scanning, click <strong>AI Score and Push to Active Queue</strong> to send matched posts to the Step 3 scoring pipeline.</li>
+                </ul>
+              </details>
               <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, marginBottom: 6, color: '#6B7280' }}>
                 Data source
               </label>
@@ -574,6 +657,62 @@ export function LinkedinCompanyPostsUtility() {
                 </div>
               )}
 
+              {/* ── AI Score Button ── */}
+              {status === 'done' && (
+                <div style={{ marginBottom: 12 }}>
+                  <button
+                    onClick={runAiScoring}
+                    disabled={visibleArticles.length === 0 || scoringStatus === 'scoring'}
+                    style={{
+                      width: '100%',
+                      padding: '10px 16px',
+                      background: visibleArticles.length === 0
+                        ? '#E5E7EB'
+                        : scoringStatus === 'scoring'
+                          ? '#93C5FD'
+                          : '#7C3AED',
+                      color: visibleArticles.length === 0 ? '#9CA3AF' : '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontSize: 13,
+                      fontWeight: 800,
+                      cursor: visibleArticles.length === 0 ? 'not-allowed' : scoringStatus === 'scoring' ? 'wait' : 'pointer',
+                    }}
+                  >
+                    {scoringStatus === 'scoring'
+                      ? `Scoring ${scoringProgress} of ${scoringTotal} articles...`
+                      : `AI Score and Push to Active Queue (${visibleArticles.length} matched posts)`}
+                  </button>
+
+                  {scoringStatus === 'done' && scoringResult && (
+                    <div style={{ marginTop: 8, padding: '10px 14px', borderRadius: 8, background: '#F0FDF4', border: '1px solid #BBF7D0', fontSize: 12.5 }}>
+                      <div style={{ fontWeight: 700, color: '#166534', marginBottom: 4 }}>
+                        AI Scoring Complete
+                      </div>
+                      <div style={{ color: '#334155', lineHeight: 1.6 }}>
+                        <strong>{scoringResult.scored}</strong> articles scored &middot;{' '}
+                        <strong style={{ color: '#166534' }}>{scoringResult.queued}</strong> pushed to active queue
+                        {scoringResult.alreadyQueued > 0 && (
+                          <> &middot; <strong>{scoringResult.alreadyQueued}</strong> already in queue</>
+                        )}
+                      </div>
+                      <a
+                        href="/"
+                        style={{ display: 'inline-block', marginTop: 6, fontSize: 12, fontWeight: 700, color: '#7C3AED', textDecoration: 'none' }}
+                      >
+                        Go to Step 3 Queue to review &rarr;
+                      </a>
+                    </div>
+                  )}
+
+                  {scoringStatus === 'error' && scoringError && (
+                    <div style={{ marginTop: 8, padding: '10px 14px', borderRadius: 8, background: '#FEF2F2', border: '1px solid #FECACA', fontSize: 12.5, color: '#991B1B' }}>
+                      {scoringError}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* ── Matched Articles Preview ── */}
               {visibleArticles.length > 0 && (
                 <>
@@ -681,7 +820,7 @@ export function LinkedinCompanyPostsUtility() {
                 <tbody>
                   {filteredScanLog.map((entry, i) => {
                     const hasSignal = (entry.dock_matches ?? 0) > 0;
-                    const bb = entry.batch === 'BFP';
+                    const bb = entry.batch === 'FP';
                     return (
                       <tr key={entry.id} style={{ background: hasSignal ? '#F0FDF4' : i % 2 ? '#F9FAFB' : '#fff' }}>
                         <td style={{ padding: '6px 8px', borderBottom: '1px solid #EEF2FF', textAlign: 'center', fontSize: 10, color: '#9CA3AF', fontWeight: 600 }}>{i + 1}</td>

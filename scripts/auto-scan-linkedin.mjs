@@ -2,14 +2,14 @@
 /**
  * Automated LinkedIn Company Posts Scanner
  *
- * Scans DJI resellers (B1–B7) + FlytBase partners (BFP) in small groups,
+ * Scans DJI resellers (B1–B7) + FlytBase partners (FP) in small groups,
  * with random delays between groups to avoid LinkedIn rate limits.
  * All results logged to dji_resellers_linkedin_scan_log with batch tag.
  *
  * Usage:
- *   node scripts/auto-scan-linkedin.mjs                    # scan BFP + B1-B7
+ *   node scripts/auto-scan-linkedin.mjs                    # scan FP + B1-B7
  *   node scripts/auto-scan-linkedin.mjs B4 B5              # scan specific batches
- *   node scripts/auto-scan-linkedin.mjs BFP                # scan only FlytBase partners
+ *   node scripts/auto-scan-linkedin.mjs FP                # scan only FlytBase partners
  *   node scripts/auto-scan-linkedin.mjs --resume            # skip already-scanned slugs
  *   node scripts/auto-scan-linkedin.mjs --dry-run           # show plan without executing
  */
@@ -30,7 +30,7 @@ const GROUP_SIZE = 3;                    // companies per API call
 const DELAY_BETWEEN_GROUPS_MIN = 45_000; // 45s min between groups
 const DELAY_BETWEEN_GROUPS_MAX = 75_000; // 75s max between groups
 const API_BASE = 'http://localhost:3000';
-const DEFAULT_BATCHES = ['BFP', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7'];
+const DEFAULT_BATCHES = ['FP', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7'];
 
 // Scraping params (~25% increase from base)
 const SCROLL_SECONDS = 56;
@@ -77,7 +77,7 @@ async function getFlytBasePartners() {
       id: null,
       name: p.name,
       country: p.country || p.region || '',
-      batch: 'BFP',
+      batch: 'FP',
       linkedin_url: p.linkedin,
     }));
 }
@@ -110,15 +110,15 @@ async function getResellersToScan(batches) {
 }
 
 async function getCompaniesToScan() {
-  const resellerBatches = targetBatches.filter((b) => b !== 'BFP');
-  const includeBFP = targetBatches.includes('BFP');
+  const resellerBatches = targetBatches.filter((b) => b !== 'FP');
+  const includeFP = targetBatches.includes('FP');
 
   let allRows = [];
 
-  // FlytBase partners (BFP) — benchmark batch
+  // FlytBase partners (FP) — benchmark batch
   let partnerSlugs = new Set();
   let partnerNames = [];
-  if (includeBFP) {
+  if (includeFP) {
     const partners = await getFlytBasePartners();
     allRows.push(...partners);
     partners.forEach((p) => {
@@ -126,7 +126,7 @@ async function getCompaniesToScan() {
       if (slug) partnerSlugs.add(slug);
       if (p.name) partnerNames.push(p.name.toLowerCase());
     });
-    console.log(`FlytBase partners (BFP): ${partners.length} with LinkedIn`);
+    console.log(`FlytBase partners (FP): ${partners.length} with LinkedIn`);
   } else {
     // Still load partner names for exclusion from other batches
     const { data: partners } = await db.from('flytbase_partners').select('name, linkedin');

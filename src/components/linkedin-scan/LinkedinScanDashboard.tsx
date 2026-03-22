@@ -25,7 +25,7 @@ type BatchSummary = {
 };
 
 const BATCH_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  BFP: { bg: '#EDE9FE', text: '#6D28D9', border: '#C4B5FD' },
+  FP: { bg: '#EDE9FE', text: '#6D28D9', border: '#C4B5FD' },
   B1: { bg: '#DBEAFE', text: '#1D4ED8', border: '#93C5FD' },
   B2: { bg: '#D1FAE5', text: '#065F46', border: '#6EE7B7' },
   B3: { bg: '#FEF3C7', text: '#92400E', border: '#FCD34D' },
@@ -49,6 +49,55 @@ export function LinkedinScanDashboard() {
 
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
+
+  // ── DB Scoring state ──
+  const [dbScoreStatus, setDbScoreStatus] = useState<'idle' | 'fetching' | 'scoring' | 'done' | 'error'>('idle');
+  const [dbScoreProgress, setDbScoreProgress] = useState(0);
+  const [dbScoreTotal, setDbScoreTotal] = useState(0);
+  const [dbScoreQueued, setDbScoreQueued] = useState(0);
+  const [dbScoreError, setDbScoreError] = useState('');
+
+  async function scoreUnscoredFromDb() {
+    setDbScoreStatus('fetching');
+    setDbScoreProgress(0);
+    setDbScoreTotal(0);
+    setDbScoreQueued(0);
+    setDbScoreError('');
+    try {
+      const res = await fetch('/api/linkedin/unscored-articles');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Failed to fetch unscored articles');
+      const articles = data.articles as unknown[];
+      if (articles.length === 0) {
+        setDbScoreStatus('done');
+        return;
+      }
+      setDbScoreTotal(articles.length);
+      setDbScoreStatus('scoring');
+
+      const BATCH = 50;
+      let totalQueued = 0;
+      for (let i = 0; i < articles.length; i += BATCH) {
+        const batch = articles.slice(i, i + BATCH);
+        const scoreRes = await fetch('/api/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ articles: batch, minScore: 0 }),
+        });
+        const scoreData = await scoreRes.json();
+        if (!scoreRes.ok) throw new Error(scoreData.error ?? 'Scoring failed');
+        const results = (scoreData.results ?? []) as Array<{ scored: { drop_reason: string | null; is_duplicate: boolean; relevance_score: number } }>;
+        const newlyQueued = results.filter(r => !r.scored.drop_reason && !r.scored.is_duplicate && r.scored.relevance_score >= 40).length;
+        totalQueued += newlyQueued;
+        setDbScoreProgress(Math.min(i + BATCH, articles.length));
+        setDbScoreQueued(totalQueued);
+      }
+      setDbScoreStatus('done');
+    } catch (err) {
+      setDbScoreError(err instanceof Error ? err.message : 'Unknown error');
+      setDbScoreStatus('error');
+    }
+  }
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -86,8 +135,8 @@ export function LinkedinScanDashboard() {
       s.signalRate = s.companies > 0 ? Math.round((s.withSignal / s.companies) * 100) : 0;
     }
     return Array.from(map.values()).sort((a, b) => {
-      if (a.batch === 'BFP') return -1;
-      if (b.batch === 'BFP') return 1;
+      if (a.batch === 'FP') return -1;
+      if (b.batch === 'FP') return 1;
       return a.batch.localeCompare(b.batch);
     });
   }, [entries]);
@@ -100,7 +149,7 @@ export function LinkedinScanDashboard() {
   const uniqueBatches = new Set(entries.map((e) => e.batch || 'Unknown'));
 
   // Progress tracking
-  const EXPECTED_TOTAL = 144; // BFP(23) + B1-B7(121)
+  const EXPECTED_TOTAL = 144; // FP(23) + B1-B7(121)
   const progressPct = Math.min(100, Math.round((totalCompanies / EXPECTED_TOTAL) * 100));
   const sortedByTime = useMemo(() => [...entries].sort((a, b) => new Date(b.scanned_at).getTime() - new Date(a.scanned_at).getTime()), [entries]);
   const lastScan = sortedByTime[0];
@@ -208,6 +257,50 @@ export function LinkedinScanDashboard() {
         </div>
       </div>
 
+      {/* ── AI Score Unscored from DB ── */}
+      <div style={{ background: '#FAF5FF', border: '1px solid #DDD6FE', borderRadius: 10, padding: '12px 18px', marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#6D28D9', marginBottom: 2 }}>Score yesterday&apos;s batch</div>
+          <div style={{ fontSize: 11, color: '#7C3AED' }}>Finds all unscored LinkedIn articles in DB and pushes them to the active queue.</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          {dbScoreStatus === 'done' && (
+            <span style={{ fontSize: 11, color: '#166534', fontWeight: 700 }}>
+              ✓ Done — {dbScoreQueued} articles queued {dbScoreTotal === 0 ? '(nothing new to score)' : `of ${dbScoreTotal}`}
+            </span>
+          )}
+          {dbScoreStatus === 'error' && (
+            <span style={{ fontSize: 11, color: '#991B1B', fontWeight: 700 }}>Error: {dbScoreError}</span>
+          )}
+          {(dbScoreStatus === 'fetching' || dbScoreStatus === 'scoring') && (
+            <span style={{ fontSize: 11, color: '#6D28D9' }}>
+              {dbScoreStatus === 'fetching' ? 'Fetching articles...' : `Scoring ${dbScoreProgress} / ${dbScoreTotal}...`}
+            </span>
+          )}
+          <button
+            onClick={scoreUnscoredFromDb}
+            disabled={dbScoreStatus === 'fetching' || dbScoreStatus === 'scoring'}
+            style={{
+              fontSize: 12,
+              fontWeight: 800,
+              padding: '6px 16px',
+              borderRadius: 7,
+              border: 'none',
+              cursor: (dbScoreStatus === 'fetching' || dbScoreStatus === 'scoring') ? 'wait' : 'pointer',
+              background: (dbScoreStatus === 'fetching' || dbScoreStatus === 'scoring') ? '#A78BFA' : '#7C3AED',
+              color: '#fff',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {dbScoreStatus === 'scoring'
+              ? `Scoring ${dbScoreProgress}/${dbScoreTotal}...`
+              : dbScoreStatus === 'fetching'
+                ? 'Fetching...'
+                : 'AI Score and Push to Active Queue'}
+          </button>
+        </div>
+      </div>
+
       {/* ── Recent Activity Feed ── */}
       {recentScans.length > 0 && (
         <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 10, padding: '10px 16px', marginBottom: 14, fontSize: 11 }}>
@@ -220,7 +313,7 @@ export function LinkedinScanDashboard() {
                 background: (e.dock_matches ?? 0) > 0 ? '#F0FDF4' : '#F9FAFB',
                 border: `1px solid ${(e.dock_matches ?? 0) > 0 ? '#BBF7D0' : '#E5E7EB'}`,
               }}>
-                {e.batch && <span style={{ fontSize: 9, fontWeight: 700, color: e.batch === 'BFP' ? '#6D28D9' : '#0369A1' }}>{e.batch}</span>}
+                {e.batch && <span style={{ fontSize: 9, fontWeight: 700, color: e.batch === 'FP' ? '#6D28D9' : '#0369A1' }}>{e.batch}</span>}
                 <span style={{ fontWeight: 500 }}>{e.slug}</span>
                 <span style={{ color: '#9CA3AF' }}>{e.posts_scraped}p</span>
                 {(e.dock_matches ?? 0) > 0 && <span style={{ fontWeight: 700, color: '#166534' }}>{e.dock_matches}d</span>}
@@ -308,7 +401,7 @@ export function LinkedinScanDashboard() {
                 <span style={{ background: style.bg, color: style.text, padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 800 }}>
                   {s.batch}
                 </span>
-                {s.batch === 'BFP' && <span style={{ fontSize: 9, color: '#6B7280' }}>Benchmark</span>}
+                {s.batch === 'FP' && <span style={{ fontSize: 9, color: '#6B7280' }}>Benchmark</span>}
               </div>
               <div style={{ fontSize: 11, color: '#6B7280', lineHeight: 1.6 }}>
                 <span style={{ fontWeight: 700, color: '#111827' }}>{s.companies}</span> companies &middot;{' '}
