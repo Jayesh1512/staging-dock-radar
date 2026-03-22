@@ -10,7 +10,7 @@ import { ScorePanel } from '@/components/score/ScorePanel';
 import { QueuePanel } from '@/components/queue/QueuePanel';
 import { DEFAULTS } from '@/lib/constants';
 import { useScore } from '@/hooks/use-score';
-import type { Article, ArticleWithScore, ArticleAction, ConfigItem, CollectResult, Run } from '@/lib/types';
+import type { Article, ArticleWithScore, ArticleAction, ArticleSource, ConfigItem, CollectResult, Run } from '@/lib/types';
 import { toast } from 'sonner';
 import { formatDateTimeIST } from '@/lib/utils';
 import { CampaignHub } from '@/components/campaign/CampaignHub';
@@ -148,30 +148,39 @@ export default function Dashboard() {
 
   // ─── Callbacks ─────────────────────────────────────────
   const handleCollectComplete = useCallback((result: CollectResult) => {
-    const run: Run = {
-      id: result.runId,
-      keywords: result.keywords,
-      sources: ['google_news'],
-      regions: result.regions,
-      filter_days: result.filterDays,
+    const collectPartToRun = (part: CollectResult): Run => ({
+      id: part.runId,
+      keywords: part.keywords,
+      sources: (part.sources ?? ['google_news']) as ArticleSource[],
+      regions: part.regions ?? [],
+      filter_days: part.filterDays,
       min_score: minScore,
       max_articles: maxArticles,
       status: 'completed',
-      articles_fetched: result.stats.totalFetched,
-      articles_stored: result.stats.stored,
-      dedup_removed: result.stats.dedupRemoved,
+      articles_fetched: part.stats.totalFetched,
+      articles_stored: part.stats.stored,
+      dedup_removed: part.stats.dedupRemoved,
       created_at: new Date().toISOString(),
       completed_at: new Date().toISOString(),
-    };
-    setAllRuns((prev) => [run, ...prev]);
-    setCurrentRun(run);
-    setSelectedRunId(run.id);
+    });
+
+    const parts = [result, ...(result.secondaryParts ?? [])];
+    const runs = parts.map(collectPartToRun);
+    setAllRuns((prev) => [...runs, ...prev]);
+    setCurrentRun(runs[0]);
+    setSelectedRunId(runs[0].id);
     setCollectedArticles(result.articles);
     setCollectedRegions(result.regions ?? []);
     setCollectionComplete(true);
     setHasScored(false);
     hasStartedRef.current = false;
-    setScoringStarted(false);
+    if (result.articles.length > 0) {
+      setActiveStep(2);
+      setScoringStarted(true);
+    } else {
+      setScoringStarted(false);
+      toast.message('No articles collected — adjust sources or keywords and retry.');
+    }
   }, [minScore, maxArticles]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -214,6 +223,7 @@ export default function Dashboard() {
     setStep3Enabled(true);
     const queueable = results.filter(r => r.scored.status === 'new' && !r.scored.drop_reason && !r.scored.is_duplicate && r.scored.relevance_score >= minScore).length;
     toast.success(`Queue ready — ${queueable} articles`);
+    setActiveStep(3);
   }, [minScore]);
 
   const handleDismiss = useCallback((articleId: string) => {
@@ -321,7 +331,6 @@ export default function Dashboard() {
                   onFilterDaysChange={setFilterDays}
                   onCollectComplete={handleCollectComplete}
                   collectionComplete={collectionComplete}
-                  onProceedToScoring={() => { setActiveStep(2); setScoringStarted(true); }}
                 />
               </>
             )}

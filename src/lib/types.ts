@@ -1,7 +1,16 @@
 export type SignalType = 'DEPLOYMENT' | 'CONTRACT' | 'TENDER' | 'PARTNERSHIP' | 'EXPANSION' | 'FUNDING' | 'REGULATION' | 'OTHER';
 export type ArticleStatus = 'new' | 'reviewed' | 'dismissed';
 export type ArticleAction = 'slack' | 'bookmarked' | 'email';
-export type ArticleSource = 'google_news' | 'newsapi' | 'linkedin' | 'facebook' | 'comet_crawler' | 'news_site' | 'dronelife' | string;
+export type ArticleSource =
+  | 'google_news'
+  | 'newsapi'
+  | 'linkedin'
+  | 'latest_articles_24h'
+  | 'facebook'
+  | 'comet_crawler'
+  | 'news_site'
+  | 'dronelife'
+  | string;
 
 export interface Run {
   id: string;
@@ -119,6 +128,10 @@ export interface CollectResult {
   keywords: string[];
   regions: string[];
   filterDays: number;
+  /** Present when /api/collect returns run metadata */
+  sources?: ArticleSource[];
+  /** Client-merged parallel news collects (e.g. main + latest 24h); each part is a persisted server run */
+  secondaryParts?: CollectResult[];
 }
 
 export interface ConfigItem {

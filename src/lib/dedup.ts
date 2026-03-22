@@ -1,5 +1,5 @@
 import type { RawArticle } from './google-news-rss';
-import type { ArticleWithScore } from './types';
+import type { Article, ArticleWithScore } from './types';
 import { DEFAULTS } from './constants';
 
 // ─── Text normalization ─────────────────────────────────────────────────────
@@ -87,6 +87,25 @@ export function deduplicateWithinRun(
     deduplicated: kept,
     removedCount: articles.length - kept.length,
   };
+}
+
+/**
+ * After merging parallel collects (e.g. Google News + Latest 24h + LinkedIn), the same story
+ * can appear twice with different client ids. Collapse by normalized_url; first occurrence wins.
+ */
+export function dedupeArticlesByNormalizedUrl(articles: Article[]): {
+  deduped: Article[];
+  removedCount: number;
+} {
+  const seen = new Set<string>();
+  const deduped: Article[] = [];
+  for (const a of articles) {
+    const key = (a.normalized_url || '').trim().toLowerCase() || a.id;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(a);
+  }
+  return { deduped, removedCount: articles.length - deduped.length };
 }
 
 // ─── Gate 2: Post-scoring semantic deduplication ────────────────────────────

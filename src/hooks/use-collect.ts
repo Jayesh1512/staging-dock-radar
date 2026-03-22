@@ -1,6 +1,64 @@
 "use client";
 import { useState, useCallback } from 'react';
+import { CORE_8_REGIONS, LATEST_ARTICLES_24H_KEYWORD } from '@/lib/constants';
+import { dedupeArticlesByNormalizedUrl } from '@/lib/dedup';
 import type { ArticleSource, CollectResult, PipelineStats } from '@/lib/types';
+
+function mergePipelineStats(a: PipelineStats, b: PipelineStats): PipelineStats {
+  return {
+    totalFetched: a.totalFetched + b.totalFetched,
+    afterDedup: a.afterDedup + b.afterDedup,
+    afterDateFilter: a.afterDateFilter + b.afterDateFilter,
+    afterScoreFilter: a.afterScoreFilter + b.afterScoreFilter,
+    stored: a.stored + b.stored,
+    dedupRemoved: a.dedupRemoved + b.dedupRemoved,
+    scoreFilterRemoved: a.scoreFilterRemoved + b.scoreFilterRemoved,
+  };
+}
+
+function mergeTwoNewsResults(primary: CollectResult, secondary: CollectResult): CollectResult {
+  const { deduped, removedCount } = dedupeArticlesByNormalizedUrl([
+    ...primary.articles,
+    ...secondary.articles,
+  ]);
+  const merged = mergePipelineStats(primary.stats, secondary.stats);
+  return {
+    ...primary,
+    articles: deduped,
+    stats: {
+      ...merged,
+      stored: deduped.length,
+      dedupRemoved: merged.dedupRemoved + removedCount,
+    },
+    secondaryParts: [secondary],
+  };
+}
+
+/** Extra pass for single-source results (usually no-op). */
+function applyCrossSourceDedup(result: CollectResult): CollectResult {
+  const { deduped, removedCount } = dedupeArticlesByNormalizedUrl(result.articles);
+  if (removedCount === 0) return result;
+  return {
+    ...result,
+    articles: deduped,
+    stats: {
+      ...result.stats,
+      stored: deduped.length,
+      dedupRemoved: result.stats.dedupRemoved + removedCount,
+    },
+  };
+}
+
+async function tryParseCollectResult(res: Response): Promise<CollectResult | null> {
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = typeof (data as { error?: string }).error === 'string'
+      ? (data as { error: string }).error
+      : `Collection server error ${res.status}`;
+    throw new Error(msg);
+  }
+  return data as CollectResult;
+}
 
 export function useCollect() {
   const [isCollecting, setIsCollecting] = useState(false);
@@ -13,7 +71,13 @@ export function useCollect() {
     filterDays: number,
     maxArticles: number,
     sources: ArticleSource[],
-    options?: { start_date?: string; end_date?: string; campaign?: string },
+    options?: {
+      start_date?: string;
+      end_date?: string;
+      campaign?: string;
+      /** Faster LinkedIn pass: ~30s-style pacing per keyword (fewer scrolls / shorter waits). */
+      linkedin30SecScrape?: boolean;
+    },
     browserTimeoutMs?: number,
   ): Promise<CollectResult> => {
     setIsCollecting(true);
@@ -21,133 +85,157 @@ export function useCollect() {
     setError(null);
 
     try {
-      const tasks: Promise<Response>[] = [];
       const hasNews = sources.includes('google_news');
-      const hasNewsAPI = sources.includes('newsapi');
       const hasLinkedIn = sources.includes('linkedin');
+      const hasLatest24h = sources.includes('latest_articles_24h');
 
-      // Route to dedicated endpoint if ONLY newsapi is selected
-      if (hasNewsAPI && !hasNews && !hasLinkedIn) {
-        tasks.push(
-          fetch('/api/collect-newsapi', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              keywords,
-              filterDays,
-              maxArticles,
-              ...options,
-            }),
-          }),
-        );
-      } else if (hasNews || hasNewsAPI) {
-        // Combine google_news + newsapi into single /api/collect call
-        const newsApiaSources: ArticleSource[] = [];
-        if (hasNews) newsApiaSources.push('google_news');
-        if (hasNewsAPI) newsApiaSources.push('newsapi');
+      type TaskTag = 'news-main' | 'news-latest24' | 'linkedin';
+      const taskSpecs: { tag: TaskTag; promise: Promise<Response> }[] = [];
 
-        tasks.push(
-          fetch('/api/collect', {
+      if (hasNews) {
+        taskSpecs.push({
+          tag: 'news-main',
+          promise: fetch('/api/collect', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               keywords,
               regions,
-              sources: newsApiaSources,
+              sources: ['google_news'] as ArticleSource[],
               filterDays,
               maxArticles,
               ...options,
             }),
           }),
-        );
+        });
       }
 
-      if (hasLinkedIn) {
-        tasks.push(
-          fetch('/api/collect-linkedin', {
+      if (hasLatest24h) {
+        taskSpecs.push({
+          tag: 'news-latest24',
+          promise: fetch('/api/collect', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ keywords, filterDays, maxArticles, ...(browserTimeoutMs !== undefined && { browserTimeoutMs }) }),
+            body: JSON.stringify({
+              keywords: [LATEST_ARTICLES_24H_KEYWORD],
+              regions: [...CORE_8_REGIONS],
+              sources: ['google_news'] as ArticleSource[],
+              filterDays: 1,
+              maxArticles,
+              ...options,
+            }),
           }),
-        );
+        });
       }
 
-      const settled = await Promise.allSettled(tasks);
+      // Phase 2: LinkedIn — either explicit source (user keywords / filter) or bundled with Latest Articles (preset)
+      const linkedInFromLatest24 = hasLatest24h && !hasLinkedIn;
+      if (hasLinkedIn || linkedInFromLatest24) {
+        const liKeywords = hasLinkedIn ? keywords : [LATEST_ARTICLES_24H_KEYWORD];
+        const liFilterDays = hasLinkedIn ? filterDays : 1;
+        taskSpecs.push({
+          tag: 'linkedin',
+          promise: fetch('/api/collect-linkedin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              keywords: liKeywords,
+              filterDays: liFilterDays,
+              maxArticles,
+              ...(options?.linkedin30SecScrape && { linkedin30SecScrape: true }),
+              ...(browserTimeoutMs !== undefined && { browserTimeoutMs }),
+            }),
+          }),
+        });
+      }
 
-      let newsResult: CollectResult | null = null;
+      const settled = await Promise.allSettled(taskSpecs.map((t) => t.promise));
+
+      let mainNews: CollectResult | null = null;
+      let latest24News: CollectResult | null = null;
       let liResult: CollectResult | null = null;
       let liErrorMessage: string | null = null;
+      let mainNewsError: string | null = null;
+      let latest24Error: string | null = null;
 
-      // Map settled responses back to services in order: [news/newsapi?, linkedin?]
-      let idx = 0;
-      const newsIdx = hasNews || hasNewsAPI ? idx++ : -1;
-      const liIdx = hasLinkedIn ? idx++ : -1;
-
-      if (newsIdx !== -1) {
-        const s = settled[newsIdx];
-        if (s.status === 'fulfilled') {
-          const res = s.value;
-          const data = await res.json();
-          if (!res.ok) {
-            throw new Error(data.error ?? `Collection server error ${res.status}`);
-          }
-          newsResult = data as CollectResult;
+      for (let i = 0; i < taskSpecs.length; i++) {
+        const { tag } = taskSpecs[i];
+        const s = settled[i];
+        if (s.status === 'rejected') {
+          const msg = s.reason instanceof Error ? s.reason.message : String(s.reason);
+          if (tag === 'linkedin') liErrorMessage = msg;
+          else if (tag === 'news-latest24') latest24Error = msg;
+          else mainNewsError = msg;
+          continue;
+        }
+        const res = s.value;
+        try {
+          const data = await tryParseCollectResult(res);
+          if (tag === 'news-main') mainNews = data;
+          else if (tag === 'news-latest24') latest24News = data;
+          else if (tag === 'linkedin') liResult = data;
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          if (tag === 'linkedin') liErrorMessage = msg;
+          else if (tag === 'news-latest24') latest24Error = msg;
+          else mainNewsError = msg;
         }
       }
 
-      if (liIdx !== -1) {
-        const s = settled[liIdx];
-        if (s.status === 'fulfilled') {
-          const res = s.value;
-          const data = await res.json();
-          if (res.ok) {
-            liResult = data as CollectResult;
-          } else {
-            liErrorMessage = data.error ?? `LinkedIn server error ${res.status}`;
-          }
-        } else if (s.status === 'rejected') {
-          liErrorMessage = s.reason instanceof Error ? s.reason.message : String(s.reason);
-        }
+      let newsResult: CollectResult | null = null;
+      if (mainNews && latest24News) {
+        newsResult = mergeTwoNewsResults(mainNews, latest24News);
+      } else {
+        newsResult = mainNews ?? latest24News;
       }
 
       if (!newsResult && !liResult) {
-        throw new Error(liErrorMessage ?? 'Collection failed for selected sources');
+        const parts = [mainNewsError, latest24Error, liErrorMessage].filter(Boolean);
+        throw new Error(parts[0] ?? 'Collection failed for selected sources');
       }
 
-      // Merge results when both succeed; otherwise fall back to whichever is available.
       const base = newsResult ?? liResult!;
       if (newsResult && liResult) {
-        const mergedStats: PipelineStats = {
-          totalFetched: newsResult.stats.totalFetched + liResult.stats.totalFetched,
-          afterDedup: newsResult.stats.afterDedup + liResult.stats.afterDedup,
-          afterDateFilter: newsResult.stats.afterDateFilter + liResult.stats.afterDateFilter,
-          afterScoreFilter: newsResult.stats.afterScoreFilter + liResult.stats.afterScoreFilter,
-          stored: newsResult.stats.stored + liResult.stats.stored,
-          dedupRemoved: newsResult.stats.dedupRemoved + liResult.stats.dedupRemoved,
-          scoreFilterRemoved: newsResult.stats.scoreFilterRemoved + liResult.stats.scoreFilterRemoved,
-        };
-
+        const { deduped, removedCount } = dedupeArticlesByNormalizedUrl([
+          ...newsResult.articles,
+          ...liResult.articles,
+        ]);
+        const mergedStats = mergePipelineStats(newsResult.stats, liResult.stats);
         const merged: CollectResult = {
-          ...base,
-          articles: [...newsResult.articles, ...liResult.articles],
-          stats: mergedStats,
-          // keep base runId/regions/keywords as-is; underlying runs are stored separately in DB
+          ...newsResult,
+          articles: deduped,
+          stats: {
+            ...mergedStats,
+            stored: deduped.length,
+            dedupRemoved: mergedStats.dedupRemoved + removedCount,
+          },
+          secondaryParts: [...(newsResult.secondaryParts ?? []), liResult],
         };
 
         setStats(merged.stats);
         if (liErrorMessage) {
           setError(`LinkedIn collection partially failed: ${liErrorMessage}`);
+        } else if (latest24Error && mainNews) {
+          setError(`Latest 24h collection failed; using other news sources only: ${latest24Error}`);
+        } else if (mainNewsError && latest24News) {
+          setError(`Main news collection failed; using Latest Articles (24h) only: ${mainNewsError}`);
         }
         return merged;
       }
 
-      const single = base;
+      const single = applyCrossSourceDedup(base);
       setStats(single.stats);
-      if (!newsResult && liErrorMessage) {
-        setError(`News/NewsAPI collection failed, using LinkedIn only: ${liErrorMessage}`);
-      } else if (!liResult && liErrorMessage) {
-        setError(`LinkedIn collection failed, using News/NewsAPI only: ${liErrorMessage}`);
+
+      if (latest24Error && mainNews && !liResult) {
+        setError(`Latest 24h collection failed; using other news sources only: ${latest24Error}`);
+      } else if (mainNewsError && latest24News && !liResult) {
+        setError(`Main news collection failed; using Latest Articles (24h) only: ${mainNewsError}`);
+      } else if (newsResult && !liResult && liErrorMessage) {
+        setError(`LinkedIn collection failed, using news sources only: ${liErrorMessage}`);
+      } else if (!newsResult && liResult && (mainNewsError || latest24Error)) {
+        setError(`News collection failed, using LinkedIn only: ${mainNewsError ?? latest24Error}`);
       }
+
       return single;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Collection failed';

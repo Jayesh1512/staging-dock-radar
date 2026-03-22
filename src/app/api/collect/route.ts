@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { searchGoogleNewsRss, mapToArticle as mapGoogleArticle, COUNTRY_TO_EDITION, type DateRange } from '@/lib/google-news-rss';
-import { searchNewsAPI, mapToArticle as mapNewsAPIArticle } from '@/lib/newsapi';
 import { deduplicateWithinRun } from '@/lib/dedup';
 import { insertRun, insertArticles } from '@/lib/db';
-import { requireSupabase } from '@/lib/supabase';
 import type { ArticleSource, PipelineStats, Run } from '@/lib/types';
 
 /**
@@ -82,14 +80,6 @@ export async function POST(req: Request) {
       }));
     }
 
-    // NewsAPI tasks
-    if (sources.includes('newsapi')) {
-      const newstapiTasks = keywords.map((keyword) => async () => {
-        return await searchNewsAPI(keyword, filterDays, 'en', dateRange);
-      });
-      tasksList.push(...newstapiTasks);
-    }
-
     // Run all tasks with concurrency limit
     const rawResults = await runWithConcurrency(tasksList, 5);
     allRaw.push(...rawResults.flat());
@@ -119,14 +109,7 @@ export async function POST(req: Request) {
     // ── Map to canonical Article type with generated IDs ────────────────────
     // D4 scoring cache (skip LLM for already-scored articles) runs in /api/score
     const ts = Date.now();
-    const articles = capped.map((raw, i) => {
-      // Use appropriate mapper based on source
-      if (raw.source === 'newsapi') {
-        return mapNewsAPIArticle(raw, `article_${ts}_${i}`, runId);
-      } else {
-        return mapGoogleArticle(raw, `article_${ts}_${i}`, runId);
-      }
-    });
+    const articles = capped.map((raw, i) => mapGoogleArticle(raw, `article_${ts}_${i}`, runId));
 
     const stats: PipelineStats = {
       totalFetched,

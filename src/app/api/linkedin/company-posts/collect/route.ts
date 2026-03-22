@@ -5,6 +5,7 @@ import { insertArticles, insertRun, requireSupabase } from "@/lib/db";
 import type { Article, Run } from "@/lib/types";
 import {
   withBrowserPage,
+  humanPause,
   loadServiceCookies,
 } from "@/lib/browser/puppeteerClient";
 
@@ -82,11 +83,14 @@ async function fetchCompanyPosts(
 ): Promise<RawCompanyPost[]> {
   return withBrowserPage(async (page) => {
     await loadServiceCookies(page, "linkedin");
+    await humanPause(500, 900);
     page.setDefaultNavigationTimeout(60000);
 
     const companyPostsUrl = `https://www.linkedin.com/company/${encodeURIComponent(companySlug)}/posts/`;
     await page.goto(companyPostsUrl, { waitUntil: "domcontentloaded" });
-    await safeScrollPage(page, scrollSeconds, 1000);
+    await humanPause(2000, 2500);
+    await safeScrollPage(page, scrollSeconds, 1600);
+    await humanPause(1200, 2200);
 
     await page.$$eval("button, span", (elements) => {
       elements.forEach((el) => {
@@ -246,10 +250,8 @@ export async function POST(req: NextRequest) {
       const dockCount = texts.filter((t) => RE_DOCK.test(t)).length;
       const diabCount = texts.filter((t) => RE_DIAB.test(t)).length;
       perCompany.push({ slug, postsFound: posts.length, dockMatches, djiCount, dockCount, diabCount });
-      // Random 3-8s delay between companies to mimic human browsing
       if (ci < cleanSlugs.length - 1) {
-        const delay = 3000 + Math.floor(Math.random() * 5000);
-        await new Promise((r) => setTimeout(r, delay));
+        await humanPause(4000, 5000);
       }
     }
 

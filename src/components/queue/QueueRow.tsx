@@ -7,6 +7,7 @@ import { SOURCE_BADGE_COLORS } from '@/lib/constants';
 
 const SOURCE_SHORT: Record<string, string> = {
   google_news: 'GN',
+  newsapi: 'NA',
   linkedin: 'LI',
   facebook: 'FB',
 };

@@ -1,19 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-import puppeteer from 'puppeteer';
+import {
+  launchPuppeteerBrowser,
+  preparePageForHumanUse,
+} from '../src/lib/browser/puppeteerClient';
 
 async function main() {
-  const browser = await puppeteer.launch({
-    headless: false,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-    ],
-  });
-
+  const browser = await launchPuppeteerBrowser({ headless: false });
   const page = await browser.newPage();
+  await preparePageForHumanUse(page);
   await page.goto('https://www.linkedin.com/login', {
     waitUntil: 'networkidle2',
   });

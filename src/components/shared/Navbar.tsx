@@ -160,6 +160,16 @@ export function Navbar({
 
                 <Link
                   role="menuitem"
+                  href="/utilities/dji-dock-research"
+                  onClick={() => setCampaignsOpen(false)}
+                  style={{ ...menuItemStyle(false), textDecoration: 'none', display: 'block' }}
+                >
+                  <div>DJI Dock raw (GN + ScraperAPI)</div>
+                  <div style={menuSubtitle}>LinkedIn HTML snapshot by country</div>
+                </Link>
+
+                <Link
+                  role="menuitem"
                   href="/utilities/linkedin-scan-results"
                   onClick={() => setCampaignsOpen(false)}
                   style={{ ...menuItemStyle(false), textDecoration: 'none', display: 'block' }}

@@ -61,6 +61,9 @@ export const ALL_COUNTRIES = REGION_GROUPS.flatMap((g) => [...g.countries]);
  */
 export const CORE_8_REGIONS = ['US', 'UK', 'France', 'Australia', 'Italy', 'Singapore', 'UAE', 'Brazil'] as const;
 
+/** Single keyword for the "Latest Articles (last 24 hours)" collect path (Google News + NewsAPI, 1 day, CORE_8_REGIONS). */
+export const LATEST_ARTICLES_24H_KEYWORD = 'DJI Dock' as const;
+
 export const DEFAULTS = {
   maxArticles: 50,
   filterDays: 7,

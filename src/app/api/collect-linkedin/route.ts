@@ -4,55 +4,49 @@ import path from "path";
 import {
   withBrowserPage,
   loadServiceCookies,
+  humanPause,
+  preparePageForHumanUse,
   scrollPage,
 } from "../../../lib/browser/puppeteerClient";
 import type { Article, Run } from "@/lib/types";
-import { normalizeUrl } from "@/lib/google-news-rss";
 import { insertArticles, insertRun } from "@/lib/db";
+import { mapLinkedInExtractedPostsToArticles } from "@/lib/linkedin/linkedinCollectMap";
+import {
+  extractLinkedInArticlesFromHtmlViaLlm,
+  minifyLinkedInSearchHtmlForLlm,
+} from "@/lib/linkedin/linkedinSearchHtmlLlmFallback";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function collapseWhitespace(s: string): string {
-  return String(s || "").replace(/\s+/g, " ").trim();
-}
+const SEARCH_RESULT_CARD = "div.search-results-container div.feed-shared-update-v2";
 
-function truncate(s: string, max: number): string {
-  const str = String(s || "");
-  return str.length <= max ? str : str.slice(0, max);
-}
-
-function parseLinkedInRelativeDate(timeStr: string): string {
-  if (!timeStr) return new Date().toISOString();
-  
-  const now = new Date();
-  const lower = timeStr.toLowerCase().trim();
-  
-  // Extract number and unit (h, d, w, mo, m, y)
-  // Handles formats like "16h •", "3w", "1mo", "2d", etc.
-  const match = lower.match(/^(\d+)\s*(h|d|w|mo|m|y)/);
-  if (!match) return now.toISOString();
-
-  const value = parseInt(match[1]);
-  const unit = match[2];
-
-  if (unit === "h") now.setHours(now.getHours() - value);
-  else if (unit === "d") now.setDate(now.getDate() - value);
-  else if (unit === "w") now.setDate(now.getDate() - value * 7);
-  else if (unit === "mo" || unit === "m") now.setMonth(now.getMonth() - value);
-  else if (unit === "y") now.setFullYear(now.getFullYear() - value);
-
-  return now.toISOString();
-}
+export type LinkedInScrapePace = "standard" | "quick30s";
 
 async function fetchLinkedInPosts(
   keyword: string,
   runId: string,
   scrollSeconds: number,
-  browserTimeoutMs: number = 30_000,
+  /** Must cover scroll + navigation + human-like pauses. POST handler usually overrides this. */
+  browserTimeoutMs: number = 240_000,
+  /** Opening each post in a new tab is slow and often trips the overall timeout (yielding 0 articles). Default 0 = search HTML only. */
+  hydrateMax: number = 0,
+  /** `quick30s`: shorter pauses, capped scroll — targets ~30s per keyword (fewer posts). */
+  pace: LinkedInScrapePace = "standard",
+  /** When DOM extraction yields no articles, minify HTML and use LLM (requires LLM API keys). */
+  llmFallbackEnabled: boolean = true,
+  /** Cap posts returned by the LLM fallback (same order of magnitude as maxArticles for the run). */
+  maxArticles: number = 40,
 ): Promise<Article[]> {
   const browserWork = withBrowserPage(async (page) => {
+    const quick = pace === "quick30s";
+    const pause = (base: number, jitter = 0) =>
+      quick
+        ? humanPause(Math.max(80, Math.floor(base * 0.22)), Math.max(0, Math.floor(jitter * 0.22)))
+        : humanPause(base, jitter);
+
     await loadServiceCookies(page, "linkedin");
+    await pause(500, 900);
 
     const searchUrl = `https://www.linkedin.com/search/results/content/?keywords=${encodeURIComponent(
       `"${keyword}"`
@@ -67,18 +61,43 @@ async function fetchLinkedInPosts(
       console.warn("[collect-linkedin] page.goto timeout, continuing with best-effort content");
     }
 
-    // Scroll down to load more results
-    await scrollPage(page, Math.max(0, scrollSeconds), 1000);
+    await pause(2000, 2500);
 
-    // Expand all "see more" buttons in posts
+    // Content search is client-rendered; without this, evaluate often runs before cards exist → 0 posts.
+    try {
+      await page.waitForSelector(SEARCH_RESULT_CARD, { timeout: quick ? 18_000 : 50_000 });
+    } catch {
+      console.warn(
+        "[collect-linkedin] no search result cards in time — session may be logged out or blocked",
+      );
+    }
+    await pause(1800, 2200);
+
+    const effectiveScrolls = quick ? Math.min(Math.max(0, scrollSeconds), 6) : Math.max(0, scrollSeconds);
+    await scrollPage(page, effectiveScrolls, quick ? 450 : 1600, {
+      jitterMs: quick ? 320 : 1400,
+      settleMs: 0,
+    });
+    await pause(1400, 2600);
+
+    // Expand truncated text (prefer known LinkedIn toggles; avoid generic "…more" links)
+    await pause(500, 900);
+    await page
+      .$$eval(
+        ".feed-shared-inline-show-more-text__see-more-less-toggle.see-more, button.see-more",
+        (elements) => {
+          elements.forEach((el) => (el as HTMLElement).click());
+        },
+      )
+      .catch(() => {});
     await page.$$eval("button, span", (elements) => {
       elements.forEach((el) => {
-        const text = el.textContent?.trim().toLowerCase() || "";
-        if (text === "see more") {
-          (el as HTMLElement).click();
-        }
+        const t = (el.textContent?.trim().toLowerCase() || "").replace(/\u2026/g, "");
+        const label = (el.getAttribute("aria-label") || "").toLowerCase();
+        if (t === "see more" || label.includes("see more")) (el as HTMLElement).click();
       });
     });
+    await pause(900, 1600);
 
     // Save the raw HTML in /data for debugging + offline parsing
     const html = await page.content();
@@ -89,22 +108,33 @@ async function fetchLinkedInPosts(
     const htmlPath = path.join(dataDir, `linkedin-search-${safeKeyword}-${timestamp}.html`);
     fs.writeFileSync(htmlPath, html, "utf8");
 
-    // Extract posts into structured data
-    const rawPosts = await page.evaluate(() => {
-      const postNodes = document.querySelectorAll<HTMLElement>(
-        "div.feed-shared-update-v2, li.artdeco-card, article"
-      );
+    // Extract posts into structured data (scope to main SERP — avoids sidebar / duplicate li+article nodes)
+    const rawPosts = await page.evaluate((rootSel: string) => {
+      const postNodes = document.querySelectorAll<HTMLElement>(rootSel);
       const extracted: any[] = [];
 
       postNodes.forEach((node) => {
-        // CONTENT
+        // CONTENT — commentary, optional LinkedIn-native article preview (title/subtitle)
         const textEl =
           node.querySelector<HTMLElement>('[data-test-id="feed-update-text"]') ??
+          node.querySelector<HTMLElement>(".update-components-update-v2__commentary span.break-words") ??
+          node.querySelector<HTMLElement>(".update-components-update-v2__commentary") ??
+          node.querySelector<HTMLElement>(".feed-shared-update-v2__description .break-words") ??
+          node.querySelector<HTMLElement>(".feed-shared-inline-show-more-text span.break-words") ??
           node.querySelector<HTMLElement>("span.break-words") ??
           node.querySelector<HTMLElement>("div.break-words") ??
           node.querySelector<HTMLElement>(".feed-shared-update-v2__commentary");
 
-        const postContent = (textEl?.innerText || textEl?.textContent || "").trim();
+        let postContent = (textEl?.innerText || textEl?.textContent || "").trim();
+        if (!postContent) {
+          const title = node
+            .querySelector<HTMLElement>(".update-components-article-first-party__title")
+            ?.innerText?.trim();
+          const subtitle = node
+            .querySelector<HTMLElement>(".update-components-article-first-party__subtitle")
+            ?.innerText?.trim();
+          if (title) postContent = subtitle ? `${title} — ${subtitle}` : title;
+        }
         if (!postContent) return;
 
         // AUTHOR
@@ -151,12 +181,13 @@ async function fetchLinkedInPosts(
           // Examples we want:
           // - /feed/update/urn:li:activity:...
           // - /posts/...
-          // - /pulse/... (rare)
+          // - /pulse/... (LinkedIn articles)
           const isPost =
             href.includes("/feed/update/") ||
             href.includes("urn:li:activity:") ||
             href.includes("/posts/") ||
-            href.includes("/pulse/");
+            href.includes("/pulse/") ||
+            /linkedin\.com\/pulse\//i.test(href);
           if (!isPost) return false;
           // Exclude obvious profile/company links that can sometimes include "activity" fragments.
           if (href.includes("/in/") || href.includes("/company/")) return false;
@@ -200,12 +231,10 @@ async function fetchLinkedInPosts(
       });
 
       return extracted;
-    });
+    }, SEARCH_RESULT_CARD);
 
-    // Hydrate: open each post permalink and extract the canonical post text.
-    // Why: search pages sometimes show truncated/quoted text and "url" can otherwise point to publisher.
-    // Best-effort: on failure, keep the already-extracted postContent.
-    const hydrateLimit = 30; // safety cap to avoid long runs / LinkedIn rate limits
+    // Hydrate: open each post permalink and extract the canonical post text (optional; slow).
+    const hydrateLimit = Math.max(0, Math.min(30, hydrateMax));
     const browser = page.browser();
     const hydratedPosts: any[] = [];
 
@@ -222,9 +251,13 @@ async function fetchLinkedInPosts(
 
       let hydratedText: string | null = null;
       try {
+        await pause(2200, 3800);
         const postPage = await browser.newPage();
+        await preparePageForHumanUse(postPage);
         postPage.setDefaultNavigationTimeout(45000);
+        await pause(400, 800);
         await postPage.goto(post.postUrl, { waitUntil: "domcontentloaded" });
+        await pause(1200, 2000);
 
         // Expand "see more" if present
         await postPage.$$eval("button, span", (elements) => {
@@ -244,6 +277,7 @@ async function fetchLinkedInPosts(
           return t || null;
         });
 
+        await pause(300, 700);
         await postPage.close();
       } catch (e) {
         // Non-fatal: keep search text
@@ -257,40 +291,31 @@ async function fetchLinkedInPosts(
       });
     }
 
-    // Map to canonical Article type with parsed dates in Node.js context
-    const ts = Date.now();
-    const createdAt = new Date().toISOString();
-    const articles: Article[] = hydratedPosts
-      .map((post: any, i: number) => {
-        const url: string = post.postUrl || "";
-        const normalized = url ? normalizeUrl(url) : `linkedin_${runId}_${ts}_${i}`.toLowerCase();
-        const content = collapseWhitespace(post.postContent || "");
-        const author = collapseWhitespace(post.authorName || "") || null;
-        const publisherUrl: string | undefined = post.authorUrl ? String(post.authorUrl) : undefined;
+    let articles: Article[] = mapLinkedInExtractedPostsToArticles(hydratedPosts, runId);
 
-        // IMPORTANT: keep snippet bounded so /api/score prompt doesn't explode and fall back to 0s.
-        const snippet = content ? truncate(content, 1000) : null;
-        // Keep title short but meaningful (helps LLM signal + UI)
-        const title = content
-          ? truncate(content, 140)
-          : (author ? `${author} – LinkedIn post` : "LinkedIn Post");
-
-        return {
-          id: `li_${runId}_${ts}_${i}`,
-          run_id: runId,
-          source: "linkedin",
-          title,
-          url: url || "https://www.linkedin.com/",
-          publisher_url: publisherUrl,
-          normalized_url: normalized,
-          snippet,
-          publisher: author ?? "LinkedIn",
-          published_at: parseLinkedInRelativeDate(post.publishedAtStr),
-          created_at: createdAt,
-        };
-      })
-      // Drop any items missing a usable URL+content (these cause noise + dedup issues downstream)
-      .filter((a) => !!a.url && !!a.normalized_url && !!a.snippet);
+    if (
+      articles.length === 0 &&
+      llmFallbackEnabled &&
+      process.env.LINKEDIN_LLM_HTML_FALLBACK !== "0"
+    ) {
+      try {
+        const lean = minifyLinkedInSearchHtmlForLlm(html);
+        if (lean.length > 200) {
+          const recovered = await extractLinkedInArticlesFromHtmlViaLlm({
+            keyword,
+            runId,
+            html: lean,
+            maxPosts: maxArticles,
+          });
+          if (recovered.length > 0) articles = recovered;
+        }
+      } catch (e) {
+        console.warn(
+          "[collect-linkedin] LLM HTML fallback failed:",
+          e instanceof Error ? e.message : e,
+        );
+      }
+    }
 
     return articles;
   });
@@ -304,7 +329,10 @@ async function fetchLinkedInPosts(
       ),
     ]);
   } catch (err) {
-    console.warn(`[collect-linkedin] ${(err as Error).message} for keyword "${keyword}" — returning empty`);
+    const msg = (err as Error).message;
+    console.warn(
+      `[collect-linkedin] ${msg} for keyword "${keyword}" — returning empty (if this mentions timeout, increase browserTimeoutMs; default is now 3 minutes)`
+    );
     return [];
   }
 }
@@ -320,7 +348,22 @@ export async function POST(req: NextRequest) {
     const filterDays: number = typeof body.filterDays === 'number' ? body.filterDays : 7;
     const maxArticles: number = typeof body.maxArticles === 'number' ? body.maxArticles : 40;
     const scrollSeconds: number = typeof body.scrollSeconds === "number" ? body.scrollSeconds : 25;
-    const browserTimeoutMs: number = typeof body.browserTimeoutMs === "number" ? body.browserTimeoutMs : 30_000;
+    const linkedin30SecScrape = body.linkedin30SecScrape === true;
+    const linkedinLlmFallback = body.linkedinLlmFallback !== false;
+    const hydrateMax: number = linkedin30SecScrape
+      ? 0
+      : typeof body.hydrateMax === "number"
+        ? body.hydrateMax
+        : 0;
+    const pace: LinkedInScrapePace = linkedin30SecScrape ? "quick30s" : "standard";
+    const browserTimeoutMs: number =
+      typeof body.browserTimeoutMs === "number"
+        ? body.browserTimeoutMs
+        : linkedin30SecScrape
+          ? 48_000
+          : hydrateMax > 0
+            ? Math.max(360_000, scrollSeconds * 1000 + hydrateMax * 45_000)
+            : Math.max(240_000, 55_000 + scrollSeconds * 3_500);
 
     if (keywords.length === 0) {
       return NextResponse.json(
@@ -332,10 +375,23 @@ export async function POST(req: NextRequest) {
     const allArticles: Article[] = [];
     const runId = `run_li_${new Date().toISOString().replace(/[:.TZ-]/g, '').slice(0, 15)}`;
 
-    for (const k of keywords) {
+    for (let ki = 0; ki < keywords.length; ki++) {
+      const k = keywords[ki];
       if (!k.trim()) continue;
+      if (ki > 0) {
+        await (linkedin30SecScrape ? humanPause(500, 450) : humanPause(4500, 5500));
+      }
       console.log(`[/api/collect-linkedin] Fetching for keyword: ${k.trim()}`);
-      const articles = await fetchLinkedInPosts(k.trim(), runId, scrollSeconds, browserTimeoutMs);
+      const articles = await fetchLinkedInPosts(
+        k.trim(),
+        runId,
+        scrollSeconds,
+        browserTimeoutMs,
+        hydrateMax,
+        pace,
+        linkedinLlmFallback,
+        maxArticles,
+      );
       allArticles.push(...articles);
     }
 
