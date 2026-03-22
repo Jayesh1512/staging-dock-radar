@@ -119,6 +119,10 @@ export interface PipelineStats {
   stored: number;
   dedupRemoved: number;
   scoreFilterRemoved: number;
+  /** Raw items returned by Google News RSS leg(s) before cross-source dedup (collect UI split). */
+  fetchedGoogleNews?: number;
+  /** Raw items returned by LinkedIn scrape before cross-source dedup. */
+  fetchedLinkedin?: number;
 }
 
 export interface CollectResult {

@@ -66,6 +66,8 @@ export function CollectPanel({
   const [sources, setSources] = useState<ArticleSource[]>([]);
   const [regions, setRegions] = useState<string[]>([...CORE_8_REGIONS]);
   const [linkedinTimingPreset, setLinkedinTimingPreset] = useState<string>('std_180000');
+  /** LinkedIn Puppeteer: matches long-standing server default (headed) unless user picks headless. */
+  const [linkedinHeadless, setLinkedinHeadless] = useState(false);
 
   const hasGoogle = sources.includes('google_news');
   const hasLinkedIn = sources.includes('linkedin');
@@ -84,6 +86,7 @@ export function CollectPanel({
       const liPreset = linkedinPresetByValue(linkedinTimingPreset);
       const result = await startCollect(keywords, regions, filterDays, maxArticles, sources, {
         ...(liPreset.linkedin30SecScrape && { linkedin30SecScrape: true }),
+        linkedinHeadless,
       }, liPreset.browserTimeoutMs);
       onCollectComplete(result);
     } catch {
@@ -134,7 +137,7 @@ export function CollectPanel({
                 marginBottom: 12,
               }}
             >
-              Latest Articles (24h) — preset (not editable)
+              Latest Articles (24h)
             </div>
             <div className="flex flex-col gap-3">
               <div>
@@ -159,6 +162,32 @@ export function CollectPanel({
                     : `Same keyword (${LATEST_ARTICLES_24H_KEYWORD}), 1-day filter — runs automatically after Google News.`}
                 </p>
               </div>
+              {(stats?.fetchedGoogleNews != null || stats?.fetchedLinkedin != null) && (
+                <div
+                  style={{
+                    marginTop: 4,
+                    paddingTop: 12,
+                    borderTop: '1px solid var(--dr-border)',
+                  }}
+                >
+                  <div style={presetLabelStyle}>Last collect — raw posts fetched (per source, before cross-source dedup)</div>
+                  <p style={{ ...presetValueStyle, fontWeight: 500, lineHeight: 1.5, marginTop: 6 }}>
+                    {stats.fetchedGoogleNews != null && (
+                      <span>
+                        Google News (8 regions): <strong style={{ color: 'var(--dr-text)' }}>{stats.fetchedGoogleNews}</strong>
+                      </span>
+                    )}
+                    {stats.fetchedGoogleNews != null && stats.fetchedLinkedin != null && (
+                      <span style={{ color: 'var(--dr-text-muted)', margin: '0 8px' }}>·</span>
+                    )}
+                    {stats.fetchedLinkedin != null && (
+                      <span>
+                        LinkedIn: <strong style={{ color: 'var(--dr-text)' }}>{stats.fetchedLinkedin}</strong>
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -177,30 +206,54 @@ export function CollectPanel({
           )}
 
           {showLinkedInTimeout && (
-            <div className="flex items-center gap-3 flex-wrap">
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--dr-text-secondary)', whiteSpace: 'nowrap' }}>
-                LinkedIn timeout
-              </label>
-              <select
-                value={linkedinTimingPreset}
-                onChange={(e) => setLinkedinTimingPreset(e.target.value)}
-                style={{
-                  fontSize: 12,
-                  padding: '4px 8px',
-                  borderRadius: 6,
-                  border: '1px solid var(--dr-border)',
-                  color: 'var(--dr-text)',
-                  background: '#fff',
-                  cursor: 'pointer',
-                  maxWidth: 'min(100%, 420px)',
-                }}
-              >
-                {LINKEDIN_TIMING_PRESETS.map((p) => (
-                  <option key={p.value} value={p.value}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--dr-text-secondary)', whiteSpace: 'nowrap' }}>
+                  LinkedIn timeout
+                </label>
+                <select
+                  value={linkedinTimingPreset}
+                  onChange={(e) => setLinkedinTimingPreset(e.target.value)}
+                  style={{
+                    fontSize: 12,
+                    padding: '4px 8px',
+                    borderRadius: 6,
+                    border: '1px solid var(--dr-border)',
+                    color: 'var(--dr-text)',
+                    background: '#fff',
+                    cursor: 'pointer',
+                    maxWidth: 'min(100%, 420px)',
+                  }}
+                >
+                  {LINKEDIN_TIMING_PRESETS.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--dr-text-secondary)', whiteSpace: 'nowrap' }}>
+                  LinkedIn browser (Puppeteer)
+                </label>
+                <select
+                  value={linkedinHeadless ? 'headless' : 'visible'}
+                  onChange={(e) => setLinkedinHeadless(e.target.value === 'headless')}
+                  style={{
+                    fontSize: 12,
+                    padding: '4px 8px',
+                    borderRadius: 6,
+                    border: '1px solid var(--dr-border)',
+                    color: 'var(--dr-text)',
+                    background: '#fff',
+                    cursor: 'pointer',
+                    maxWidth: 'min(100%, 420px)',
+                  }}
+                >
+                  <option value="visible">Visible window (default — easier login / debug)</option>
+                  <option value="headless">Headless (no UI — typical on servers)</option>
+                </select>
+              </div>
             </div>
           )}
 

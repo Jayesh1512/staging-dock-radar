@@ -128,7 +128,7 @@ export function SourcesPanel({ selected, onChange }: SourcesPanelProps) {
           </span>
         </button>
         <span style={{ fontSize: 10, color: 'var(--dr-text-muted)', fontStyle: 'italic', paddingLeft: 22 }}>
-          Google News + LinkedIn (preset) — 1 day, 8 regions for news — see panel below
+          Google News (1 Day - 8 region) + LinkedIn (preset - global)
         </span>
       </div>
 

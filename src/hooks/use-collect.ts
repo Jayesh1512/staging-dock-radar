@@ -16,12 +16,18 @@ function mergePipelineStats(a: PipelineStats, b: PipelineStats): PipelineStats {
   };
 }
 
+/** Strip per-source fetch annotations before summing stats (avoid double-counting in merges). */
+function stripFetchBreakdown(s: PipelineStats): PipelineStats {
+  const { fetchedGoogleNews: _g, fetchedLinkedin: _l, ...rest } = s;
+  return rest;
+}
+
 function mergeTwoNewsResults(primary: CollectResult, secondary: CollectResult): CollectResult {
   const { deduped, removedCount } = dedupeArticlesByNormalizedUrl([
     ...primary.articles,
     ...secondary.articles,
   ]);
-  const merged = mergePipelineStats(primary.stats, secondary.stats);
+  const merged = mergePipelineStats(stripFetchBreakdown(primary.stats), stripFetchBreakdown(secondary.stats));
   return {
     ...primary,
     articles: deduped,
@@ -77,6 +83,8 @@ export function useCollect() {
       campaign?: string;
       /** Faster LinkedIn pass: ~30s-style pacing per keyword (fewer scrolls / shorter waits). */
       linkedin30SecScrape?: boolean;
+      /** Puppeteer for LinkedIn: `true` = headless, `false` = show Chromium (debug). Omit = server default (headed). */
+      linkedinHeadless?: boolean;
     },
     browserTimeoutMs?: number,
   ): Promise<CollectResult> => {
@@ -144,6 +152,7 @@ export function useCollect() {
               maxArticles,
               ...(options?.linkedin30SecScrape && { linkedin30SecScrape: true }),
               ...(browserTimeoutMs !== undefined && { browserTimeoutMs }),
+              ...(options?.linkedinHeadless !== undefined && { linkedinHeadless: options.linkedinHeadless }),
             }),
           }),
         });
@@ -200,7 +209,10 @@ export function useCollect() {
           ...newsResult.articles,
           ...liResult.articles,
         ]);
-        const mergedStats = mergePipelineStats(newsResult.stats, liResult.stats);
+        const mergedStats = mergePipelineStats(
+          stripFetchBreakdown(newsResult.stats),
+          stripFetchBreakdown(liResult.stats),
+        );
         const merged: CollectResult = {
           ...newsResult,
           articles: deduped,
@@ -208,6 +220,8 @@ export function useCollect() {
             ...mergedStats,
             stored: deduped.length,
             dedupRemoved: mergedStats.dedupRemoved + removedCount,
+            fetchedGoogleNews: newsResult.stats.totalFetched,
+            fetchedLinkedin: liResult.stats.totalFetched,
           },
           secondaryParts: [...(newsResult.secondaryParts ?? []), liResult],
         };
@@ -224,7 +238,13 @@ export function useCollect() {
       }
 
       const single = applyCrossSourceDedup(base);
-      setStats(single.stats);
+      const singleStats: PipelineStats =
+        newsResult && !liResult
+          ? { ...single.stats, fetchedGoogleNews: newsResult.stats.totalFetched }
+          : !newsResult && liResult
+            ? { ...single.stats, fetchedLinkedin: liResult.stats.totalFetched }
+            : single.stats;
+      setStats(singleStats);
 
       if (latest24Error && mainNews && !liResult) {
         setError(`Latest 24h collection failed; using other news sources only: ${latest24Error}`);
@@ -236,7 +256,7 @@ export function useCollect() {
         setError(`News collection failed, using LinkedIn only: ${mainNewsError ?? latest24Error}`);
       }
 
-      return single;
+      return { ...single, stats: singleStats };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Collection failed';
       setError(message);

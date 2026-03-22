@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import {
   withBrowserPage,
+  type BrowserOptions,
   loadServiceCookies,
   humanPause,
   preparePageForHumanUse,
@@ -37,6 +38,8 @@ async function fetchLinkedInPosts(
   llmFallbackEnabled: boolean = true,
   /** Cap posts returned by the LLM fallback (same order of magnitude as maxArticles for the run). */
   maxArticles: number = 40,
+  /** Puppeteer launch options (e.g. `{ headless: true }`). Omit to use puppeteerClient defaults. */
+  browserLaunchOptions?: BrowserOptions,
 ): Promise<Article[]> {
   const browserWork = withBrowserPage(async (page) => {
     const quick = pace === "quick30s";
@@ -318,7 +321,7 @@ async function fetchLinkedInPosts(
     }
 
     return articles;
-  });
+  }, browserLaunchOptions ?? {});
 
   // Race the browser work against a timeout — returns [] if browser exceeds the limit
   try {
@@ -356,6 +359,8 @@ export async function POST(req: NextRequest) {
         ? body.hydrateMax
         : 0;
     const pace: LinkedInScrapePace = linkedin30SecScrape ? "quick30s" : "standard";
+    const browserLaunchOptions: BrowserOptions | undefined =
+      typeof body.linkedinHeadless === "boolean" ? { headless: body.linkedinHeadless } : undefined;
     const browserTimeoutMs: number =
       typeof body.browserTimeoutMs === "number"
         ? body.browserTimeoutMs
@@ -391,6 +396,7 @@ export async function POST(req: NextRequest) {
         pace,
         linkedinLlmFallback,
         maxArticles,
+        browserLaunchOptions,
       );
       allArticles.push(...articles);
     }
