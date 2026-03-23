@@ -331,6 +331,7 @@ export default function Dashboard() {
                   onFilterDaysChange={setFilterDays}
                   onCollectComplete={handleCollectComplete}
                   collectionComplete={collectionComplete}
+                  minScore={minScore}
                 />
               </>
             )}

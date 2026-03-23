@@ -1,5 +1,6 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { KeywordInput } from './KeywordInput';
 import { SourcesPanel } from './SourcesPanel';
 import { DateFilter } from './DateFilter';
@@ -18,6 +19,7 @@ interface CollectPanelProps {
   onFilterDaysChange: (days: number) => void;
   onCollectComplete: (result: CollectResult) => void;
   collectionComplete: boolean;
+  minScore: number;
 }
 
 const COLLECTABLE: ArticleSource[] = ['google_news', 'linkedin', 'latest_articles_24h'];
@@ -61,6 +63,7 @@ export function CollectPanel({
   onFilterDaysChange,
   onCollectComplete,
   collectionComplete,
+  minScore,
 }: CollectPanelProps) {
   const { isCollecting, stats, error, startCollect } = useCollect();
   const [sources, setSources] = useState<ArticleSource[]>([]);
@@ -68,6 +71,46 @@ export function CollectPanel({
   const [linkedinTimingPreset, setLinkedinTimingPreset] = useState<string>('std_180000');
   /** LinkedIn Puppeteer: matches long-standing server default (headed) unless user picks headless. */
   const [linkedinHeadless, setLinkedinHeadless] = useState(false);
+
+  const latestScheduleDefaultTime = '09:00';
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [scheduleEnabledDraft, setScheduleEnabledDraft] = useState(true);
+  const [scheduleTimeDraft, setScheduleTimeDraft] = useState(latestScheduleDefaultTime);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [latestSchedule, setLatestSchedule] = useState<{
+    enabled: boolean;
+    timeOfDay: string;
+    nextRunAt: string | null;
+    lastRunAt: string | null;
+    lastStatus?: string | null;
+  } | null>(null);
+
+  const liPreset = useMemo(() => linkedinPresetByValue(linkedinTimingPreset), [linkedinTimingPreset]);
+
+  useEffect(() => {
+    let alive = true;
+    async function loadSchedule() {
+      try {
+        const res = await fetch('/api/latest-articles/schedule');
+        if (!res.ok) return;
+        const data = await res.json() as {
+          enabled: boolean;
+          timeOfDay: string;
+          nextRunAt: string | null;
+          lastRunAt: string | null;
+          lastStatus?: string | null;
+        };
+        if (!alive) return;
+        setLatestSchedule(data);
+        setScheduleEnabledDraft(data.enabled);
+        setScheduleTimeDraft(data.timeOfDay || latestScheduleDefaultTime);
+      } catch {
+        // Scheduling is optional — ignore errors.
+      }
+    }
+    loadSchedule();
+    return () => { alive = false; };
+  }, []);
 
   const hasGoogle = sources.includes('google_news');
   const hasLinkedIn = sources.includes('linkedin');
@@ -83,7 +126,6 @@ export function CollectPanel({
   const handleCollect = async () => {
     if (needsUserKeywords && keywords.length === 0) return;
     try {
-      const liPreset = linkedinPresetByValue(linkedinTimingPreset);
       const result = await startCollect(keywords, regions, filterDays, maxArticles, sources, {
         ...(liPreset.linkedin30SecScrape && { linkedin30SecScrape: true }),
         linkedinHeadless,
@@ -162,6 +204,36 @@ export function CollectPanel({
                     : `Same keyword (${LATEST_ARTICLES_24H_KEYWORD}), 1-day filter — runs automatically after Google News.`}
                 </p>
               </div>
+
+              <div style={{ paddingTop: 2 }}>
+                <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--dr-text-muted)', letterSpacing: 0.35, marginBottom: 8 }}>
+                  Auto-run (cron)
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setScheduleModalOpen(true)}
+                    style={{
+                      background: latestSchedule?.enabled ? 'var(--dr-blue)' : '#fff',
+                      color: latestSchedule?.enabled ? '#fff' : 'var(--dr-text)',
+                      border: latestSchedule?.enabled ? 'none' : '1px solid var(--dr-border)',
+                      padding: '8px 14px',
+                      borderRadius: 9,
+                      fontSize: 13,
+                      fontWeight: 800,
+                      letterSpacing: 0.1,
+                    }}
+                  >
+                    {latestSchedule?.enabled ? `Scheduled: ${latestSchedule.timeOfDay}` : 'Schedule Latest Articles'}
+                  </button>
+                  <span style={{ fontSize: 12, color: 'var(--dr-text-muted)' }}>
+                    {latestSchedule?.enabled
+                      ? `Next: ${latestSchedule.nextRunAt ? new Date(latestSchedule.nextRunAt).toLocaleString() : '—'}`
+                      : 'Not scheduled'}
+                  </span>
+                </div>
+              </div>
+
               {(stats?.fetchedGoogleNews != null || stats?.fetchedLinkedin != null) && (
                 <div
                   style={{
@@ -299,7 +371,176 @@ export function CollectPanel({
             Unique articles are saved from each source, then scoring runs automatically on Step 2. Above-threshold items are added to the queue on Step 3 when scoring finishes — use the tabs to review.
           </p>
         )}
+
+        {scheduleModalOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={() => setScheduleModalOpen(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(17,24,39,0.45)',
+              zIndex: 50,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 16,
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: 'min(520px, 100%)',
+                background: '#fff',
+                borderRadius: 12,
+                border: '1px solid var(--dr-border)',
+                padding: 18,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--dr-text)' }}>Schedule Latest Articles</div>
+                  <div style={{ fontSize: 13, color: 'var(--dr-text-muted)', marginTop: 6 }}>
+                    Runs the Latest Articles (24h) collect + scoring flow daily at the selected time.
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setScheduleModalOpen(false)}
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid var(--dr-border)',
+                    borderRadius: 9,
+                    width: 36,
+                    height: 36,
+                    cursor: 'pointer',
+                    color: 'var(--dr-text-secondary)',
+                    fontWeight: 900,
+                  }}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 14 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={scheduleEnabledDraft}
+                    onChange={(e) => setScheduleEnabledDraft(e.target.checked)}
+                  />
+                  <span style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--dr-text-secondary)' }}>
+                    Enable daily auto-run
+                  </span>
+                </label>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--dr-text-muted)' }}>Time of day</div>
+                  <input
+                    type="time"
+                    value={scheduleTimeDraft}
+                    onChange={(e) => setScheduleTimeDraft(e.target.value)}
+                    disabled={!scheduleEnabledDraft || scheduleLoading}
+                    style={{
+                      height: 38,
+                      padding: '0 10px',
+                      borderRadius: 10,
+                      border: '1px solid var(--dr-border)',
+                      background: !scheduleEnabledDraft ? '#F3F4F6' : '#fff',
+                      color: 'var(--dr-text)',
+                      fontWeight: 800,
+                    }}
+                  />
+                  {!timeInputToValidate(scheduleTimeDraft) && scheduleEnabledDraft && (
+                    <div style={{ fontSize: 12, color: '#991B1B', fontWeight: 700 }}>
+                      Enter a valid time (HH:mm).
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 4 }}>
+                  <button
+                    type="button"
+                    onClick={() => setScheduleModalOpen(false)}
+                    disabled={scheduleLoading}
+                    style={{
+                      background: '#fff',
+                      color: 'var(--dr-text-secondary)',
+                      border: '1px solid var(--dr-border)',
+                      padding: '10px 14px',
+                      borderRadius: 10,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={scheduleLoading || (scheduleEnabledDraft && !timeInputToValidate(scheduleTimeDraft))}
+                    onClick={async () => {
+                      if (!scheduleEnabledDraft) {
+                        // Disabling: keep time value but turn scheduler off.
+                      }
+                      setScheduleLoading(true);
+                      try {
+                        const res = await fetch('/api/latest-articles/schedule', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            enabled: scheduleEnabledDraft,
+                            timeOfDay: scheduleTimeDraft,
+                            minScore,
+                            maxArticles,
+                            linkedin30SecScrape: liPreset.linkedin30SecScrape,
+                            linkedinHeadless,
+                            browserTimeoutMs: liPreset.browserTimeoutMs,
+                          }),
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) {
+                          throw new Error(typeof data.error === 'string' ? data.error : 'Failed to save schedule');
+                        }
+                        toast.success('Latest Articles schedule saved');
+                        setLatestSchedule(data);
+                        setScheduleModalOpen(false);
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : 'Failed to save schedule');
+                      } finally {
+                        setScheduleLoading(false);
+                      }
+                    }}
+                    style={{
+                      background: 'var(--dr-blue)',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '10px 14px',
+                      borderRadius: 10,
+                      fontWeight: 900,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {scheduleLoading ? 'Saving…' : 'Save'}
+                  </button>
+                </div>
+
+                <div style={{ fontSize: 12.5, color: 'var(--dr-text-muted)', lineHeight: 1.45 }}>
+                  Uses the current “LinkedIn timeout” and “Puppeteer browser (headless/visible)” settings.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
+}
+
+function timeInputToValidate(t: string) {
+  return /^([01]\d|2[0-3]):([0-5]\d)$/.test(t);
 }
