@@ -733,4 +733,135 @@ ALTER TABLE discovered_companies ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'a
 
 ---
 
-*Last updated: 2026-03-21 · Dock Radar Hackathon Sprint*
+## BACKLOG ITEM 21 — SHOW Filter Redesign + Pipeline Stage Badges
+
+**Feature:** Expand the SHOW dropdown in Potential Partners tab to filter by pipeline state; replace generic "In Pipeline" badge with stage-specific labels
+**Priority:** High — enables list hygiene without manual dismiss once leads progress
+**Effort:** ~1.5h
+
+### Current state
+SHOW dropdown has 3 options: `Active | Dismissed | All`. No way to filter by pipeline status. Badge shows generic "In Pipeline" with no stage info.
+
+### Proposed SHOW options
+| Option | What it shows |
+|---|---|
+| Active (default) | Not dismissed AND pipeline stage not in `[sent_to_crm, lost_archived]` |
+| In Pipeline | Companies with any active pipeline stage (`prospect` → `scheduling_meeting`) |
+| Sent to CRM | Pipeline stage = `sent_to_crm` |
+| Lost | Pipeline stage = `lost_archived` |
+| Dismissed | Manually dismissed from hit list |
+| All | Everything |
+
+### Pipeline stage badges (replace "In Pipeline" pill)
+| Stage | Badge | Color |
+|---|---|---|
+| `prospect` | `◉ Prospect` | Gray |
+| `connecting_linkedin` | `◉ LinkedIn` | Blue |
+| `connecting_email` | `◉ Email` | Blue |
+| `scheduling_meeting` | `◉ Meeting` | Amber |
+| `sent_to_crm` | `✓ CRM` | Green |
+| `lost_archived` | `✗ Lost` | Red/muted |
+
+### Auto-cleanup logic
+When a pipeline lead reaches `sent_to_crm` or `lost_archived`, the company auto-drops from "Active" view. No manual dismiss needed — terminal pipeline state IS the cleanup signal. The company is still visible under "Sent to CRM" or "Lost" filters.
+
+### Implementation notes
+- PipelineContext needs `getPipelineStage(companyName): string | null` — must normalize company names before comparing (use `normalizeCompanyName`)
+- `filteredNewDsps` "active" condition becomes: `!dismissed AND getPipelineStage(name) not in ['sent_to_crm', 'lost_archived']`
+- `[+ Pipe]` row action should hide when company is already in pipeline — replaced by stage badge
+- Row badge and drawer header badge both use the stage-specific label
+- Sent to CRM / Lost filters need the full pipeline cards loaded (already in PipelineContext)
+
+### Open decision
+**Sent to CRM and Lost as separate filters vs combined "Completed"?**
+Recommendation: keep separate. "Sent to CRM" = conversion success (BD wants to track how many converted). "Lost" = dropped lead (BD wants to review why). Opposite outcomes that lose meaning if combined.
+
+### Files to touch
+- `src/components/pipeline/PipelineContext.tsx` — add `getPipelineStage()` with name normalization
+- `src/components/partner-dashboard/PartnerDashboard.tsx` — SHOW dropdown options, filter logic, badge rendering
+
+---
+
+## BACKLOG ITEM 22 — Expert Review: Critical Gaps & Fixes
+
+**Feature:** Bug fixes and improvements identified during expert panel review of the full Partner Hit List build
+**Priority:** Mixed (see individual items)
+**Context:** Full review conducted 2026-03-20 after completing Phases 1-6
+
+### Fix now (high impact, low effort)
+
+**Gap #3 — Article count mismatch between drawer and Radar**
+Drawer shows max 5 articles per company. Ask Radar queries up to 20 articles independently. Radar may cite articles the user can't see in the drawer.
+**Fix:** Add a note below Source Articles: `"Showing 5 of {total}. Ask Radar has access to all {total} articles."` — sets user expectation. UI-only change in PartnerDashboard.tsx.
+
+**Gap #4 — `isInPipeline` uses display name, dismiss uses `normalized_name`**
+Pipeline membership check uses `dsp.name` (display casing). Dismiss uses `dsp.normalized_name`. If display name has inconsistent casing vs what's stored in `pipeline_leads.company_name`, `isInPipeline` returns false even though the DB record exists.
+**Fix:** `getPipelineStage()` (from Item 21) must normalize company names before comparing. Aligns pipeline checks with the same normalization used everywhere else.
+
+**Gap #6 — Pipeline reactivation doesn't update metadata**
+When a previously archived company is re-added via `POST /api/pipeline`, stage resets to `prospect` but `score`, `signal`, `region`, `is_known_partner` retain stale values from the original entry.
+**Fix:** In `/api/pipeline` POST handler, when reactivating an archived lead, also update `score`, `region`, `signal`, `is_known_partner` from the request body. File: `src/app/api/pipeline/route.ts` lines 73-78.
+
+**Gap #8 — LinkedIn Connect no character counter**
+LinkedIn connection requests have a 300-char limit. LLM sometimes exceeds it. No client-side warning.
+**Fix:** Add `{charCount}/300` counter below the connect draft textarea. If over 300, turn red. File: `src/components/partner-dashboard/PartnerDashboard.tsx` near the connect textarea.
+
+**Gap #10 — Fire-and-forget dismiss doesn't surface DB failures**
+`persistDismissStatus` uses `.catch(console.warn)`. If Supabase is unreachable, user sees "dismissed" toast but next reload shows the company as active.
+**Fix:** Change `.catch(warn)` to `.catch(() => toast.warning('Dismiss may not have saved — try again'))`. Same fire-and-forget pattern, but user is informed.
+
+**Gap #12 — Radar entity-type filter too narrow**
+`/api/radar/ask` only matches entities of type `operator`, `si`, `partner`. Articles where the company was tagged as `buyer` or `manufacturer` are silently excluded from Radar's context.
+**Fix:** Expand filter to include all entity types: `['operator', 'si', 'partner', 'buyer', 'oem']` — for the Ask Radar use case, all context about the company is valuable regardless of role classification. File: `src/app/api/radar/ask/route.ts` line 62.
+
+### Accept as-is (not worth fixing now)
+
+**Gap #7 — Undo dismiss doesn't restore Radar/Connect state**
+When a user dismisses a company, `cleanupCompanyState` wipes all 8 state maps. Undo brings the company back but radar questions and connect drafts are lost. Restoring would require state snapshots before cleanup. The 5-second undo window makes this a minor annoyance, not a workflow blocker.
+
+**Gap #9 — Ask Radar fires a new LLM call every time (no caching)**
+No per-question caching. Acceptable for internal BD use with <50 companies. Revisit if usage grows or LLM costs become noticeable.
+
+### Needs decision
+
+**Gap #1 & #2 — Top 25 tab ignores all filters + shows dismissed companies**
+`top25 = newDsps.slice(0, 25)` happens before filtering. Dismissed companies reappear in Top 25. Score/Region/Show filters don't apply.
+**Decision needed:** Remove Top 25 tab now (Item 7) or patch it? Recommendation: remove it — Potential Partners tab has sortable SCORE column and Score filter making a separate ranked view redundant.
+
+**Gap #5 — Score filter boundary: MEA (0.8 weight) lands under HIGH filter**
+HIGH filter is `>= 0.8`, which includes MEA (weight 0.8). Americas/Europe are 1.0. So MEA shows under HIGH, but MEA isn't a top-priority region for BD.
+**Decision needed:** Is MEA HIGH-tier or MED-tier? If MED: change filter to `HIGH > 0.8` and `MED 0.5-0.8`. If HIGH: keep as-is.
+
+### Files affected (summary)
+- `src/components/partner-dashboard/PartnerDashboard.tsx` — gaps #3, #8, #10
+- `src/app/api/pipeline/route.ts` — gap #6
+- `src/app/api/radar/ask/route.ts` — gap #12
+- `src/components/pipeline/PipelineContext.tsx` — gap #4 (via Item 21)
+
+---
+
+## BACKLOG ITEM 23 — Pointers from Achal and Nitin Review
+
+**Source:** `docs/PRDs/Next step pointers from Achal and Nitin`
+**Priority:** Mixed — captures stakeholder feedback for next sprint planning
+
+### Enhancements
+1. **DJI Dock flag in Tab 2 and Tab 3** — Show a visible DJI Dock badge on rows where dock usage is detected. Currently the drawer checks article titles only (fragile). See Item 20 Phase A (T1.1) for proper detection and Item 22 (Gap #1) for Top 25 tab issues.
+2. **Scoring reasoning** — Show why a company scored high/low. See Item 12 (Score Breakdown Detail View) and Item 20 Phase B (T2.1-T2.4) for richer scoring inputs.
+3. **Approval on top list** — Require approval before progressing a lead. See Item 5 (Role-based Approval for Pipeline Entry).
+4. **AI scoring hardening** — Current scoring is too generous. Needs tighter prompts and possibly re-calibrating the scoring bands in `scoring-prompt.ts`. Separate task — review scoring bands and tighten the 50-74 range criteria.
+
+### Optimize partner search
+5. **Right keywords, DJI Dock only** — Narrow collection to DJI Dock-specific keywords even if data volume drops. Quality > quantity.
+6. **One-time historical database** — Backfill all historical records with DJI Dock keywords into a permanent database. Run once, then incremental.
+7. **Daily scheduler** — Automated daily fetch from identified sources to keep database current. Requires cron/scheduled function infrastructure.
+8. **Intel agent** — An agent that can read through the full database for any intelligence question (extends Ask Radar to global scope, not per-company).
+
+### Data sourcing agent
+9. **DJI Enterprise reseller discovery** — See Item 14 (DJI Enterprise Reseller Directory Crawler). Separate search that identifies who DJI resellers are partnered with from a DSP perspective.
+10. **Ranking criteria for sourced partners** — Define explicit scoring criteria for reseller-discovered partners. May differ from article-discovered scoring (no articles to score against — need website/LinkedIn-based scoring).
+11. **Store in database** — Upsert discovered resellers into `discovered_companies` with `source = 'dji_reseller'`. See Item 19 for the `source` column addition.
+
+---
+
+*Last updated: 2026-03-23 · Dock Radar Hackathon Sprint*

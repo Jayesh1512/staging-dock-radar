@@ -214,79 +214,15 @@ Before execution starts, these must be resolved:
 
 ## 30-Day Execution Plan
 
----
-
-### Week 1 — Decisions & Setup (Days 1–7)
-*Nothing moves without this week happening cleanly.*
-
-| # | Action | Owner | Dependency |
+| Week | Focus | Key Actions | Owner |
 |---|---|---|---|
-| 1 | Make the 3 leadership decisions (owner, partner offer, 90-day target) | CEO / BD Head | — |
-| 2 | Tier-classify all 41 March batch companies (Tier 1: 5+ signals, Tier 2: 2–4, Tier 3: 1) | BD | Dock Radar queue |
-| 3 | Find 1 right contact per Tier 1 company on LinkedIn | BD | Tier classification done |
-| 4 | Draft DSP/SI partner one-pager (what FlytBase offers, why now) | Marketing | Partner terms confirmed |
-| 5 | Write first Lemlist sequence (3 touches, dock-signal personalized) | Marketing | One-pager draft ready |
-| 6 | Engineering: ship Slack webhook alert for new high-signal companies | Engineering | — |
+| **Week 1** | Decisions & Setup | Make 3 leadership decisions · Tier-classify 44 new leads · Find contact per Tier 1 company | CEO + BD |
+| | | Write DSP partner one-pager + Lemlist 3-touch sequence · Ship Slack webhook alert | Mktg + Eng |
+| **Week 2** | First Outreach Wave | Launch Lemlist to ~7 Tier 1 (high-signal) companies · Run April LinkedIn batch scan · Tag all leads in CRM (source = Dock Radar) | BD + Mktg |
+| **Week 3** | Iterate | Review reply rates · Send Touch 2 to non-replies · Book discovery calls · Launch Tier 2 outreach | BD + Mktg |
+| **Week 4** | Measure & Plan Q2 | Count conversations vs. target · Decide top 2 focus regions for Q2 · Lock monthly scan → score → outreach cadence | BD Head + Leadership |
 
-**Week 1 exit criteria:** Tier 1 list ready, contacts identified, Lemlist sequence drafted, partner offer defined.
-
----
-
-### Week 2 — First Outreach Wave (Days 8–14)
-*Start the clock. Signal-to-outreach < 48h begins here.*
-
-| # | Action | Owner | Dependency |
-|---|---|---|---|
-| 7 | Launch Lemlist sequence to all Tier 1 companies (~15 targets) | BD + Marketing | Week 1 complete |
-| 8 | Run April LinkedIn batch scan (B1–B7 + FP) | BD / Engineering | Nightly script running |
-| 9 | Score and queue April batch in Dock Radar | BD | Scan complete |
-| 10 | Engineering: begin outreach draft generation feature | Engineering | — |
-| 11 | Set up CRM tagging: source = Dock Radar for all leads from this batch | BD / Ops | — |
-
-**Week 2 exit criteria:** First 15 outreach messages sent, April scan queued, CRM tracking live.
-
----
-
-### Week 3 — Iterate on Signal (Days 15–21)
-*Data starts coming in. Adjust before it's too late to matter.*
-
-| # | Action | Owner | Dependency |
-|---|---|---|---|
-| 12 | Review Lemlist reply rates from Wave 1 — what subject lines and openers are working? | Marketing | 7+ days of send data |
-| 13 | Send Touch 2 to non-replies from Wave 1 | BD | Touch 1 sent ≥ 5 days ago |
-| 14 | Book first partner discovery calls from any replies | BD | Replies received |
-| 15 | Present regional signal breakdown to leadership (where are the signals coming from?) | BD / Growth | April batch scored |
-| 16 | Launch Tier 2 outreach (~10–15 companies) with adapted messaging | BD + Marketing | Wave 1 learnings applied |
-
-**Week 3 exit criteria:** ≥ 3 replies or meetings booked, Tier 2 outreach live, regional data presented.
-
----
-
-### Week 4 — Measure & Lock Q2 Plan (Days 22–30)
-*Close the loop. What worked, what didn't, what's the plan going forward.*
-
-| # | Action | Owner | Dependency |
-|---|---|---|---|
-| 17 | Engineering: ship outreach draft generation (BD reviews AI draft → sends) | Engineering | Week 2 build started |
-| 18 | Count: conversations opened vs. 90-day target (are we on track?) | BD Head | CRM data |
-| 19 | Leadership decision: top 2 focus regions for Q2 based on signal data | CEO / BD Head | Regional breakdown presented |
-| 20 | Document what the Lemlist sequence needs to improve — hand back to Marketing | BD | Reply rate data |
-| 21 | Send Touch 3 (final) to remaining non-replies, move to Tier 3 nurture | BD | 14+ days since Touch 1 |
-| 22 | Set monthly cadence: scan → score → outreach on a fixed schedule | BD / Growth | — |
-
-**Week 4 exit criteria:** ≥ 5 conversations opened, Q2 regions decided, monthly cadence locked in calendar.
-
----
-
-### 30-Day Summary Target
-
-| Metric | Target |
-|---|---|
-| Companies tiered and contacted | 25–30 |
-| Replies or meetings booked | ≥ 5 |
-| Partner conversations in progress | ≥ 3 |
-| Monthly scan + outreach cadence established | Yes |
-| Q2 regional focus decided | Yes |
+**30-day targets:** 25–30 companies contacted · ≥ 5 replies or meetings · ≥ 3 partner conversations in progress · monthly cadence locked
 
 ---
 
