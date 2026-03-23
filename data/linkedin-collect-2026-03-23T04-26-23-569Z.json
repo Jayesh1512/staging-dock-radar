@@ -1,0 +1,92 @@
+{
+  "run": {
+    "id": "run_li_202603230424269",
+    "keywords": [
+      "DJI Dock"
+    ],
+    "sources": [
+      "linkedin"
+    ],
+    "regions": [],
+    "filter_days": 1,
+    "min_score": 40,
+    "max_articles": 50,
+    "status": "completed",
+    "articles_fetched": 56,
+    "articles_stored": 5,
+    "dedup_removed": 51,
+    "created_at": "2026-03-23T04:26:23.569Z",
+    "completed_at": "2026-03-23T04:26:23.569Z"
+  },
+  "stats": {
+    "totalFetched": 56,
+    "afterDateFilter": 8,
+    "afterDedup": 5,
+    "stored": 5
+  },
+  "articles": [
+    {
+      "id": "li_run_li_202603230424269_1774239982949_8",
+      "run_id": "run_li_202603230424269",
+      "source": "linkedin",
+      "title": "DJI Deploys Dock 3 Across the Oil and Gas Industry: Leading oil & gas companies have continued to modernize their field inspection workflows",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7441647958162325504/",
+      "publisher_url": "https://www.linkedin.com/company/ndt.org/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7441647958162325504",
+      "snippet": "DJI Deploys Dock 3 Across the Oil and Gas Industry: Leading oil & gas companies have continued to modernize their field inspection workflows across multiple production and midstream sites. Improving safety, reducing manual inspection time, and enabling remote monitoring of critical infrastructure using the DJI Dock 3 paired with the Matrice 4D Series. From pipeline corridors to active production facilities, customer deployments have revealed best practices for how drone-in-a-box automation can transform operations in one of the world's most dema http://dlvr.it/TRdsxL hashtag #ndt",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-23T01:26:22.959Z",
+      "created_at": "2026-03-23T04:26:22.949Z"
+    },
+    {
+      "id": "li_run_li_202603230424269_1774239982949_10",
+      "run_id": "run_li_202603230424269",
+      "source": "linkedin",
+      "title": "DJI Deploys Dock 3 Across the Oil and Gas Industry: Leading oil & gas companies have continued to modernize their field inspection workflows",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7441647957864546304/",
+      "publisher_url": "https://www.linkedin.com/in/dbong",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7441647957864546304",
+      "snippet": "DJI Deploys Dock 3 Across the Oil and Gas Industry: Leading oil & gas companies have continued to modernize their field inspection workflows across multiple production and midstream sites. Improving safety, reducing manual inspection time, and enabling remote monitoring of critical infrastructure using the DJI Dock 3 paired with the Matrice 4D Series. From pipeline corridors to active production facilities, customer deployments have revealed best practices for how drone-in-a-box automation can transform operations in one of the world's most dema http://dlvr.it/TRdsxK",
+      "publisher": "David Bongiovanni",
+      "published_at": "2026-03-23T01:26:22.960Z",
+      "created_at": "2026-03-23T04:26:22.949Z"
+    },
+    {
+      "id": "li_run_li_202603230424269_1774239982949_18",
+      "run_id": "run_li_202603230424269",
+      "source": "linkedin",
+      "title": "Does your security team sleep? Because the DJI Dock doesn't. We’re not just talking about a drone; we’re talking about the ultimate autonomo",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7441642514522034176/",
+      "publisher_url": "https://www.linkedin.com/company/oil-well-security/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7441642514522034176",
+      "snippet": "Does your security team sleep? Because the DJI Dock doesn't. We’re not just talking about a drone; we’re talking about the ultimate autonomous solution for 24/7 site monitoring. Imagine a system that takes off, lands, and charges itself without any human intervention: regardless of the weather. The DJI Dock is a total game-changer for oil and gas infrastructure. It’s NOT just a gadget; it’s your eye in the sky that never blinks. At Oil Well Security, we’re integrating this cutting-edge technology with our veteran-led expertise to provide real-time aerial surveillance and incident response faster than traditional methods ever could. Efficiency is everything in YOUR business. When you need to protect remote assets or large-scale operations, autonomy isn’t a luxury: it’s a necessity. Let's secure your future with tech that works as hard as you do. Visit oilwellsecurity.com to see how we’re redefining protection. Get started here: https://lnkd.in/gDZpAzJ4 hashtag #OilWellSecurity hashtag #",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-23T01:26:22.965Z",
+      "created_at": "2026-03-23T04:26:22.949Z"
+    },
+    {
+      "id": "li_run_li_202603230424269_1774239982949_44",
+      "run_id": "run_li_202603230424269",
+      "source": "linkedin",
+      "title": "DJI Dock 3: Roof-Mounted Drone Operations in the Rain",
+      "url": "https://www.linkedin.com/",
+      "normalized_url": "linkedin_run_li_202603230424269_1774239982949_44",
+      "snippet": "DJI Dock 3: Roof-Mounted Drone Operations in the Rain",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-23T04:26:22.966Z",
+      "created_at": "2026-03-23T04:26:22.949Z"
+    },
+    {
+      "id": "li_run_li_202603230424269_1774239982949_55",
+      "run_id": "run_li_202603230424269",
+      "source": "linkedin",
+      "title": "From platform to sky in under 11 seconds ⏲️ DJI Dock 3",
+      "url": "https://www.linkedin.com/",
+      "normalized_url": "linkedin_run_li_202603230424269_1774239982949_55",
+      "snippet": "From platform to sky in under 11 seconds ⏲️ DJI Dock 3",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-23T04:26:22.967Z",
+      "created_at": "2026-03-23T04:26:22.949Z"
+    }
+  ]
+}
