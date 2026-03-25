@@ -99,14 +99,29 @@ async function tick() {
       lastStatus: 'success',
       nextRunAt,
     });
-    await notifyCronRunByEmail(
-      'Latest Articles cron: SUCCESS',
-      [
-        `time=${new Date().toISOString()}`,
-        `google=${result.googleCount}, linkedin=${result.linkedinCount}, merged=${result.mergedCount}`,
-        `nextRunAt=${nextRunAt}`,
-      ].join('\n'),
-    );
+
+    const subject = 'Dock Radar | Latest Articles cron SUCCESS';
+    const body = [
+      'Latest Articles cron completed successfully.',
+      '',
+      `When: ${new Date().toISOString()}`,
+      `Next scheduled run: ${nextRunAt}`,
+      '',
+      'Run config:',
+      `- timeOfDay: ${runningConfig.timeOfDay}`,
+      `- minScore: ${runningConfig.minScore}`,
+      `- maxArticles: ${runningConfig.maxArticles}`,
+      `- linkedin30SecScrape: ${runningConfig.linkedin30SecScrape}`,
+      `- linkedinHeadless: ${runningConfig.linkedinHeadless}`,
+      `- browserTimeoutMs: ${runningConfig.browserTimeoutMs}`,
+      '',
+      'Results:',
+      `- Google News: ${result.googleCount}`,
+      `- LinkedIn: ${result.linkedinCount}`,
+      `- Merged unique: ${result.mergedCount}`,
+    ].join('\n');
+
+    await notifyCronRunByEmail(subject, body);
   } catch (err) {
     console.error('[latest-articles-scheduler] Scheduled run failed:', err);
     const nextRunAt = computeNextRunAt(config.timeOfDay, new Date());
@@ -117,14 +132,27 @@ async function tick() {
       nextRunAt,
     });
     const message = err instanceof Error ? err.message : 'Unknown error';
-    await notifyCronRunByEmail(
-      'Latest Articles cron: FAILED',
-      [
-        `time=${new Date().toISOString()}`,
-        `error=${message}`,
-        `nextRunAt=${nextRunAt}`,
-      ].join('\n'),
-    );
+
+    const subject = 'Dock Radar | Latest Articles cron FAILED';
+    const body = [
+      'Latest Articles cron failed.',
+      '',
+      `When: ${new Date().toISOString()}`,
+      `Next scheduled run: ${nextRunAt}`,
+      '',
+      'Error:',
+      String(message),
+      '',
+      'Run config:',
+      `- timeOfDay: ${config.timeOfDay}`,
+      `- minScore: ${config.minScore}`,
+      `- maxArticles: ${config.maxArticles}`,
+      `- linkedin30SecScrape: ${config.linkedin30SecScrape}`,
+      `- linkedinHeadless: ${config.linkedinHeadless}`,
+      `- browserTimeoutMs: ${config.browserTimeoutMs}`,
+    ].join('\n');
+
+    await notifyCronRunByEmail(subject, body);
   } finally {
     state.running = false;
   }
@@ -135,8 +163,25 @@ export function ensureLatestArticlesSchedulerStarted() {
   if (state.started) return;
   state.started = true;
 
-  // Kick immediately on start (then poll).
-  void tick().catch((e) => console.error('[latest-articles-scheduler] initial tick failed:', e));
+  // Do not run immediately on server start.
+  // If `nextRunAt` is already in the past (e.g. server restarted after the scheduled time),
+  // advance it to the next scheduled time so we don't "catch up" unexpectedly.
+  void (async () => {
+    try {
+      const config = await loadLatestArticlesScheduleConfig();
+      if (!config.enabled) return;
+      if (!config.nextRunAt) return;
+      const dueAt = new Date(config.nextRunAt).getTime();
+      if (Number.isNaN(dueAt)) return;
+      if (Date.now() >= dueAt) {
+        const nextRunAt = computeNextRunAt(config.timeOfDay, new Date());
+        await saveLatestArticlesScheduleConfig({ ...config, nextRunAt });
+        console.log('[latest-articles-scheduler] Startup advanced nextRunAt to', nextRunAt);
+      }
+    } catch (e) {
+      console.error('[latest-articles-scheduler] Startup init failed:', e);
+    }
+  })();
 
   state.timer = setInterval(() => {
     void tick().catch((e) => console.error('[latest-articles-scheduler] tick failed:', e));

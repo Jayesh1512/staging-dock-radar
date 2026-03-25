@@ -6,7 +6,7 @@
   "linkedin30SecScrape": false,
   "linkedinHeadless": false,
   "browserTimeoutMs": 180000,
-  "nextRunAt": "2000-01-01T00:00:00.000Z",
-  "lastRunAt": "2026-03-25T20:10:32.957Z",
+  "nextRunAt": "2026-03-26T20:06:00.000Z",
+  "lastRunAt": "2026-03-25T20:28:52.892Z",
   "lastStatus": "success"
 }
