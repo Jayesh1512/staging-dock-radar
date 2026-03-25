@@ -26,6 +26,8 @@ interface SourceSignal {
 interface GroupedCompany {
   normalized_name: string;
   display_name: string;
+  entity_type: string;
+  fence: string | null;
   website: string | null;
   linkedin_url: string | null;
   normalized_domain: string | null;
@@ -114,6 +116,25 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Pass 3: Fuzzy name matching — strip all non-alphanumeric and merge
+    // Catches "flying eye" (from DJI) ↔ "flyingeye" (from Google)
+    const fuzzyIndex = new Map<string, string>(); // fuzzyKey → canonical name
+    for (const name of groupMap.keys()) {
+      const fuzzy = name.replace(/[^a-z0-9]/g, '');
+      const existing = fuzzyIndex.get(fuzzy);
+      if (existing && existing !== name) {
+        // Merge: move records from `name` into `existing`
+        const target = groupMap.get(existing);
+        const source = groupMap.get(name);
+        if (target && source) {
+          target.push(...source);
+          groupMap.delete(name);
+        }
+      } else {
+        fuzzyIndex.set(fuzzy, name);
+      }
+    }
+
     // Build grouped companies
     const groups: GroupedCompany[] = [];
 
@@ -155,12 +176,13 @@ export async function GET(req: NextRequest) {
           }
         }
 
-        // Use shortest non-all-caps name as display name, or first
-        if (!displayName || (r.company_name.length < displayName.length && r.company_name !== r.company_name.toUpperCase())) {
+        // Display name priority: DJI/Comet (human-curated) > Registry > Google (slug-derived)
+        const SOURCE_NAME_PRIORITY: Record<string, number> = { dji_reseller_list: 4, comet: 3, govt_registry: 2, google_search: 1 };
+        const currentPriority = SOURCE_NAME_PRIORITY[r.source_type] ?? 0;
+        const existingPriority = displayName ? (records.find(rec => rec.company_name === displayName) ? SOURCE_NAME_PRIORITY[records.find(rec => rec.company_name === displayName)!.source_type] ?? 0 : 0) : -1;
+        if (!displayName || currentPriority > existingPriority) {
           displayName = r.company_name;
         }
-        // Fallback: if all are uppercase, just use first
-        if (!displayName) displayName = r.company_name;
 
         // Check for Dock 3 authorization
         const meta = r.source_meta as Record<string, unknown> | null;
@@ -199,9 +221,32 @@ export async function GET(req: NextRequest) {
       // Build key signal string
       const keySignal = signals.filter(Boolean).slice(0, 2).join(' + ') || '—';
 
+      // ── Entity type: operator-wins rule ──
+      // If ANY source says operator → operator (sticky upward)
+      // If Dock 3 Authorized → operator (they deploy Docks)
+      // Otherwise: reseller if any source says reseller, else unknown
+      const entityTypes = records.map(r => r.entity_type).filter(Boolean);
+      let entityType = 'unknown';
+      if (entityTypes.includes('operator') || hasDock3) {
+        entityType = 'operator';
+      } else if (entityTypes.includes('reseller')) {
+        entityType = 'reseller';
+      } else if (entityTypes.includes('media')) {
+        entityType = 'media';
+      }
+
+      // ── Fence flag ──
+      const fenceRecord = records.find(r => {
+        const meta = r.source_meta as Record<string, unknown> | null;
+        return meta?.fence;
+      });
+      const fence = fenceRecord ? String((fenceRecord.source_meta as Record<string, unknown>).fence) : null;
+
       groups.push({
         normalized_name: normalizedName,
         display_name: displayName || normalizedName,
+        entity_type: entityType,
+        fence,
         website: bestWebsite,
         linkedin_url: bestLinkedin,
         normalized_domain: bestDomain,
@@ -221,10 +266,15 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Sort: multi-source first, then by composite confidence, then by score
+    // Sort: multi-source first, then operators over resellers, then by score
+    const TYPE_RANK: Record<string, number> = { operator: 3, reseller: 2, media: 1, unknown: 0 };
     groups.sort((a, b) => {
       // Multi-source first
       if (a.source_count !== b.source_count) return b.source_count - a.source_count;
+      // Then operators before resellers
+      if ((TYPE_RANK[a.entity_type] ?? 0) !== (TYPE_RANK[b.entity_type] ?? 0)) {
+        return (TYPE_RANK[b.entity_type] ?? 0) - (TYPE_RANK[a.entity_type] ?? 0);
+      }
       // Then by confidence
       if (CONFIDENCE_RANK[a.composite_confidence] !== CONFIDENCE_RANK[b.composite_confidence]) {
         return CONFIDENCE_RANK[b.composite_confidence] - CONFIDENCE_RANK[a.composite_confidence];
@@ -245,6 +295,9 @@ export async function GET(req: NextRequest) {
     const medConf = groups.filter(g => g.composite_confidence === 'medium').length;
     const lowConf = groups.filter(g => g.composite_confidence === 'low').length;
     const compositePriorityCount = groups.filter(g => matchesCompositePriority(g)).length;
+    const operators = groups.filter(g => g.entity_type === 'operator').length;
+    const resellers = groups.filter(g => g.entity_type === 'reseller').length;
+    const fenceCount = groups.filter(g => g.fence).length;
 
     // Tag each group with priority match
     const tagged = groups.map((g, i) => ({
@@ -265,6 +318,9 @@ export async function GET(req: NextRequest) {
         medium_confidence: medConf,
         low_confidence: lowConf,
         composite_priority_matches: compositePriorityCount,
+        operators,
+        resellers,
+        fence_flagged: fenceCount,
       },
       companies: tagged,
     });

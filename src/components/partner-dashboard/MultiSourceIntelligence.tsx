@@ -22,6 +22,8 @@ interface GroupedCompany {
   rank: number;
   normalized_name: string;
   display_name: string;
+  entity_type: string;
+  fence: string | null;
   website: string | null;
   linkedin_url: string | null;
   normalized_domain: string | null;
@@ -52,6 +54,9 @@ interface ApiResponse {
     medium_confidence: number;
     low_confidence: number;
     composite_priority_matches: number;
+    operators: number;
+    resellers: number;
+    fence_flagged: number;
   };
   companies: GroupedCompany[];
 }
@@ -140,6 +145,7 @@ export default function MultiSourceIntelligence() {
   const [activeSources, setActiveSources] = useState<Set<string>>(new Set()); // empty = all
   const [confFilter, setConfFilter] = useState('all');
   const [websiteFilter, setWebsiteFilter] = useState('all');
+  const [entityTypeFilter, setEntityTypeFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
@@ -179,6 +185,9 @@ export default function MultiSourceIntelligence() {
     if (confFilter !== 'all') {
       list = list.filter(c => c.composite_confidence === confFilter);
     }
+    if (entityTypeFilter !== 'all') {
+      list = list.filter(c => c.entity_type === entityTypeFilter);
+    }
     if (websiteFilter === 'yes') {
       list = list.filter(c => c.website);
     } else if (websiteFilter === 'no') {
@@ -194,7 +203,7 @@ export default function MultiSourceIntelligence() {
     }
 
     return list;
-  }, [data, compositePriority, activeSources, confFilter, websiteFilter, searchQuery]);
+  }, [data, compositePriority, activeSources, confFilter, entityTypeFilter, websiteFilter, searchQuery]);
 
   // Search suggestions
   const searchSuggestions = useMemo(() => {
@@ -240,6 +249,10 @@ export default function MultiSourceIntelligence() {
         <span><strong style={{ color: '#111827', fontSize: 13 }}>{data.total_companies}</strong> total</span>
         <span>·</span>
         <span><strong style={{ color: '#111827', fontSize: 13 }}>{filtered.filter(c => c.source_count >= 2).length}</strong> multi-source</span>
+        <span>·</span>
+        <span><strong style={{ color: '#166534', fontSize: 13 }}>{filtered.filter(c => c.entity_type === 'operator').length}</strong> DSP/SI</span>
+        <span>·</span>
+        <span><strong style={{ color: '#92400E', fontSize: 13 }}>{filtered.filter(c => c.entity_type === 'reseller').length}</strong> Resellers</span>
         <span>·</span>
         <span><strong style={{ color: '#111827', fontSize: 13 }}>{filtered.filter(c => c.has_dock3).length}</strong> Dock 3</span>
         <span>·</span>
@@ -295,6 +308,14 @@ export default function MultiSourceIntelligence() {
             Clear sources
           </button>
         )}
+
+        {/* Entity Type */}
+        <select value={entityTypeFilter} onChange={e => setEntityTypeFilter(e.target.value)} style={sFilterSelect}>
+          <option value="all">All Types</option>
+          <option value="operator">DSP/SI</option>
+          <option value="reseller">Reseller</option>
+          <option value="unknown">Unknown</option>
+        </select>
 
         {/* Confidence */}
         <select value={confFilter} onChange={e => setConfFilter(e.target.value)} style={sFilterSelect}>
@@ -359,6 +380,7 @@ export default function MultiSourceIntelligence() {
               <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
                 <th style={{ ...sTHCompact, width: 28 }}></th>
                 <th style={sTHCompact}>Company</th>
+                <th style={{ ...sTHCompact, width: 60 }}>Type</th>
                 <th style={{ ...sTHCompact, width: 90 }}>Sources</th>
                 <th style={{ ...sTHCompact, width: 55 }}>Conf.</th>
                 <th style={{ ...sTHCompact, width: 40 }}>Score</th>
@@ -370,11 +392,11 @@ export default function MultiSourceIntelligence() {
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>No companies match the current filters</td></tr>
+                <tr><td colSpan={10} style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>No companies match the current filters</td></tr>
               )}
               {sections.map((section) => (
                 <React.Fragment key={section.label}>
-                  <tr><td colSpan={9} style={{ background: '#F3F4F6', padding: '3px 10px', fontSize: 10, color: '#6B7280', fontWeight: 600 }}>{section.label}</td></tr>
+                  <tr><td colSpan={10} style={{ background: '#F3F4F6', padding: '3px 10px', fontSize: 10, color: '#6B7280', fontWeight: 600 }}>{section.label}</td></tr>
 
                   {section.companies.map(c => {
                     const isExpanded = expandedRows[c.normalized_name];
@@ -409,6 +431,13 @@ export default function MultiSourceIntelligence() {
                             <span style={{ fontSize: 10, color: '#6B7280' }}>{c.normalized_domain ?? ''}</span>
                           </td>
                           <td style={sTDCompact}>
+                            {c.entity_type === 'operator' && <span style={{ padding: '2px 6px', borderRadius: 4, fontSize: 9, fontWeight: 700, background: '#DCFCE7', color: '#166534' }}>DSP/SI</span>}
+                            {c.entity_type === 'reseller' && <span style={{ padding: '2px 6px', borderRadius: 4, fontSize: 9, fontWeight: 700, background: '#FEF3C7', color: '#92400E' }}>Reseller</span>}
+                            {c.entity_type === 'media' && <span style={{ padding: '2px 6px', borderRadius: 4, fontSize: 9, fontWeight: 700, background: '#E0E7FF', color: '#3730A3' }}>Media</span>}
+                            {c.entity_type === 'unknown' && <span style={{ color: '#9CA3AF', fontSize: 9 }}>—</span>}
+                            {c.fence && <span title={c.fence} style={{ marginLeft: 3, fontSize: 9, cursor: 'help' }}>🔶</span>}
+                          </td>
+                          <td style={sTDCompact}>
                             <span style={{ display: 'inline-block', padding: '1px 5px', borderRadius: 3, fontSize: 9, fontWeight: 700, background: '#EFF6FF', color: '#1D4ED8', minWidth: 16, textAlign: 'center', marginRight: 3 }}>{c.source_count}</span>
                             {c.source_types.map(st => {
                               const b = SOURCE_BADGE_MAP[st];
@@ -431,10 +460,11 @@ export default function MultiSourceIntelligence() {
 
                         {isExpanded && (
                           <tr>
-                            <td colSpan={9} style={{ padding: 0, borderBottom: '1px solid #E5E7EB' }}>
+                            <td colSpan={10} style={{ padding: 0, borderBottom: '1px solid #E5E7EB' }}>
                               <div style={{ borderTop: '2px solid #2C7BF2', borderLeft: '3px solid #2C7BF2', background: '#FAFCFF', boxShadow: '0 4px 20px rgba(44,123,242,0.09)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 20px', background: '#2C7BF2', color: '#fff', fontSize: 13, fontWeight: 700 }}>
                                   {c.display_name}
+                                  <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 9, fontWeight: 600, background: 'rgba(255,255,255,0.2)' }}>{c.entity_type === 'operator' ? 'DSP/SI' : c.entity_type === 'reseller' ? 'Reseller' : c.entity_type}</span>
                                   <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 9, fontWeight: 600, background: 'rgba(255,255,255,0.2)' }}>{c.source_count} sources</span>
                                   <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 9, fontWeight: 600, background: 'rgba(255,255,255,0.2)' }}>{c.composite_confidence.toUpperCase()}</span>
                                   {c.has_dock3 && <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 9, fontWeight: 600, background: 'rgba(255,255,255,0.2)' }}>Dock 3 Authorized</span>}
@@ -533,7 +563,10 @@ export default function MultiSourceIntelligence() {
         {SOURCE_TYPES.map(st => (
           <span key={st.key}><span style={{ display: 'inline-block', padding: '1px 5px', borderRadius: 3, fontSize: 9, fontWeight: 600, background: st.bg, color: st.color, marginRight: 2 }}>{st.label}</span> {st.fullLabel}</span>
         ))}
-        <span><span style={{ display: 'inline-block', padding: '1px 5px', borderRadius: 3, fontSize: 8, fontWeight: 600, background: '#FEF3C7', color: '#92400E', border: '1px solid #FCD34D' }}>Dock 3 ✓</span> Authorized</span>
+        <span style={{ borderLeft: '1px solid #E5E7EB', paddingLeft: 8, marginLeft: 4 }}><span style={{ display: 'inline-block', padding: '1px 5px', borderRadius: 3, fontSize: 8, fontWeight: 600, background: '#DCFCE7', color: '#166534' }}>DSP/SI</span> Operator</span>
+        <span><span style={{ display: 'inline-block', padding: '1px 5px', borderRadius: 3, fontSize: 8, fontWeight: 600, background: '#FEF3C7', color: '#92400E' }}>Reseller</span> DJI Dealer</span>
+        <span>🔶 Hybrid signal</span>
+        <span style={{ borderLeft: '1px solid #E5E7EB', paddingLeft: 8, marginLeft: 4 }}><span style={{ display: 'inline-block', padding: '1px 5px', borderRadius: 3, fontSize: 8, fontWeight: 600, background: '#FEF3C7', color: '#92400E', border: '1px solid #FCD34D' }}>Dock 3 ✓</span> Authorized</span>
         <span><span style={{ display: 'inline-block', padding: '1px 4px', borderRadius: 3, fontSize: 8, fontWeight: 600, background: '#FEF2F2', color: '#991B1B' }}>no web</span> Needs enrichment</span>
       </div>
     </div>
