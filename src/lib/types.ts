@@ -164,6 +164,11 @@ export interface DspHitListEntry {
   linkedin_followers?: number;
   isFlytbasePartner?: boolean; // true if in flytbase_partners
   key_contact?: { name: string; role: string; organization: string } | null;
+  enriched_by?: string | null; // 'scoring' | 'registry_merge' | 'manual' etc.
+  employee_count?: string | null; // e.g. '20-49', '50-99'
+  founded_year?: number | null;
+  city?: string | null;
+  source?: string | null; // 'article' | 'country_registry' | 'manual' | 'dji_reseller'
 }
 
 export interface HitListData {

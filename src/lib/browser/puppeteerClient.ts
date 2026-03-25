@@ -72,6 +72,17 @@ export async function loadServiceCookies(page: Page, service: string) {
   await page.setCookie(...cookies);
 }
 
+/** Random delay to simulate human browsing behavior. */
+export async function humanPause(minMs = 500, maxMs = 2000) {
+  const ms = Math.floor(Math.random() * (maxMs - minMs)) + minMs;
+  await new Promise((r) => setTimeout(r, ms));
+}
+
+/** Configure a page for interactive (non-headless) debugging. */
+export async function preparePageForHumanUse(page: Page) {
+  await page.setViewport({ width: 1280, height: 900 });
+}
+
 /** Generic infinite-scroll helper to load more content in a feed/search UI. */
 export async function scrollPage(page: Page, maxScrolls: number, delayMs: number) {
   for (let i = 0; i < maxScrolls; i++) {

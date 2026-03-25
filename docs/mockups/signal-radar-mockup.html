@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Dock Radar — Multi-Source Intelligence Tab Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F8FAFC; color: #111827; font-size: 13px; }
+
+  /* ── Navbar ── */
+  .navbar { background: #fff; border-bottom: 1px solid #E5E7EB; padding: 10px 24px; display: flex; align-items: center; gap: 16px; }
+  .navbar-brand { font-weight: 800; font-size: 15px; color: #111827; }
+  .navbar-link { font-size: 12px; color: #6B7280; text-decoration: none; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; border-bottom: 2px solid #E5E7EB; background: #fff; padding: 0 24px; }
+  .tab { padding: 10px 18px; font-size: 12px; font-weight: 500; color: #6B7280; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+  .tab:hover { color: #374151; }
+  .tab-active { color: #1D4ED8; font-weight: 700; border-bottom-color: #1D4ED8; }
+  .tab-subtitle { display: block; font-size: 10px; font-weight: 400; color: #9CA3AF; margin-top: 1px; }
+  .tab-active .tab-subtitle { color: #93C5FD; }
+
+  /* ── Content ── */
+  .content { max-width: 1200px; margin: 0 auto; padding: 16px 20px; }
+
+  /* ── Filter Bar ── */
+  .filter-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    border: 1px solid #D1D5DB; background: #fff; color: #374151; cursor: pointer;
+  }
+  .filter-btn-active { background: #1D4ED8; color: #fff; border-color: #1D4ED8; }
+  .filter-select {
+    padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 1px solid #D1D5DB;
+    background: #fff; color: #374151;
+  }
+  .search-box {
+    padding: 5px 10px; border-radius: 6px; font-size: 11px; border: 1px solid #D1D5DB; width: 200px;
+  }
+  .search-box:focus { outline: none; border-color: #2563EB; box-shadow: 0 0 0 2px #DBEAFE; }
+  .filter-note { font-size: 9px; color: #6B7280; background: #F3F4F6; padding: 3px 8px; border-radius: 4px; margin-left: auto; }
+
+  /* ── Search Dropdown ── */
+  .search-wrapper { position: relative; }
+  .search-dropdown {
+    position: absolute; top: 100%; left: 0; width: 320px; background: #fff;
+    border: 1px solid #D1D5DB; border-radius: 0 0 6px 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 50;
+  }
+  .search-item { padding: 6px 12px; font-size: 11px; cursor: pointer; border-bottom: 1px solid #F3F4F6; }
+  .search-item:hover { background: #EFF6FF; }
+  .search-highlight { background: #FDE68A; padding: 0 1px; }
+
+  /* ── Stats Mini ── */
+  .stats-mini { display: flex; gap: 14px; margin-bottom: 10px; font-size: 11px; color: #6B7280; }
+  .stats-mini strong { color: #111827; font-size: 13px; }
+
+  /* ── Table ── */
+  .table-wrap { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; }
+  .table-header { padding: 8px 12px; border-bottom: 1px solid #E5E7EB; display: flex; justify-content: space-between; align-items: center; }
+  .table-header-title { font-size: 12px; font-weight: 700; }
+  .table-header-meta { font-size: 10px; color: #9CA3AF; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th {
+    padding: 6px 10px; text-align: left; font-size: 10px; font-weight: 600;
+    color: #6B7280; background: #F9FAFB; border-bottom: 1px solid #E5E7EB;
+    text-transform: uppercase; letter-spacing: 0.3px; cursor: pointer;
+    white-space: nowrap; position: sticky; top: 0; z-index: 10;
+  }
+  th:hover { color: #111827; background: #EFF6FF; }
+  td { padding: 6px 10px; border-bottom: 1px solid #F3F4F6; vertical-align: middle; white-space: nowrap; }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover { background: #F9FAFB; }
+  tr.row-high { border-left: 3px solid #059669; }
+  tr.row-medium { border-left: 3px solid #D97706; }
+  tr.row-low { border-left: 3px solid #E5E7EB; }
+
+  /* ── Expand arrow (matches existing partner dashboard) ── */
+  .expand-arrow {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #4B5563;
+    transition: transform 0.18s ease, color 0.15s ease;
+  }
+  .expand-arrow.open { transform: rotate(90deg); color: #2C7BF2; }
+
+  /* ── Inline Expanded Drawer (matches existing pattern) ── */
+  .drawer-row td { padding: 0; border-bottom: 1px solid #E5E7EB; }
+  .drawer-container {
+    border-top: 2px solid #2C7BF2;
+    border-left: 3px solid #2C7BF2;
+    background: #FAFCFF;
+    box-shadow: 0 4px 20px rgba(44, 123, 242, 0.09);
+  }
+  .drawer-header {
+    display: flex; align-items: center; gap: 10px; padding: 8px 20px;
+    background: #2C7BF2; color: #fff; font-size: 13px; font-weight: 700;
+  }
+  .drawer-header-badge { padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 600; background: rgba(255,255,255,0.2); }
+  .drawer-body { padding: 16px 20px; }
+  .drawer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .drawer-col-title { font-size: 10px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; border-bottom: 1px solid #E5E7EB; padding-bottom: 4px; }
+  .drawer-field { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; }
+  .drawer-field-label { color: #6B7280; }
+  .drawer-field-value { color: #111827; font-weight: 500; }
+  .drawer-field-value a { color: #2563EB; text-decoration: none; }
+
+  /* ── Source Evidence Cards ── */
+  .source-evidence-section { margin-top: 14px; padding-top: 12px; border-top: 1px solid #E5E7EB; }
+  .source-evidence-title { font-size: 10px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .source-cards { display: flex; gap: 8px; flex-wrap: wrap; }
+  .source-card {
+    flex: 1; min-width: 200px; background: #F9FAFB; border: 1px solid #E5E7EB;
+    border-radius: 6px; padding: 8px 12px;
+  }
+  .source-card-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .source-card-body { font-size: 10px; color: #6B7280; line-height: 1.5; }
+
+  /* ── Action Bar ── */
+  .drawer-actions {
+    display: flex; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #E5E7EB;
+  }
+  .btn-approve {
+    padding: 6px 20px; border-radius: 6px; font-size: 12px; font-weight: 700;
+    background: #059669; color: #fff; border: none; cursor: pointer;
+  }
+  .btn-approve:hover { background: #047857; }
+  .btn-dismiss {
+    padding: 6px 16px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    background: #fff; color: #DC2626; border: 1px solid #FCA5A5; cursor: pointer;
+  }
+
+  /* ── Section divider ── */
+  .section-row td { background: #F3F4F6; padding: 3px 10px; font-size: 10px; color: #6B7280; font-weight: 600; cursor: default; border-left: none; }
+
+  /* ── Badges ── */
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 600; margin-right: 2px; }
+  .badge-high { background: #DCFCE7; color: #166534; }
+  .badge-medium { background: #FEF3C7; color: #92400E; }
+  .badge-low { background: #F3F4F6; color: #6B7280; }
+  .badge-source-dji { background: #FEE2E2; color: #991B1B; }
+  .badge-source-registry { background: #DBEAFE; color: #1E40AF; }
+  .badge-source-google { background: #E0E7FF; color: #3730A3; }
+  .badge-source-comet { background: #F3E8FF; color: #6B21A8; }
+  .badge-dock3 { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; font-size: 8px; }
+  .badge-enrich { background: #FEF2F2; color: #991B1B; font-size: 8px; padding: 1px 4px; }
+  .badge-src-count { background: #EFF6FF; color: #1D4ED8; font-size: 9px; font-weight: 700; min-width: 16px; text-align: center; }
+
+  .company-name { font-weight: 600; color: #111827; font-size: 12px; }
+  .company-domain { font-size: 10px; color: #6B7280; }
+  .website-link { color: #2563EB; text-decoration: none; font-size: 10px; }
+
+  .btn-approve-sm { padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; background: #059669; color: #fff; border: none; cursor: pointer; }
+  .btn-dismiss-sm { padding: 3px 8px; border-radius: 4px; font-size: 10px; background: #fff; color: #9CA3AF; border: 1px solid #E5E7EB; cursor: pointer; }
+
+  .legend { padding: 6px 12px; font-size: 9px; color: #9CA3AF; display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+
+  /* ── Faded filtered rows ── */
+  tr.filtered { opacity: 0.4; }
+  tr.filtered td { color: #D1D5DB; }
+</style>
+</head>
+<body>
+
+<!-- ═══ Navbar ═══ -->
+<div class="navbar">
+  <div class="navbar-brand">Dock Radar</div>
+  <a class="navbar-link" href="#">Dashboard</a>
+  <a class="navbar-link" href="#">Partners</a>
+  <a class="navbar-link" href="#">Tools ▾</a>
+</div>
+
+<!-- ═══ Tabs ═══ -->
+<div class="tabs">
+  <div class="tab">FB Partners<span class="tab-subtitle">Existing partner directory</span></div>
+  <div class="tab">Potential Partners: Social Intelligence<span class="tab-subtitle">DSP/SI from article scoring</span></div>
+  <div class="tab tab-active">Potential Partners: Multi-Source Intelligence<span class="tab-subtitle">DJI, Registry, Google, Comet</span></div>
+  <div class="tab">Pipeline<span class="tab-subtitle">Partner onboarding</span></div>
+</div>
+
+<!-- ═══ Content ═══ -->
+<div class="content">
+
+  <!-- Stats -->
+  <div class="stats-mini">
+    <span><strong>384</strong> companies</span>·
+    <span><strong>11</strong> multi-source</span>·
+    <span><strong>2</strong> Dock 3</span>·
+    <span><strong>25</strong> with website</span>·
+    <span><strong>152</strong> high conf.</span>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <button class="filter-btn filter-btn-active">Composite Priority</button>
+    <select class="filter-select"><option selected>FR</option><option>NL</option><option>All</option></select>
+    <select class="filter-select"><option selected>All Sources</option><option>DJI Reseller</option><option>Govt Registry</option><option>Comet</option><option>Google Search</option></select>
+    <select class="filter-select"><option>All Confidence</option><option>High</option><option>Medium</option><option>Low</option></select>
+    <select class="filter-select"><option>All</option><option>Has Website</option><option>No Website</option></select>
+    <div class="search-wrapper">
+      <input class="search-box" placeholder="Search company..." value="inst" />
+      <div class="search-dropdown">
+        <div class="search-item"><span style="font-weight:600;"><span class="search-highlight">INST</span>ADRONE</span> <span style="font-size:10px;color:#6B7280;">— Registry · HIGH · 12 emp</span></div>
+        <div class="search-item"><span style="font-weight:600;">DRONE <span class="search-highlight">INST</span>ALLATION</span> <span style="font-size:10px;color:#6B7280;">— Registry · MED</span></div>
+      </div>
+    </div>
+    <div class="filter-note">ℹ 2+ sources OR (high + website)</div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-header-title">27 of 384 companies</span>
+      <span class="table-header-meta">Click ▶ to expand source details</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:28px;"></th>
+          <th>Company</th>
+          <th style="width:90px;">Sources</th>
+          <th style="width:55px;">Conf.</th>
+          <th style="width:40px;">Score</th>
+          <th>Website</th>
+          <th style="width:45px;">Emp.</th>
+          <th>Key Signal</th>
+          <th style="width:100px;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- ═══ Section: Multi-source ═══ -->
+        <tr class="section-row"><td colspan="9">MULTI-SOURCE MATCHES (11 companies — 2+ independent sources)</td></tr>
+
+        <!-- Row 1: Escadrone (EXPANDED) -->
+        <tr class="clickable row-high" style="background:#EFF6FF;">
+          <td><span class="expand-arrow open">▶</span></td>
+          <td><span class="company-name">Escadrone</span><br><span class="company-domain">escadrone.com</span></td>
+          <td><span class="badge badge-src-count">3</span> <span class="badge badge-source-dji">DJI</span><span class="badge badge-source-registry">Reg</span><span class="badge badge-source-comet">Com</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+          <td>85</td>
+          <td><a class="website-link" href="#">escadrone.com</a></td>
+          <td>11</td>
+          <td style="font-size:10px;">Enterprise Dealer + NAF 30.30Z</td>
+          <td><button class="btn-approve-sm">Approve</button> <button class="btn-dismiss-sm">✕</button></td>
+        </tr>
+
+        <!-- ═══ INLINE EXPANDED DRAWER for Escadrone ═══ -->
+        <tr class="drawer-row">
+          <td colspan="9">
+            <div class="drawer-container">
+              <div class="drawer-header">
+                Escadrone
+                <span class="drawer-header-badge">3 sources</span>
+                <span class="drawer-header-badge">HIGH</span>
+                <span class="drawer-header-badge">DJI Enterprise Dealer</span>
+              </div>
+              <div class="drawer-body">
+
+                <!-- 3-column grid -->
+                <div class="drawer-grid">
+                  <div>
+                    <div class="drawer-col-title">Company Identity</div>
+                    <div class="drawer-field"><span class="drawer-field-label">Name</span><span class="drawer-field-value">Escadrone</span></div>
+                    <div class="drawer-field"><span class="drawer-field-label">Website</span><span class="drawer-field-value"><a href="#">escadrone.com</a></span></div>
+                    <div class="drawer-field"><span class="drawer-field-label">LinkedIn</span><span class="drawer-field-value"><a href="#">/company/escadrone</a></span></div>
+                    <div class="drawer-field"><span class="drawer-field-label">Country</span><span class="drawer-field-value">France (FR)</span></div>
+                    <div class="drawer-field"><span class="drawer-field-label">City</span><span class="drawer-field-value">Montbonnot-Saint-Martin</span></div>
+                  </div>
+                  <div>
+                    <div class="drawer-col-title">Business Profile</div>
+                    <div class="drawer-field"><span class="drawer-field-label">Employees</span><span class="drawer-field-value">11</span></div>
+                    <div class="drawer-field"><span class="drawer-field-label">Founded</span><span class="drawer-field-value">2014-10-27</span></div>
+                    <div class="drawer-field"><span class="drawer-field-label">NAF Code</span><span class="drawer-field-value">30.30Z — Aircraft mfg</span></div>
+                    <div class="drawer-field"><span class="drawer-field-label">SIREN</span><span class="drawer-field-value">807500541</span></div>
+                    <div class="drawer-field"><span class="drawer-field-label">Category</span><span class="drawer-field-value">PME · SAS</span></div>
+                  </div>
+                  <div>
+                    <div class="drawer-col-title">DJI Relationship</div>
+                    <div class="drawer-field"><span class="drawer-field-label">Dealer Type</span><span class="drawer-field-value">Enterprise Dealer</span></div>
+                    <div class="drawer-field"><span class="drawer-field-label">Dock 3 Auth.</span><span class="drawer-field-value">No</span></div>
+                    <div class="drawer-field"><span class="drawer-field-label">Contact</span><span class="drawer-field-value">contact@escadrone.com</span></div>
+                    <div class="drawer-field"><span class="drawer-field-label">Phone</span><span class="drawer-field-value">+33458005410</span></div>
+                  </div>
+                </div>
+
+                <!-- Source Evidence -->
+                <div class="source-evidence-section">
+                  <div class="source-evidence-title">Source Evidence (3 independent sources)</div>
+                  <div class="source-cards">
+                    <div class="source-card" style="border-left: 3px solid #991B1B;">
+                      <div class="source-card-head"><span class="badge badge-source-dji">DJI Reseller</span> <span style="font-size:9px;color:#6B7280;">High confidence</span></div>
+                      <div class="source-card-body">DJI Enterprise Dealer in Isère<br>Website + LinkedIn verified<br>+33458005410 · contact@escadrone.com</div>
+                    </div>
+                    <div class="source-card" style="border-left: 3px solid #1E40AF;">
+                      <div class="source-card-head"><span class="badge badge-source-registry">Govt Registry</span> <span style="font-size:9px;color:#6B7280;">Score 75 · High</span></div>
+                      <div class="source-card-body">ESCADRONE — NAF 30.30Z<br>SIREN: 807500541 · SAS · 11 emp · PME<br>Founded: 2014-10-27</div>
+                    </div>
+                    <div class="source-card" style="border-left: 3px solid #6B21A8;">
+                      <div class="source-card-head"><span class="badge badge-source-comet">Comet Research</span> <span style="font-size:9px;color:#6B7280;">Medium</span></div>
+                      <div class="source-card-body">DJI Enterprise Authorized Dealer<br>DJI Dock 3 Authorized: No<br>Montbonnot-Saint-Martin</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="drawer-actions">
+                  <button class="btn-approve">▸ Approve → Partner Queue</button>
+                  <button class="btn-dismiss">Dismiss</button>
+                  <span style="margin-left:auto;font-size:10px;color:#9CA3AF;">Approving moves to discovered_companies + pipeline</span>
+                </div>
+
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Row 2: Prodrones -->
+        <tr class="clickable row-high">
+          <td><span class="expand-arrow">▶</span></td>
+          <td><span class="company-name">Prodrones</span><br><span class="company-domain">prodrones.fr</span></td>
+          <td><span class="badge badge-src-count">3</span> <span class="badge badge-source-dji">DJI</span><span class="badge badge-source-registry">Reg</span><span class="badge badge-source-comet">Com</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+          <td>80</td>
+          <td><a class="website-link" href="#">prodrones.fr</a></td>
+          <td>3</td>
+          <td style="font-size:10px;">Enterprise Dealer + NAF 30.30Z</td>
+          <td><button class="btn-approve-sm">Approve</button> <button class="btn-dismiss-sm">✕</button></td>
+        </tr>
+
+        <!-- Row 3: Abot -->
+        <tr class="clickable row-high">
+          <td><span class="expand-arrow">▶</span></td>
+          <td><span class="company-name">Abot</span> <span class="badge badge-dock3">Dock 3 ✓</span><br><span class="company-domain">abot.fr</span></td>
+          <td><span class="badge badge-src-count">2</span> <span class="badge badge-source-dji">DJI</span><span class="badge badge-source-comet">Com</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+          <td>85</td>
+          <td><a class="website-link" href="#">abot.fr</a></td>
+          <td>—</td>
+          <td style="font-size:10px;">Dock 3 Authorized</td>
+          <td><button class="btn-approve-sm">Approve</button> <button class="btn-dismiss-sm">✕</button></td>
+        </tr>
+
+        <!-- Row 4: Flying Eye -->
+        <tr class="clickable row-high">
+          <td><span class="expand-arrow">▶</span></td>
+          <td><span class="company-name">Flying Eye</span> <span class="badge badge-dock3">Dock 3 ✓</span><br><span class="company-domain">flyingeye.fr</span></td>
+          <td><span class="badge badge-src-count">2</span> <span class="badge badge-source-dji">DJI</span><span class="badge badge-source-comet">Com</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+          <td>85</td>
+          <td><a class="website-link" href="#">flyingeye.fr</a></td>
+          <td>—</td>
+          <td style="font-size:10px;">Dock 3 Auth + First BVLOS</td>
+          <td><button class="btn-approve-sm">Approve</button> <button class="btn-dismiss-sm">✕</button></td>
+        </tr>
+
+        <!-- Rows 5-7: More 2-source companies -->
+        <tr class="clickable row-high">
+          <td><span class="expand-arrow">▶</span></td>
+          <td><span class="company-name">DUMONT SECURITE</span><br><span class="company-domain">dumont-securite.fr</span></td>
+          <td><span class="badge badge-src-count">2</span> <span class="badge badge-source-dji">DJI</span><span class="badge badge-source-comet">Com</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+          <td>80</td>
+          <td><a class="website-link" href="#">dumont-securite.fr</a></td>
+          <td>—</td>
+          <td style="font-size:10px;">Enterprise Dealer</td>
+          <td><button class="btn-approve-sm">Approve</button> <button class="btn-dismiss-sm">✕</button></td>
+        </tr>
+
+        <tr class="clickable row-high">
+          <td><span class="expand-arrow">▶</span></td>
+          <td><span class="company-name">Geomesure</span><br><span class="company-domain">geomesure.fr</span></td>
+          <td><span class="badge badge-src-count">2</span> <span class="badge badge-source-dji">DJI</span><span class="badge badge-source-comet">Com</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+          <td>80</td>
+          <td><a class="website-link" href="#">geomesure.fr</a></td>
+          <td>—</td>
+          <td style="font-size:10px;">Enterprise Dealer</td>
+          <td><button class="btn-approve-sm">Approve</button> <button class="btn-dismiss-sm">✕</button></td>
+        </tr>
+
+        <tr class="clickable row-high">
+          <td><span class="expand-arrow">▶</span></td>
+          <td><span class="company-name">VOLTANEO</span><br><span class="company-domain">voltaneo.com</span></td>
+          <td><span class="badge badge-src-count">2</span> <span class="badge badge-source-dji">DJI</span><span class="badge badge-source-comet">Com</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+          <td>80</td>
+          <td><a class="website-link" href="#">voltaneo.com</a></td>
+          <td>—</td>
+          <td style="font-size:10px;">Enterprise Dealer</td>
+          <td><button class="btn-approve-sm">Approve</button> <button class="btn-dismiss-sm">✕</button></td>
+        </tr>
+
+        <!-- ═══ Section: Single source, high + website ═══ -->
+        <tr class="section-row"><td colspan="9">HIGH CONFIDENCE + WEBSITE (5 companies — single source, actionable)</td></tr>
+
+        <tr class="clickable row-high">
+          <td><span class="expand-arrow">▶</span></td>
+          <td><span class="company-name">STTL</span><br><span class="company-domain">sttl-topographie.com</span></td>
+          <td><span class="badge badge-src-count">1</span> <span class="badge badge-source-dji">DJI</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+          <td>80</td>
+          <td><a class="website-link" href="#">sttl-topographie.com</a></td>
+          <td>—</td>
+          <td style="font-size:10px;">Enterprise Dealer</td>
+          <td><button class="btn-approve-sm">Approve</button> <button class="btn-dismiss-sm">✕</button></td>
+        </tr>
+
+        <tr class="clickable row-high">
+          <td><span class="expand-arrow">▶</span></td>
+          <td><span class="company-name">NETPIX La Camera</span><br><span class="company-domain">lacameraembarquee.fr</span></td>
+          <td><span class="badge badge-src-count">2</span> <span class="badge badge-source-dji">DJI</span><span class="badge badge-source-comet">Com</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+          <td>80</td>
+          <td><a class="website-link" href="#">lacameraembarquee.fr</a></td>
+          <td>—</td>
+          <td style="font-size:10px;">Enterprise Dealer</td>
+          <td><button class="btn-approve-sm">Approve</button> <button class="btn-dismiss-sm">✕</button></td>
+        </tr>
+
+        <!-- ═══ Section: High confidence, no website ═══ -->
+        <tr class="section-row"><td colspan="9">HIGH CONFIDENCE, NO WEBSITE (138 — needs enrichment to become actionable)</td></tr>
+
+        <tr class="clickable row-medium">
+          <td><span class="expand-arrow">▶</span></td>
+          <td><span class="company-name">DRONE INSPECTION</span> <span class="badge badge-enrich">no web</span></td>
+          <td><span class="badge badge-src-count">1</span> <span class="badge badge-source-registry">Reg</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+          <td>95</td>
+          <td style="color:#D1D5DB;">—</td>
+          <td>—</td>
+          <td style="font-size:10px;">NAF 71.20B · dock_kw</td>
+          <td><button class="btn-approve-sm">Approve</button> <button class="btn-dismiss-sm">✕</button></td>
+        </tr>
+
+        <tr class="clickable row-medium">
+          <td><span class="expand-arrow">▶</span></td>
+          <td><span class="company-name">INSTADRONE</span> <span class="badge badge-enrich">no web</span></td>
+          <td><span class="badge badge-src-count">1</span> <span class="badge badge-source-registry">Reg</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+          <td>85</td>
+          <td style="color:#D1D5DB;">—</td>
+          <td>12</td>
+          <td style="font-size:10px;">NAF 71.12B · structured</td>
+          <td><button class="btn-approve-sm">Approve</button> <button class="btn-dismiss-sm">✕</button></td>
+        </tr>
+
+        <tr class="clickable row-medium">
+          <td><span class="expand-arrow">▶</span></td>
+          <td><span class="company-name">DRONE VOLT</span> <span class="badge badge-enrich">no web</span></td>
+          <td><span class="badge badge-src-count">1</span> <span class="badge badge-source-registry">Reg</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+          <td>75</td>
+          <td style="color:#D1D5DB;">—</td>
+          <td>—</td>
+          <td style="font-size:10px;">NAF 46.69B · generic</td>
+          <td><button class="btn-approve-sm">Approve</button> <button class="btn-dismiss-sm">✕</button></td>
+        </tr>
+
+        <tr style="color:#9CA3AF;"><td colspan="9" style="padding:4px 10px;font-size:10px;">... 135 more high-confidence registry companies (scroll)</td></tr>
+
+        <!-- ═══ Section: Medium (filtered/faded) ═══ -->
+        <tr class="section-row"><td colspan="9">MEDIUM CONFIDENCE (201 — turn off Composite Priority to review)</td></tr>
+
+        <tr class="clickable filtered">
+          <td><span class="expand-arrow">▶</span></td>
+          <td>AZUR DRONES <span class="badge badge-enrich">no web</span></td>
+          <td><span class="badge badge-src-count">1</span> <span class="badge badge-source-registry">Reg</span></td>
+          <td><span class="badge badge-medium">MED</span></td>
+          <td>65</td>
+          <td>—</td>
+          <td>—</td>
+          <td style="font-size:10px;">NAF 30.30Z</td>
+          <td style="color:#D1D5DB;">filtered</td>
+        </tr>
+
+        <tr class="clickable filtered">
+          <td><span class="expand-arrow">▶</span></td>
+          <td>RigiTech <span class="badge badge-enrich">no web</span></td>
+          <td><span class="badge badge-src-count">1</span> <span class="badge badge-source-comet">Com</span></td>
+          <td><span class="badge badge-medium">MED</span></td>
+          <td>60</td>
+          <td>—</td>
+          <td>—</td>
+          <td style="font-size:10px;">BVLOS Delivery</td>
+          <td style="color:#D1D5DB;">filtered</td>
+        </tr>
+
+        <tr style="color:#D1D5DB;"><td colspan="9" style="padding:4px 10px;font-size:10px;">... 199 more medium + 39 low (toggle filter)</td></tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    <span><span class="badge badge-source-dji">DJI</span> Reseller</span>
+    <span><span class="badge badge-source-registry">Reg</span> Govt Registry</span>
+    <span><span class="badge badge-source-comet">Com</span> Comet</span>
+    <span><span class="badge badge-source-google">Ggl</span> Google Search</span>
+    <span><span class="badge badge-dock3">Dock 3 ✓</span> Authorized</span>
+    <span><span class="badge badge-enrich">no web</span> Needs enrichment</span>
+    <span><span class="badge badge-src-count">N</span> Source count</span>
+  </div>
+
+</div>
+
+</body>
+</html>

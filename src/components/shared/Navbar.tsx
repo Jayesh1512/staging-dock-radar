@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { EnrichmentTestAgent } from './EnrichmentTestAgent';
 import { CometImportPanel } from '../import/CometImportPanel';
 import { DjiPartnersScraper } from '../utilities/DjiPartnersScraper';
@@ -22,6 +23,7 @@ export function Navbar({
   partnerHitListActive?: boolean;
   onHome?: () => void;
 }) {
+  const pathname = usePathname();
   const [campaignsOpen, setCampaignsOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const campaignsRef = useRef<HTMLDivElement | null>(null);
@@ -152,7 +154,7 @@ export function Navbar({
                   role="menuitem"
                   href="/utilities/linkedin-company-posts"
                   onClick={() => setCampaignsOpen(false)}
-                  style={{ ...menuItemStyle(false), textDecoration: 'none', display: 'block' }}
+                  style={{ ...menuItemStyle(pathname === '/utilities/linkedin-company-posts', '#C2410C'), textDecoration: 'none', display: 'block' }}
                 >
                   <div>LinkedIn Company Scan</div>
                   <div style={menuSubtitle}>Scan company pages for DJI Dock signals + keyword match</div>
@@ -160,19 +162,9 @@ export function Navbar({
 
                 <Link
                   role="menuitem"
-                  href="/utilities/dji-dock-research"
-                  onClick={() => setCampaignsOpen(false)}
-                  style={{ ...menuItemStyle(false), textDecoration: 'none', display: 'block' }}
-                >
-                  <div>DJI Dock raw (GN + ScraperAPI)</div>
-                  <div style={menuSubtitle}>LinkedIn HTML snapshot by country</div>
-                </Link>
-
-                <Link
-                  role="menuitem"
                   href="/utilities/linkedin-scan-results"
                   onClick={() => setCampaignsOpen(false)}
-                  style={{ ...menuItemStyle(false), textDecoration: 'none', display: 'block' }}
+                  style={{ ...menuItemStyle(pathname === '/utilities/linkedin-scan-results', '#C2410C'), textDecoration: 'none', display: 'block' }}
                 >
                   <div>LinkedIn Scan Results</div>
                   <div style={menuSubtitle}>Dashboard with batch signals, dock matches, progress</div>
@@ -249,6 +241,36 @@ export function Navbar({
 
             {toolsOpen && (
               <div role="menu" aria-label="Tools" style={dropdownStyle} onClick={(e) => e.stopPropagation()}>
+                <Link
+                  role="menuitem"
+                  href="/utilities/country-wise-registry-review"
+                  onClick={() => setToolsOpen(false)}
+                  style={{ ...menuItemStyle(pathname === '/utilities/country-wise-registry-review'), textDecoration: 'none', display: 'block' }}
+                >
+                  <div>Country Registry Review</div>
+                  <div style={menuSubtitle}>QA & approve companies from govt business registries (SIRENE, Companies House)</div>
+                </Link>
+
+                <Link
+                  role="menuitem"
+                  href="/utilities/google-search-crawler"
+                  onClick={() => setToolsOpen(false)}
+                  style={{ ...menuItemStyle(pathname === '/utilities/google-search-crawler'), textDecoration: 'none', display: 'block' }}
+                >
+                  <div>Google Search Crawler</div>
+                  <div style={menuSubtitle}>Crawl Google for DJI Dock keywords by country, score domains</div>
+                </Link>
+
+                <Link
+                  role="menuitem"
+                  href="/utilities/dji-dock-research"
+                  onClick={() => setToolsOpen(false)}
+                  style={{ ...menuItemStyle(pathname === '/utilities/dji-dock-research'), textDecoration: 'none', display: 'block' }}
+                >
+                  <div>DJI Dock Research</div>
+                  <div style={menuSubtitle}>Raw Google News + LinkedIn HTML snapshots by country</div>
+                </Link>
+
                 <div style={{ width: '100%' }} title="Test company enrichment lookups">
                   <EnrichmentTestAgent mode="menuItem" />
                 </div>

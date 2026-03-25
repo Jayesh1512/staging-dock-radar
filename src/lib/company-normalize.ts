@@ -18,16 +18,30 @@ export function normalizeCompanyName(name: string): string {
 
   let normalized = name.toLowerCase().trim();
 
-  // Remove common legal/generic suffixes (as whole words)
-  const suffixes = [
-    'inc', 'ltd', 'llc', 'gmbh', 'corp', 'corporation',
-    'solutions', 'services', 'technologies', 'technology',
-    'systems', 'group', 'limited', 'co', 'plc',
-    'pty',   // Australian
+  // Remove parenthetical content: "STTL (Service Technique...)" → "STTL"
+  normalized = normalized.replace(/\(.*?\)/g, '');
+
+  // Remove legal suffixes at end of name only
+  const legalSuffixes = [
+    'inc', 'ltd', 'llc', 'gmbh', 'corp', 'corporation', 'limited', 'co', 'plc',
+    'pty',        // Australian
+    'sas', 'sarl', 'sa', 'eurl', 'sasu', 'sci',  // French
+    'bv', 'nv',   // Dutch
+    'ag',         // German/Swiss
+    'srl', 'spa', // Italian
+    'sl',         // Spanish
   ];
-  for (const suffix of suffixes) {
-    // Match as a whole word (word boundary)
-    normalized = normalized.replace(new RegExp(`\\b${suffix}\\b`, 'g'), '');
+  for (const suffix of legalSuffixes) {
+    normalized = normalized.replace(new RegExp(`\\b${suffix}\\s*$`), '');
+  }
+
+  // Remove generic suffixes only at end (don't strip "Capture Solutions" → "Capture")
+  const genericSuffixes = [
+    'solutions', 'services', 'technologies', 'technology',
+    'systems', 'group',
+  ];
+  for (const suffix of genericSuffixes) {
+    normalized = normalized.replace(new RegExp(`\\b${suffix}\\s*$`), '');
   }
 
   // Strip punctuation (keep alphanumeric + spaces only)

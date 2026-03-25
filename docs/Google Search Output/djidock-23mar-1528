@@ -1,0 +1,93 @@
+Live Log
+══ GOOGLE SEARCH CRAWLER v0.1 ══
+Keyword: "DJI Dock" | Country: FR | Pages: 5
+── Phase 1: Google Search ──
+  [1/5] "DJI Dock" FR p1 → 10 results
+  [2/5] "DJI Dock" FR p2 → 10 results
+  [3/5] "DJI Dock" FR p3 → 10 results
+  [4/5] "DJI Dock" FR p4 → 10 results
+  [5/5] "DJI Dock" FR p5 → 10 results
+  Total: 50 raw results
+── Phase 2: Domain Extraction & Classification ──
+  50 results → 27 direct + 8 social + 15 excluded
+  Excluded: enterprise.dji.com, dji.com, enterprise-insights.dji.com
+  Social: facebook — https://www.facebook.com/instadronebrive/posts/r%C3%A9volutionnez-vos-op%C3%A9ra → company: "instadronebrive"
+  Social: youtube — https://www.youtube.com/watch?v=NtJdbO4RinM
+  Social: facebook — https://m.facebook.com/Flyingeye/videos/le-drone-automatique-dji-dock-vient-d%C3 → company: "flyingeye"
+  Social: linkedin — https://fr.linkedin.com/posts/instadrone-sarl_d%C3%A9couvrez-lint%C3%A9gration-3 → company: "instadrone"
+  Social: youtube — https://www.youtube.com/@DJI_France/videos → company: "djifrance"
+  Social: instagram — https://www.instagram.com/p/DBi92goiuR8/
+  Social: youtube — https://www.youtube.com/watch?v=SpBNLka6pzk
+  Social: facebook — https://www.facebook.com/TakeOffFormation/posts/-dji-matrice-4e-dji-matrice-4t-d → company: "takeoffformation"
+  Grouped into 22 unique entities
+── Phase 3: Snippet Pre-Score ──
+  ✓ shop — score: 160 [T1] — dji dock(×2), dock 2(×2)
+  ✓ abot — score: 160 [T1] — dji dock(×2), dock 2(×2)
+  ✓ store — score: 160 [T1] — dji dock(×2), dock 3(×2)
+  ✓ heliguy — score: 80 [T1] — dji dock(×2)
+  ✓ boutique — score: 300 [T1] — dji dock(×4), dock 2(×2), dock 3(×2), inspection(×1), surveillance(×1)
+  ✓ megadron — score: 160 [T1] — dji dock(×2), dock 3(×2)
+  ✓ dronavia — score: 40 [T1] — dock 3(×1)
+  ✓ flyingeye — score: 290 [T1] — dji dock(×8), dock 2(×2), dock 3(×2), surveillance(×1)
+  ✓ escadrone — score: 170 [T1] — dji dock(×2), dock 3(×2), surveillance(×1)
+  ✓ djlfrance — score: 240 [T1] — dji dock(×8), dock 2(×8)
+  ✓ djifrance — score: 90 [T1] — dji dock(×1), dock 3(×1), sécurité(×1)
+  ✓ telepilote — score: 170 [T1] — dji dock(×2), dock 2(×2), surveillance(×1)
+  ✓ phototrend — score: 120 [T1] — dji dock(×3)
+  ✓ instadrone — score: 260 [T1] — dji dock(×5), dock 3(×5), sécurité(×1), surveillance(×1)
+  ✓ enterprise — score: 160 [T1] — dji dock(×2), dock 3(×2)
+  ✓ belgashare — score: 260 [T1] — dji dock(×3), dock 3(×3), surveillance(×2)
+  ✓ studiosport — score: 240 [T1] — dji dock(×8), dock 3(×4)
+  ✓ globeflight — score: 160 [T1] — dji dock(×2), dock 3(×2)
+  ✓ dominiondrones — score: 160 [T1] — dji dock(×3), dock 2(×1)
+  ✓ dronepartscenter — score: 240 [T1] — dji dock(×4), dock 3(×4)
+  ✓ takeoffformation — score: 160 [T1] — dji dock(×2), dock 2(×2)
+  ✓ lacameraembarquee — score: 80 [T1] — dji dock(×1), dock 2(×1)
+  22 with snippet signals, 0 without
+── Phase 4: Waterfall Crawl ──
+  Crawling 22 entities with signals...
+  [1/22] shop — https://shop.prodrones.fr/ ✓ (3080ms, 1000 chars)
+  [1/22] shop — https://shop.prodrones.fr/dji-dock-2/1610-dji-dock-2-matrice ✓ (1322ms, 1000 chars)
+  [2/22] abot — https://abot.fr/ ✓ (2837ms, 1000 chars)
+  [2/22] abot — https://www.abot.fr/blog/l-interet-du-dji-dock-2-chez-epc-fr ✓ (691ms, 1000 chars)
+  [3/22] store — https://store.ired.co.uk/ ✓ (1610ms, 1000 chars)
+  [3/22] store — https://store.ired.co.uk/products/dock-3?srsltid=AfmBOoo9jCo ✓ (1152ms, 1000 chars)
+  [4/22] heliguy — https://heliguy.com/ ✓ (2403ms, 1000 chars)
+  [4/22] heliguy — https://www.heliguy.com/products/dji-dock-with-dji-m30/ ✓ (1315ms, 1000 chars)
+  [5/22] boutique — https://boutique.dji-paris.com/ ✓ (2806ms, 1000 chars)
+  [5/22] boutique — https://boutique.dji-paris.com/dock-c3671.html ✓ (449ms, 1000 chars)
+  [5/22] boutique — https://boutique.dji-paris.com/dock-3-c3740.html ✓ (347ms, 1000 chars)
+  [6/22] megadron — https://megadron.pl/ ✓ (2260ms, 1000 chars)
+  [6/22] megadron — https://megadron.pl/en/products/docking-station-dji-dock-3-3 ✓ (1256ms, 1000 chars)
+  [7/22] dronavia — https://dronavia.com/ ✓ (7841ms, 1000 chars)
+  [7/22] dronavia — https://www.dronavia.com/fr/product/dji-dock-3-kronos-m4d/ ✓ (3200ms, 1000 chars)
+  [8/22] flyingeye — https://flyingeye.fr/ ✓ (7611ms, 1000 chars)
+  [8/22] flyingeye — https://www.flyingeye.fr/product/dji-dock-3/ ✓ (1669ms, 1000 chars)
+  [8/22] flyingeye — https://www.flyingeye.fr/pack-dji-dock-2-flying-eye/ ✓ (1811ms, 1000 chars)
+  [9/22] escadrone — https://escadrone.com/ ✓ (1660ms, 1000 chars)
+  [9/22] escadrone — https://escadrone.com/produit/dji-dock-3-drone-de-securite-a ✓ (652ms, 1000 chars)
+  [10/22] djlfrance — https://djlfrance.com/ ✓ (3002ms, 1000 chars)
+  [10/22] djlfrance — https://djlfrance.com/product/dji-dock-2/ ✓ (725ms, 1000 chars)
+  [12/22] telepilote — https://telepilote.store/ ✓ (3285ms, 1000 chars)
+  [12/22] telepilote — https://www.telepilote.store/drone-surveillance-evenementiel ✓ (384ms, 1000 chars)
+  [13/22] phototrend — https://phototrend.fr/ ✓ (730ms, 1000 chars)
+  [13/22] phototrend — https://phototrend.fr/tag/dji-dock/ ✓ (2228ms, 837 chars)
+  [15/22] enterprise — https://enterprise.dronenerds.com/ ✓ (2473ms, 1000 chars)
+  [15/22] enterprise — https://enterprise.dronenerds.com/drone-solutions/drone-dock ✓ (1148ms, 1000 chars)
+  [16/22] belgashare — https://belgashare.be/ ✓ (1248ms, 679 chars)
+  [16/22] belgashare — https://www.belgashare.be/fr/newsrooms/86/press-releases/145 ✓ (1744ms, 1000 chars)
+  [17/22] studiosport — https://studiosport.fr/ ✓ (5713ms, 1000 chars)
+  [17/22] studiosport — https://www.studiosport.fr/dji-dock-3-et-dji-matrice-4d-4dt- ✓ (730ms, 1000 chars)
+  [17/22] studiosport — https://www.studiosport.fr/dji-dock-m64198.html?srsltid=AfmB ✓ (759ms, 1000 chars)
+  [18/22] globeflight — https://globe-flight.de/ ✓ (3509ms, 1000 chars)
+  [18/22] globeflight — https://www.globe-flight.de/DJI-Dock-3-category-EN ✓ (992ms, 1000 chars)
+  [19/22] dominiondrones — https://dominiondrones.com/ ✓ (1506ms, 1000 chars)
+  [19/22] dominiondrones — https://www.dominiondrones.com/collections/dji-dock-series?s ✓ (563ms, 1000 chars)
+  [20/22] dronepartscenter — https://drone-parts-center.com/ ✓ (6190ms, 1000 chars)
+  [20/22] dronepartscenter — https://drone-parts-center.com/produit/dji-dock-3-la-station ✓ (5109ms, 1000 chars)
+  [20/22] dronepartscenter — https://drone-parts-center.com/produit/dji-dock-3-la-station ✓ (5200ms, 1000 chars)
+  [22/22] lacameraembarquee — https://lacameraembarquee.fr/ ✗ (HTTP 403)
+  [22/22] lacameraembarquee — https://www.lacameraembarquee.fr/1741-drones-in-a-box?srslti ✗ (HTTP 403)
+── Phase 5: Final Results ──
+  22 entities with signals | 0 with no signals
+  ✓ LITMUS PASS: instadrone found at rank #9 (score: 260)

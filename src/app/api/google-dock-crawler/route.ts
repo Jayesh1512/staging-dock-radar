@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchGoogle, type SerperResult } from '@/lib/google-search/serper';
 import { classifyResults, groupByCompany, type GroupedCompany } from '@/lib/google-search/extract-domains';
-import { scoreDomain, type DomainScore } from '@/lib/google-search/score-domain';
+import { scoreDomain, getFreshnessBand, type DomainScore } from '@/lib/google-search/score-domain';
 import { crawlUrl, type CrawlResult } from '@/lib/google-search/crawl-homepage';
 
 export const maxDuration = 120; // allow up to 2 min for crawling
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
   const keyword: string = body.keyword ?? 'DJI Dock';
   const country: string = body.country ?? 'FR';
   const pages: number = Math.min(body.pages ?? 5, 10);
+  const litmusCompany: string = (body.litmusCompany ?? '').trim().toLowerCase();
 
   const apiKey = process.env.SERPER_API_KEY;
   if (!apiKey) {
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
 
       try {
         // ── Phase 1: Google Search ──
-        log(`══ GOOGLE DOCK CRAWLER v0.1 ══`);
+        log(`══ GOOGLE SEARCH CRAWLER v0.1 ══`);
         log(`Keyword: "${keyword}" | Country: ${country} | Pages: ${pages}`);
         log(``);
         log(`── Phase 1: Google Search ──`);
@@ -102,7 +103,7 @@ export async function POST(req: NextRequest) {
           if (score.totalScore > 0) {
             const tier1 = score.tier1Hit ? ' [T1]' : '';
             const signals = score.signals.map(s => `${s.keyword}(×${s.count})`).join(', ');
-            log(`  ✓ ${group.slug} — score: ${score.totalScore}${tier1} — ${signals}`);
+            log(`  ✓ ${group.slug} — ${score.normalizedScore}/100${tier1} — ${signals}`);
           }
         }
 
@@ -131,7 +132,7 @@ export async function POST(req: NextRequest) {
             if (!domain.includes('linkedin.com') && !domain.includes('facebook.com') &&
                 !domain.includes('instagram.com') && !domain.includes('youtube.com') &&
                 !domain.includes('reddit.com')) {
-              const homepage = `https://${domain.startsWith('www.') ? '' : 'www.'}${domain}/`;
+              const homepage = `https://${domain}/`;
               if (!crawlUrls.includes(homepage)) crawlUrls.push(homepage);
             }
           }
@@ -195,27 +196,45 @@ export async function POST(req: NextRequest) {
         log(`  ${scored.length} entities with signals | ${crawledCompanies.length - scored.length} with no signals`);
         log(``);
 
-        // Litmus test
-        const instadrone = crawledCompanies.find(c => c.group.slug.includes('instadrone'));
-        if (instadrone) {
-          const rank = crawledCompanies.indexOf(instadrone) + 1;
-          log(`  ✓ LITMUS PASS: instadrone found at rank #${rank} (score: ${instadrone.finalScore.totalScore})`);
-        } else {
-          log(`  ✗ LITMUS FAIL: instadrone not found in results`);
+        // Litmus test (optional — only if user provided a company to check)
+        let litmusPass: boolean | null = null;
+        if (litmusCompany) {
+          const litmusMatch = crawledCompanies.find(c => c.group.slug.includes(litmusCompany));
+          if (litmusMatch) {
+            const rank = crawledCompanies.indexOf(litmusMatch) + 1;
+            log(`  ✓ LITMUS PASS: "${litmusCompany}" found at rank #${rank} (score: ${litmusMatch.finalScore.totalScore})`);
+            litmusPass = true;
+          } else {
+            log(`  ✗ LITMUS FAIL: "${litmusCompany}" not found in results`);
+            litmusPass = false;
+          }
         }
 
         // Emit final results
-        const resultData = crawledCompanies.map((c, i) => ({
+        const resultData = crawledCompanies.map((c, i) => {
+          const freshness = getFreshnessBand(c.group.lastSeen);
+          const pipelineScore = Math.min(100, c.finalScore.normalizedScore + freshness.bonus);
+          return {
           rank: i + 1,
           slug: c.group.slug,
+          companyName: c.group.companyName,
           domains: c.group.domains,
+          entityType: c.group.entityType,
+          fence: c.group.fence,
+          lastSeen: c.group.lastSeen ?? null,
           totalScore: c.finalScore.totalScore,
+          normalizedScore: pipelineScore,
+          freshnessBand: freshness.band,
+          freshnessLabel: freshness.label,
           snippetScore: c.snippetScore.totalScore,
           tier1Hit: c.finalScore.tier1Hit,
           tier2Hit: c.finalScore.tier2Hit,
           topSignal: c.finalScore.topSignal,
           signalCount: c.finalScore.signalCount,
           signals: c.finalScore.signals,
+          tier1Count: c.finalScore.tier1Count,
+          tier2Count: c.finalScore.tier2Count,
+          tier3Count: c.finalScore.tier3Count,
           resultCount: c.group.resultCount,
           sourceUrls: c.group.results.map(r => ({
             link: r.link,
@@ -232,7 +251,8 @@ export async function POST(req: NextRequest) {
             error: cr.error,
             textPreview: cr.text.substring(0, 200),
           })),
-        }));
+        };
+        });
 
         emit('results', {
           keyword,
@@ -241,7 +261,8 @@ export async function POST(req: NextRequest) {
           totalRawResults: searchResults.length,
           totalEntities: groups.length,
           scoredEntities: scored.length,
-          litmusPass: !!instadrone,
+          litmusCompany: litmusCompany || null,
+          litmusPass,
           companies: resultData,
         });
       } catch (err) {

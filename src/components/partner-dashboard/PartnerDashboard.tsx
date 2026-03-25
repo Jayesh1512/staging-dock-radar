@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { HitListData, DspHitListEntry } from '@/lib/types';
 import { toast } from 'sonner';
 import PipelineBoard from '@/components/pipeline/PipelineBoard';
+import MultiSourceIntelligence from '@/components/partner-dashboard/MultiSourceIntelligence';
 import { PipelineProvider, usePipeline, generateColor } from '@/components/pipeline/PipelineContext';
 import type { PipelineCardData } from '@/components/pipeline/PipelineCard';
 
@@ -206,6 +207,15 @@ const PartnerDashboardInner: React.FC = () => {
   const [selectedScore, setSelectedScore] = useState('all');
   const [selectedShow, setSelectedShow] = useState('active');
   const [dismissedSet, setDismissedSet] = useState<Set<string>>(new Set());
+
+  // ─── Multi-Source Intelligence KPI count (composite priority = 2+ sources OR high) ──
+  const [multiSourceCount, setMultiSourceCount] = useState<number | null>(null);
+  useEffect(() => {
+    fetch('/api/source-candidates/grouped?country=FR')
+      .then(r => r.json())
+      .then(d => { if (d.stats) setMultiSourceCount(d.stats.composite_priority_matches); })
+      .catch(() => {});
+  }, []);
   const [justAdded, setJustAdded] = useState<Set<string>>(new Set());
 
   // ─── Phase 4: Ask Radar State ─────────────────────────────────────────────
@@ -490,8 +500,8 @@ const PartnerDashboardInner: React.FC = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
         {[
           { label: 'FLYTBASE PARTNERS', value: partners.length, tab: 0 },
-          { label: 'POTENTIAL PARTNERS', value: newDsps.length,  tab: 1 },
-          { label: 'TOP 25 TARGETS',    value: Math.min(25, top25.length), tab: 2 },
+          { label: 'POTENTIAL PARTNERS: SOCIAL INTELLIGENCE', value: newDsps.length,  tab: 1 },
+          { label: 'POTENTIAL PARTNERS: MULTI-SOURCE INTELLIGENCE', value: multiSourceCount ?? '...', tab: 2 },
           { label: 'PIPELINE',           value: activePipelineCount, tab: 3 },
         ].map(({ label, value, tab }) => (
           <div
@@ -513,8 +523,8 @@ const PartnerDashboardInner: React.FC = () => {
       <div style={{ display: 'flex', gap: 0, borderBottom: '2px solid #E5E7EB', marginBottom: 24 }}>
         {[
           { label: 'FlytBase Partners', tab: 0 },
-          { label: `Potential Partners (${newDsps.length})`, tab: 1 },
-          { label: 'Top 25 Targets', tab: 2 },
+          { label: `Social Intelligence (${newDsps.length})`, tab: 1 },
+          { label: `Multi-Source Intelligence (${multiSourceCount ?? '...'})`, tab: 2 },
           { label: `Pipeline (${activePipelineCount})`, tab: 3 },
         ].map(({ label, tab }) => (
           <button
@@ -683,6 +693,11 @@ const PartnerDashboardInner: React.FC = () => {
                               In Pipeline
                             </span>
                           )}
+                          {dsp.enriched_by === 'registry_merge' && dsp.mention_count === 0 && (
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A' }}>
+                              Registry Import
+                            </span>
+                          )}
                         </div>
                       </td>
                       {/* Score */}
@@ -771,6 +786,11 @@ const PartnerDashboardInner: React.FC = () => {
                               {inPipeline && (
                                 <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#DCFCE7', color: '#166534', border: '1px solid #86EFAC', whiteSpace: 'nowrap' as const }}>
                                   In Pipeline
+                                </span>
+                              )}
+                              {dsp.enriched_by === 'registry_merge' && dsp.mention_count === 0 && (
+                                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', whiteSpace: 'nowrap' as const }}>
+                                  Registry Import
                                 </span>
                               )}
                               <span style={{ fontSize: 11, color: '#BFDBFE' }}>
@@ -1112,107 +1132,10 @@ const PartnerDashboardInner: React.FC = () => {
         </div>
       )}
 
-      {/* ── Tab 3: Top 25 Targets ── */}
+      {/* ── Tab 3: Multi-Source Intelligence ── */}
       {activeTab === 2 && (
         <div style={sCard}>
-
-          {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <div>
-              <h2 style={sH2}>Top 25 Targets</h2>
-              <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 3 }}>
-                Ranked by macro-region priority: Americas/Europe (1.0) &gt; MEA (0.8) &gt; APAC (0.7) &gt; Others (0.5)
-              </div>
-            </div>
-            <button onClick={exportTop25} style={sBtnSecondary}>Export CSV</button>
-          </div>
-
-          {/* Table */}
-          <div style={{ overflowX: 'auto' }}>
-            <table style={sTable}>
-              <thead>
-                <tr style={sTHeadRow}>
-                  <th style={{ ...sTH, width: 36 }}>#</th>
-                  <SortHeader label="COMPANY"  sortKey="name"     config={top25Sort} onSort={k => setTop25Sort(c => toggleSort(c, k))} style={{ width: '18%' }} />
-                  <SortHeader label="SCORE"    sortKey="score"    config={top25Sort} onSort={k => setTop25Sort(c => toggleSort(c, k))} style={{ width: 72 }} />
-                  <SortHeader label="REGION"   sortKey="region"   config={top25Sort} onSort={k => setTop25Sort(c => toggleSort(c, k))} style={{ width: '14%' }} />
-                  <SortHeader label="INDUSTRY" sortKey="industry" config={top25Sort} onSort={k => setTop25Sort(c => toggleSort(c, k))} style={{ width: '15%' }} />
-                  <th style={{ ...sTH, width: '13%' }}>SIGNAL</th>
-                  <th style={{ ...sTH, width: 90 }}>WEBSITE</th>
-                  <th style={{ ...sTH, width: 90 }}>LINKEDIN</th>
-                  <SortHeader label="ARTICLES" sortKey="articles" config={top25Sort} onSort={k => setTop25Sort(c => toggleSort(c, k))} style={{ width: 80 }} />
-                  <th style={{ ...sTH, width: 28 }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedTop25.length === 0 && (
-                  <tr><td colSpan={10} style={{ ...sTD, textAlign: 'center', color: '#9CA3AF', padding: 40 }}>No DSPs available for ranking</td></tr>
-                )}
-                {sortedTop25.map((dsp, i) => {
-                  const key = `top-${dsp.normalized_name}`;
-                  return (
-                    <React.Fragment key={key}>
-                      <tr style={sClickableRow} onClick={() => toggleRow(key)}>
-                        <td style={{ ...sTD, fontWeight: 700, color: '#9CA3AF', fontSize: 13 }}>{i + 1}</td>
-                        <td style={{ ...sTD, fontWeight: 600, color: '#111827' }}>{dsp.name}</td>
-                        <td style={{ ...sTD, fontWeight: 700, color: '#15803D', fontSize: 15 }}>{dsp.hit_score.toFixed(2)}</td>
-                        <td style={sTD}><RegionPriority countries={dsp.countries} /></td>
-                        <td style={sTD}><IndustryPriority industries={dsp.industries} /></td>
-                        <td style={sTD}>{dsp.signal_types.map(s => <SignalBadge key={s} type={s} />)}</td>
-                        <td style={sTD} onClick={e => e.stopPropagation()}>
-                          {dsp.website
-                            ? <a href={dsp.website} target="_blank" rel="noopener noreferrer" style={sLinkBtn}>Website ↗</a>
-                            : <span style={{ color: '#D1D5DB' }}>—</span>}
-                        </td>
-                        <td style={sTD} onClick={e => e.stopPropagation()}>
-                          {dsp.linkedin
-                            ? <a href={dsp.linkedin} target="_blank" rel="noopener noreferrer" style={sLinkBtn}>LinkedIn ↗</a>
-                            : <span style={{ color: '#D1D5DB' }}>—</span>}
-                        </td>
-                        <td style={sTD}>
-                          <span style={{ fontSize: 12, color: '#6B7280' }}>
-                            {dsp.articles.length} {dsp.articles.length === 1 ? 'article' : 'articles'}
-                          </span>
-                        </td>
-                        <td style={{ ...sTD, color: '#CBD5E1', fontSize: 11, paddingLeft: 0 }}>
-                          {expandedRows[key] ? '▼' : '▶'}
-                        </td>
-                      </tr>
-                      {expandedRows[key] && (
-                        <tr>
-                          <td colSpan={10} style={sExpandedCell}>
-                            {dsp.latest_article_date && (
-                              <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 12 }}>
-                                Last seen: <span style={{ fontWeight: 600 }}>{new Date(dsp.latest_article_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                              </div>
-                            )}
-                            {dsp.key_contact && (
-                              <div style={{ marginBottom: 14, padding: '8px 12px', background: '#F0FDF4', borderRadius: 6, borderLeft: '3px solid #15803D' }}>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: '#15803D', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' as const }}>Key Contact</div>
-                                <div style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>{dsp.key_contact.name}</div>
-                                {(dsp.key_contact.role || dsp.key_contact.organization) && (
-                                  <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
-                                    {[dsp.key_contact.role, dsp.key_contact.organization].filter(Boolean).join(' · ')}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                            <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', letterSpacing: 0.5, marginBottom: 10, textTransform: 'uppercase' as const }}>
-                              Source Articles
-                            </div>
-                            {dsp.articles.length === 0
-                              ? <div style={{ color: '#9CA3AF', fontSize: 13 }}>No articles available</div>
-                              : dsp.articles.map((a, idx) => <ArticleRow key={a.id} article={a} index={idx} />)
-                            }
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <MultiSourceIntelligence />
         </div>
       )}
 

@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    font-size: 11pt;
+    color: #1a1a1a;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    line-height: 1.6;
+  }
+  h1 {
+    font-size: 22pt;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+  }
+  .subtitle {
+    font-size: 10pt;
+    color: #6b7280;
+    margin-bottom: 32px;
+  }
+  h2 {
+    font-size: 14pt;
+    font-weight: 700;
+    color: #1d4ed8;
+    margin-top: 36px;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #dbeafe;
+    padding-bottom: 4px;
+  }
+  h3 {
+    font-size: 12pt;
+    font-weight: 700;
+    color: #374151;
+    margin-top: 20px;
+    margin-bottom: 6px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 16px;
+    font-size: 10pt;
+  }
+  th {
+    background: #1e40af;
+    color: #fff;
+    font-weight: 600;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: top;
+  }
+  tr:nth-child(even) { background: #f9fafb; }
+  .callout {
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+  }
+  .callout-blue {
+    background: #eff6ff;
+    border-left: 4px solid #2563eb;
+  }
+  .callout-green {
+    background: #ecfdf5;
+    border-left: 4px solid #059669;
+  }
+  .callout-amber {
+    background: #fffbeb;
+    border-left: 4px solid #d97706;
+  }
+  .callout-red {
+    background: #fef2f2;
+    border-left: 4px solid #dc2626;
+  }
+  .callout-purple {
+    background: #faf5ff;
+    border-left: 4px solid #7c3aed;
+  }
+  .callout-title {
+    font-weight: 700;
+    font-size: 11pt;
+    margin-bottom: 4px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 9pt;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-purple { background: #ede9fe; color: #5b21b6; }
+  .badge-gray { background: #f3f4f6; color: #374151; }
+  .flow-box {
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 8px 0;
+    background: #fff;
+  }
+  .flow-arrow {
+    text-align: center;
+    font-size: 18pt;
+    color: #9ca3af;
+    margin: 4px 0;
+  }
+  .source-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .source-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 14px;
+    background: #fff;
+  }
+  .source-card-title {
+    font-weight: 700;
+    font-size: 10pt;
+    margin-bottom: 3px;
+  }
+  .source-card-desc {
+    font-size: 9pt;
+    color: #6b7280;
+    line-height: 1.4;
+  }
+  .phase-label {
+    display: inline-block;
+    background: #1e40af;
+    color: #fff;
+    font-size: 9pt;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-right: 6px;
+  }
+  .screen-mockup {
+    border: 2px solid #d1d5db;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 12px 0;
+    font-size: 10pt;
+  }
+  .screen-header {
+    background: #f9fafb;
+    border-bottom: 1px solid #d1d5db;
+    padding: 8px 14px;
+    font-weight: 700;
+    font-size: 11pt;
+    color: #111827;
+  }
+  .screen-tabs {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fff;
+  }
+  .screen-tab {
+    padding: 6px 16px;
+    font-size: 10pt;
+    color: #6b7280;
+    border-bottom: 2px solid transparent;
+  }
+  .screen-tab-active {
+    color: #1e40af;
+    font-weight: 600;
+    border-bottom: 2px solid #1e40af;
+  }
+  .screen-body {
+    padding: 12px 14px;
+    background: #fff;
+  }
+  .mini-table {
+    width: 100%;
+    font-size: 9pt;
+    border-collapse: collapse;
+  }
+  .mini-table th {
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 8pt;
+    padding: 4px 8px;
+  }
+  .mini-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 9pt;
+  }
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 28px 0; }
+  .footnote { font-size: 9pt; color: #9ca3af; font-style: italic; margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<h1>Dock Radar — Solution Architecture</h1>
+<div class="subtitle">How it works: Sources → Score → Merge → Review → Pipeline &nbsp;|&nbsp; Internal &nbsp;|&nbsp; March 2026</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>What is Dock Radar?</h2>
+
+<div class="callout callout-blue">
+  <div class="callout-title">A multi-source signal intelligence tool</div>
+  Dock Radar collects signals from 7 data sources — bulk databases, on-demand search, scheduled scans, AI browsers, and team intel — for companies deploying or selling DJI Dock infrastructure. It scores, deduplicates, and merges signals into a single prioritized queue for BD action.
+  <br><br>
+  <strong>Core principle:</strong> A company found by multiple independent sources is almost certainly a real prospect. Multi-source corroboration is the strongest signal.
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>Full Data Flow</h2>
+
+<div class="flow-box" style="background: #fafafa;">
+  <div style="text-align: center; margin-bottom: 8px;">
+    <span class="badge badge-red">DJI Resellers</span>
+    <span class="badge badge-amber">Gov. Registry</span>
+    <span class="badge badge-blue">Google Search</span>
+    <span class="badge badge-purple">LinkedIn + News</span>
+    <span class="badge badge-gray">LinkedIn Deep-Dive</span>
+    <span style="display:inline-block; padding: 2px 8px; border-radius: 4px; font-size: 9pt; font-weight: 600; background: #ecfeff; color: #155e75;">Comet AI</span>
+    <span class="badge badge-green">Team Intel</span>
+  </div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-box" style="border-color: #93c5fd; text-align: center;">
+    <span class="phase-label">1</span> <strong>Collect</strong> — Each source runs independently, surfaces companies mentioning DJI Dock
+  </div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-box" style="border-color: #60a5fa; text-align: center;">
+    <span class="phase-label">2</span> <strong>Score</strong> — Normalize to 0-100, classify <span class="badge badge-green">HIGH</span> <span class="badge badge-amber">MEDIUM</span> <span class="badge badge-red">LOW</span>
+  </div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-box" style="border-color: #86efac; text-align: center;">
+    <span class="phase-label">3</span> <strong>Merge</strong> — Dedup by domain/name → one row per company in <code>discovered_companies</code><br>
+    <span style="font-size: 9pt; color: #6b7280;">Multi-source companies get confidence boost. Source signals stored with full traceability.</span>
+  </div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-box" style="border-color: #fbbf24; text-align: center;">
+    <span class="phase-label">4</span> <strong>Enrich</strong> — Auto-fill website, LinkedIn, country, employees. BD adds contact + tier.
+  </div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-box" style="border-color: #c084fc; text-align: center;">
+    <span class="phase-label">5</span> <strong>Review</strong> — BD sees one queue (Tab 2: Potential Partners). Filter, sort, expand, act.
+  </div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-box" style="border-color: #f87171; text-align: center;">
+    <span class="phase-label">6</span> <strong>Pipeline</strong> — Kanban: Prospect → Connecting → Meeting → CRM → Signed
+  </div>
+</div>
+
+<p style="font-size: 10pt; color: #6b7280; text-align: center;">Each source feeds the same funnel. BD interacts at Phase 5 only. Let's look at each phase.</p>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2><span class="phase-label">1</span> Collect — Data Sources</h2>
+
+<p>Six sources feed the funnel. Each discovers companies differently — some scan in bulk, others are triggered on-demand, and one captures human intel from the team.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Source</th>
+      <th>Tool / Utility</th>
+      <th>What It Finds</th>
+      <th>Mode</th>
+      <th>Volume</th>
+      <th>Cost</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-top: 3px solid #dc2626;">
+      <td colspan="7" style="background: #fef2f2; font-weight: 700; font-size: 9pt; color: #991b1b; padding: 4px 10px;">BULK SOURCES — Run once per country/region, produce hundreds of records</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td><strong>DJI Reseller Database</strong></td>
+      <td>DJI Partners</td>
+      <td>Official DJI dealer list — 4,500+ resellers across 6 types (Enterprise, Professional, Authorized, Retail, Agriculture, Delivery). The baseline universe.</td>
+      <td><span class="badge badge-red" style="font-size: 8pt;">Bulk</span></td>
+      <td>4,500+</td>
+      <td>Free</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Country Registry Parser</strong></td>
+      <td>Country Registry Review</td>
+      <td>Government business registries (SIRENE, Companies House, etc.) filtered for drone/UAV activity codes. Validates legitimacy, employees, founding date.</td>
+      <td><span class="badge badge-red" style="font-size: 8pt;">Bulk</span></td>
+      <td>1,000s / country</td>
+      <td>Free (public data)</td>
+    </tr>
+    <tr style="border-top: 3px solid #2563eb;">
+      <td colspan="7" style="background: #eff6ff; font-weight: 700; font-size: 9pt; color: #1e40af; padding: 4px 10px;">ON-DEMAND SOURCES — User triggers a search, gets targeted results</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Google Search Crawler</strong></td>
+      <td>Google Search Crawler</td>
+      <td>Searches Google for "DJI Dock" + country. Crawls result pages, scores by keyword tiers, classifies as DSP/SI vs Reseller vs Media.</td>
+      <td><span class="badge badge-blue" style="font-size: 8pt;">On-demand</span></td>
+      <td>~20-50 / run</td>
+      <td>Partially paid (Serper: 2,500 free, then $50/50k)</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>LinkedIn Company Deep-Dive</strong></td>
+      <td>LinkedIn Company Posts</td>
+      <td>Targeted scan of a specific company's LinkedIn page. Used to validate prospects already in queue — confirms recent dock activity.</td>
+      <td><span class="badge badge-blue" style="font-size: 8pt;">On-demand</span></td>
+      <td>1 company / run</td>
+      <td>Free</td>
+    </tr>
+    <tr style="border-top: 3px solid #7c3aed;">
+      <td colspan="7" style="background: #faf5ff; font-weight: 700; font-size: 9pt; color: #5b21b6; padding: 4px 10px;">MONITORING SOURCES — Run on schedule, detect new signals over time</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>LinkedIn + Google News Scanner</strong></td>
+      <td>LinkedIn Scan Results, DJI Dock Research</td>
+      <td>Scans LinkedIn posts across DJI reseller pages + Google News RSS (14 editions) for DJI Dock mentions. LLM-scored for relevance. Strongest human-authored signal.</td>
+      <td><span class="badge badge-purple" style="font-size: 8pt;">Scheduled</span></td>
+      <td>50-200 / batch</td>
+      <td>Partially paid (LLM scoring)</td>
+    </tr>
+    <tr style="border-top: 3px solid #0891b2;">
+      <td colspan="7" style="background: #ecfeff; font-weight: 700; font-size: 9pt; color: #155e75; padding: 4px 10px;">AI-ASSISTED SOURCE — Autonomous web research with LLM-powered browser</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><strong>Comet AI Browser</strong></td>
+      <td>Comet Crawler</td>
+      <td>AI-powered browser agent that autonomously searches and reads web pages for DJI Dock signals. Deeper than keyword matching — understands context. Slow, incremental, hits rate limits on Pro plan.</td>
+      <td><span class="badge badge-purple" style="font-size: 8pt;">Scheduled</span></td>
+      <td>10-30 / run</td>
+      <td>Paid (Comet Pro)</td>
+    </tr>
+    <tr style="border-top: 3px solid #059669;">
+      <td colspan="7" style="background: #ecfdf5; font-weight: 700; font-size: 9pt; color: #065f46; padding: 4px 10px;">MANUAL SOURCE — Team adds intel from conversations, events, referrals</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><strong>Team Intel</strong></td>
+      <td>Manual entry (Partner Dashboard)</td>
+      <td>BD team adds companies discovered through events, partner referrals, DJI introductions, industry conversations. Captures intel that no automated tool can find.</td>
+      <td><span class="badge badge-green" style="font-size: 8pt;">Manual</span></td>
+      <td>1 at a time</td>
+      <td>Free</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-blue">
+  <div class="callout-title">Why these sources complement each other</div>
+  <strong>Bulk sources</strong> (DJI Resellers, Registries) give us the universe — who exists in the drone industry.<br>
+  <strong>On-demand sources</strong> (Google Search, LinkedIn Deep-Dive) let us investigate specific countries or companies.<br>
+  <strong>Monitoring sources</strong> (LinkedIn + News Scanner) catch new signals as they appear over time.<br>
+  <strong>Team Intel</strong> captures what no tool can — human conversations and relationships.<br><br>
+  A company found across multiple source types (e.g., Instadrone: DJI dealer + LinkedIn post + French registry + Google result) is the highest-confidence prospect.
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2><span class="phase-label">2</span> Score — Unified 0-100, Three Levels</h2>
+
+<p>Every source produces a raw signal. Before merging, each signal is normalized to a standard 0-100 scale and classified into three confidence levels.</p>
+
+<div class="callout callout-green">
+  <div class="callout-title">One scoring language across all sources</div>
+  Regardless of whether a company was found via Google, LinkedIn, or a government registry — the confidence output is always: <span class="badge badge-green">HIGH</span> <span class="badge badge-amber">MEDIUM</span> <span class="badge badge-red">LOW</span>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Level</th>
+      <th>Score Range</th>
+      <th>Definition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="badge badge-green">HIGH</span></td>
+      <td>75-100</td>
+      <td>Company almost certainly deploys or sells DJI Dock. Confirmed deployment, named contract, or verified enterprise dealer.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-amber">MEDIUM</span></td>
+      <td>50-74</td>
+      <td>Strong signals but not fully confirmed. Multiple keyword matches, enterprise context, or BVLOS capability mentioned.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-red">LOW</span></td>
+      <td>25-49</td>
+      <td>Mentioned in context but needs verification. Single keyword match, indirect reference, or unconfirmed operator.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>How Each Source Maps to 0-100</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Source</th>
+      <th>Tool / Utility</th>
+      <th>Scoring Method</th>
+      <th>HIGH (75-100)</th>
+      <th>MEDIUM (50-74)</th>
+      <th>LOW (25-49)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><strong>DJI Reseller DB</strong></td>
+      <td style="font-size: 9pt;">DJI Partners</td>
+      <td style="font-size: 9pt;">Rule-based (dealer type)</td>
+      <td>Enterprise dealer + LinkedIn verified</td>
+      <td>Enterprise / Professional dealer</td>
+      <td>Authorized / Retail dealer</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Country Registry</strong></td>
+      <td style="font-size: 9pt;">Country Registry Review</td>
+      <td style="font-size: 9pt;">Waterfall keyword scoring</td>
+      <td>Multiple keyword matches + employees ≥ 10</td>
+      <td>Single keyword match + has employees</td>
+      <td>Weak keyword match</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Google Search Crawler</strong></td>
+      <td style="font-size: 9pt;">Google Search Crawler</td>
+      <td style="font-size: 9pt;">Tiered keyword scoring</td>
+      <td>Tier 1 keyword + crawled page confirms dock</td>
+      <td>Tier 1 keyword in snippet only</td>
+      <td>Tier 2/3 keywords only</td>
+    </tr>
+    <tr>
+      <td>4-5</td>
+      <td><strong>LinkedIn / Google News</strong></td>
+      <td style="font-size: 9pt;">LinkedIn Scan Results, DJI Dock Research</td>
+      <td style="font-size: 9pt;">LLM scoring (Gemini/GPT)</td>
+      <td>Named DSP + confirmed deployment + use case</td>
+      <td>Named DSP + deployment mentioned</td>
+      <td>Brief mention or hiring signal</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><strong>Team Intel</strong></td>
+      <td style="font-size: 9pt;">Manual entry</td>
+      <td style="font-size: 9pt;">BD assigns confidence</td>
+      <td>Direct conversation / confirmed interest</td>
+      <td>Referral / event lead</td>
+      <td>Heard about, unverified</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><strong>Comet AI Browser</strong></td>
+      <td style="font-size: 9pt;">Comet Crawler</td>
+      <td style="font-size: 9pt;">LLM scoring</td>
+      <td>Named DSP + confirmed deployment</td>
+      <td>Named DSP + deployment context</td>
+      <td>Brief mention</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2><span class="phase-label">3</span> Merge — Single Company Record</h2>
+
+<p>All sources write to one table: <code>discovered_companies</code>. When multiple sources find the same company, they merge into a single row with stacked evidence.</p>
+
+<div class="callout callout-blue">
+  <div class="callout-title">Multi-source corroboration = highest signal</div>
+  A company found by 3 independent sources (e.g., Google + LinkedIn + DJI dealer list) is almost certainly a real prospect — regardless of individual scores.
+</div>
+
+<h3>Dedup: What Makes Two Records "Same Company"?</h3>
+<table>
+  <thead>
+    <tr><th>Priority</th><th>Match Method</th><th>Example</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Exact domain match</td><td>instadrone.fr = instadrone.fr</td></tr>
+    <tr><td>2</td><td>Normalized name slug</td><td>"INSTADRONE SAS" → "instadrone" = "instadrone"</td></tr>
+    <tr><td>3</td><td>Registry ID match</td><td>SIREN 81234567 already linked to instadrone</td></tr>
+  </tbody>
+</table>
+
+<h3>Source Signal Record</h3>
+<p>Each source writes a structured signal entry with traceability:</p>
+
+<table>
+  <thead>
+    <tr><th>Field</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>source_type</code></td><td>google_search | linkedin | news | dji_reseller | registry | social_listening</td></tr>
+    <tr><td><code>confidence</code></td><td>high | medium | low (normalized 0-100)</td></tr>
+    <tr><td><code>score</code></td><td>Normalized 0-100 score</td></tr>
+    <tr><td><code>keyword</code></td><td>What matched: "DJI Dock 3", "BVLOS", activity code, etc.</td></tr>
+    <tr><td><code>evidence_url</code></td><td>The specific URL, post, or registry entry that triggered detection</td></tr>
+    <tr><td><code>detected_at</code></td><td>When this source found the company</td></tr>
+    <tr><td><code>country</code></td><td>Country context from this source</td></tr>
+    <tr><td><code>snippet</code></td><td>Text excerpt proving the signal</td></tr>
+  </tbody>
+</table>
+
+<h3>Composite Confidence</h3>
+
+<table>
+  <thead>
+    <tr><th>Condition</th><th>Composite Confidence</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Found by 3+ independent sources</td><td><span class="badge badge-green">HIGH</span></td></tr>
+    <tr><td>Found by 2 sources, at least one HIGH</td><td><span class="badge badge-green">HIGH</span></td></tr>
+    <tr><td>Found by 2 sources</td><td><span class="badge badge-amber">MEDIUM</span></td></tr>
+    <tr><td>Single source rated HIGH</td><td><span class="badge badge-amber">MEDIUM</span></td></tr>
+    <tr><td>Single source rated MEDIUM or LOW</td><td><span class="badge badge-red">LOW</span></td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2><span class="phase-label">4</span> Enrich — Fill the Gaps</h2>
+
+<p>After merge, each company record is enriched with actionable data from available sources.</p>
+
+<table>
+  <thead>
+    <tr><th>Field</th><th>Auto-filled From</th><th>BD Fills Manually</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Website</td><td>Google Crawler, Registry, DJI DB</td><td></td></tr>
+    <tr><td>LinkedIn URL</td><td>LinkedIn scanner, DJI DB</td><td></td></tr>
+    <tr><td>Country</td><td>All sources (consensus)</td><td></td></tr>
+    <tr><td>Employee count</td><td>Registry, LinkedIn</td><td></td></tr>
+    <tr><td>Dealer type</td><td>DJI Reseller DB</td><td></td></tr>
+    <tr><td>Contact name</td><td>LinkedIn posts (author)</td><td>✓ Verify/update</td></tr>
+    <tr><td>Contact email</td><td></td><td>✓ Required</td></tr>
+    <tr><td>Use case / notes</td><td></td><td>✓ Optional</td></tr>
+    <tr><td>Partner tier</td><td></td><td>✓ T1/T2/T3</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2><span class="phase-label">5</span> Review — One Screen, All Sources</h2>
+
+<p>BD interacts with <strong>one screen only</strong>. All sources have already been scored, merged, and enriched. The review queue shows the unified list sorted by composite confidence.</p>
+
+<div class="screen-mockup">
+  <div class="screen-header">Dock Radar — Partner Dashboard</div>
+  <div class="screen-tabs">
+    <div class="screen-tab">FB Partners</div>
+    <div class="screen-tab screen-tab-active">Potential Partners</div>
+    <div class="screen-tab">Pipeline</div>
+  </div>
+  <div class="screen-body">
+    <div style="display: flex; gap: 8px; margin-bottom: 10px; font-size: 9pt;">
+      <span style="padding: 3px 8px; background: #eff6ff; border-radius: 4px; color: #1e40af;">All Sources ▼</span>
+      <span style="padding: 3px 8px; background: #eff6ff; border-radius: 4px; color: #1e40af;">All Countries ▼</span>
+      <span style="padding: 3px 8px; background: #eff6ff; border-radius: 4px; color: #1e40af;">Confidence ≥ Medium ▼</span>
+    </div>
+    <table class="mini-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Company</th>
+          <th>Sources</th>
+          <th>Confidence</th>
+          <th>Country</th>
+          <th>Last Seen</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><strong>Instadrone</strong></td>
+          <td>
+            <span class="badge badge-blue" style="font-size: 8pt;">Google</span>
+            <span class="badge badge-purple" style="font-size: 8pt;">LinkedIn</span>
+            <span class="badge badge-gray" style="font-size: 8pt;">Registry</span>
+          </td>
+          <td><span class="badge badge-green">HIGH</span></td>
+          <td>FR</td>
+          <td>2d ago</td>
+          <td style="font-size: 9pt;">[Add to Pipeline]</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><strong>CopterZ</strong></td>
+          <td>
+            <span class="badge badge-blue" style="font-size: 8pt;">Google</span>
+            <span class="badge badge-gray" style="font-size: 8pt;">DJI</span>
+          </td>
+          <td><span class="badge badge-green">HIGH</span></td>
+          <td>NL</td>
+          <td>5d ago</td>
+          <td style="font-size: 9pt;">[Add to Pipeline]</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><strong>Escadrone</strong></td>
+          <td>
+            <span class="badge badge-blue" style="font-size: 8pt;">Google</span>
+          </td>
+          <td><span class="badge badge-amber">MEDIUM</span></td>
+          <td>FR</td>
+          <td>1w ago</td>
+          <td style="font-size: 9pt;">[Add to Pipeline]</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><strong>FlyingEye</strong></td>
+          <td>
+            <span class="badge badge-purple" style="font-size: 8pt;">LinkedIn</span>
+            <span class="badge badge-gray" style="font-size: 8pt;">DJI</span>
+          </td>
+          <td><span class="badge badge-amber">MEDIUM</span></td>
+          <td>FR</td>
+          <td>3d ago</td>
+          <td style="font-size: 9pt;">[Add to Pipeline]</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="font-size: 8pt; color: #9ca3af; margin-top: 8px;">Click row to expand → see all source evidence, enrichment data, and contact info</div>
+  </div>
+</div>
+
+<h3>Tab Structure</h3>
+<table>
+  <thead>
+    <tr><th>Tab</th><th>Purpose</th><th>Data Source</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Tab 1: FB Partners</strong></td>
+      <td>Existing FlytBase partners. Read-only reference. Used to exclude known partners from prospect list.</td>
+      <td><code>flytbase_partners</code></td>
+    </tr>
+    <tr>
+      <td><strong>Tab 2: Potential Partners</strong></td>
+      <td>The primary action screen. All net-new companies from all sources, scored and merged. BD reviews, enriches, and pushes to pipeline from here.</td>
+      <td><code>discovered_companies</code> (filtered: not FB partner, not dismissed)</td>
+    </tr>
+    <tr>
+      <td><strong>Tab 3: Pipeline</strong></td>
+      <td>Kanban board tracking partner onboarding stages: Prospect → Connecting → Meeting → Sent to CRM → Signed.</td>
+      <td><code>pipeline_leads</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-purple">
+  <div class="callout-title">Top 25 Targets → Quick Overview Tool</div>
+  A separate lightweight view (accessible from Tools menu) showing the 25 highest-composite-confidence companies across all sources and countries. Updated live. Useful for weekly BD standups and leadership reviews — not a daily workflow screen.
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2><span class="phase-label">6</span> Pipeline — Track to Close</h2>
+
+<p>Once BD clicks "Add to Pipeline," the company enters the Kanban board with stage tracking and audit log.</p>
+
+<table>
+  <thead>
+    <tr><th>Stage</th><th>What Happens</th><th>Exit Criteria</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><span class="badge badge-blue">Prospect</span></td><td>Contact identified, outreach drafted</td><td>First message sent</td></tr>
+    <tr><td><span class="badge badge-purple">Connecting</span></td><td>LinkedIn/email outreach sent</td><td>Reply received or meeting booked</td></tr>
+    <tr><td><span class="badge badge-amber">Meeting</span></td><td>Discovery call scheduled/done</td><td>Mutual interest confirmed</td></tr>
+    <tr><td><span class="badge badge-green">Sent to CRM</span></td><td>Qualified — handed to partnerships team</td><td>Agreement in progress</td></tr>
+    <tr><td><span class="badge badge-gray">Signed / Archived</span></td><td>Partner agreement signed or lead lost</td><td>—</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>Scoring Rules — Published on All Screens</h2>
+
+<p>These rules are visible as a collapsible panel on every utility screen, ensuring team-wide consistency.</p>
+
+<h3>Keyword Tiers (Google Search Crawler)</h3>
+<table>
+  <thead>
+    <tr><th>Tier</th><th>Points</th><th>Keywords</th><th>Max / keyword</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="badge badge-red">Tier 1</span></td>
+      <td>40</td>
+      <td>dji dock, dock 2, dock 3</td>
+      <td>120 (3 mentions cap)</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-amber">Tier 2</span></td>
+      <td>25</td>
+      <td>bvlos, sora, luc</td>
+      <td>75</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-blue">Tier 3</span></td>
+      <td>10</td>
+      <td>inspection, surveillance, infrastructure, mining, construction, railway, pipeline, wind farm, solar, oil and gas, sécurité, énergie</td>
+      <td>30</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>LLM Scoring (LinkedIn / Google News — via LinkedIn Scan Results &amp; DJI Dock Research)</h3>
+<table>
+  <thead>
+    <tr><th>Band</th><th>Score</th><th>Criteria</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><span class="badge badge-green">HIGH</span></td><td>75-100</td><td>Named DSP/SI + confirmed deployment/contract + clear use case + named buyer</td></tr>
+    <tr><td><span class="badge badge-amber">STRONG</span></td><td>50-74</td><td>Named DSP/SI + confirmed deployment/contract; buyer unnamed</td></tr>
+    <tr><td><span class="badge badge-red">WEAK</span></td><td>25-49</td><td>Brief mention of DSP/SI; hiring signal; regulatory mention</td></tr>
+    <tr><td><span class="badge badge-gray">NOISE</span></td><td>0-24</td><td>OEM marketing, consumer content, opinion pieces → dropped</td></tr>
+  </tbody>
+</table>
+
+<h3>Entity Classification (Google Search Crawler)</h3>
+<table>
+  <thead>
+    <tr><th>Type</th><th>Definition</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><span class="badge badge-green">DSP/SI</span></td><td>Deploys drones as a service — operator, integrator, consulting firm</td></tr>
+    <tr><td><span class="badge badge-amber">Reseller</span></td><td>Sells DJI hardware — e-commerce, retail, parts distributor</td></tr>
+    <tr><td><span class="badge badge-blue">Media</span></td><td>News site, blog, press release, review publication</td></tr>
+    <tr><td><span class="badge badge-gray">Unknown</span></td><td>Insufficient signals to classify — needs manual review</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>Campaigns Run To Date</h2>
+
+<p>Dock Radar has been used to run targeted campaigns since March 2026. Each campaign combines one or more sources with specific keyword/region parameters.</p>
+
+<h3>LinkedIn Campaigns (B1-B7 + FP)</h3>
+<table>
+  <thead>
+    <tr><th>Batch</th><th>Source</th><th>Scope</th><th>Results</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>FP (Benchmark)</strong></td>
+      <td>LinkedIn Post Scanner</td>
+      <td>FlytBase existing partners — scanned as a benchmark to calibrate scoring</td>
+      <td>Confirmed dock signals among known partners (Halo Robotics, DroneLand, GeoAerospace, Droprise, etc.)</td>
+    </tr>
+    <tr>
+      <td><strong>B1-B7</strong></td>
+      <td>LinkedIn Post Scanner</td>
+      <td>151 DJI resellers scanned across 7 priority batches for DJI Dock mentions on their LinkedIn pages</td>
+      <td>56 companies with dock signals. 12 excluded (existing FB partners). <strong>44 net-new prospects</strong>. 7 high-signal (5+ mentions), 18 medium, 19 low.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Google News Campaigns (C1-C3)</h3>
+<table>
+  <thead>
+    <tr><th>Campaign</th><th>Source</th><th>Keywords / Focus</th><th>Results</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>C1</strong></td>
+      <td>Google News Monitor</td>
+      <td>DJI Dock-specific keywords — direct operator/deployment articles</td>
+      <td rowspan="3">~40 additional companies across 24 countries. Combined with LinkedIn batches: <strong>~80 unique net-new companies</strong> in the pipeline.</td>
+    </tr>
+    <tr>
+      <td><strong>C2</strong></td>
+      <td>Google News Monitor</td>
+      <td>DSP operator-adjacent — drone service providers, BVLOS operations</td>
+    </tr>
+    <tr>
+      <td><strong>C3</strong></td>
+      <td>Google News Monitor</td>
+      <td>6-month sweep — broader timeline to catch historical deployment signals</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Google Search Campaigns (March 2026)</h3>
+<table>
+  <thead>
+    <tr><th>Run</th><th>Source</th><th>Keyword</th><th>Region</th><th>Results</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>FR-01</strong></td>
+      <td>Google Search Crawler</td>
+      <td>"DJI Dock"</td>
+      <td>France (gl=fr)</td>
+      <td>20 entities scored. 8 DSP/SI, 6 Resellers. Litmus test: Instadrone found at rank #6.</td>
+    </tr>
+    <tr>
+      <td><strong>NL-01</strong></td>
+      <td>Google Search Crawler</td>
+      <td>"DJI Dock"</td>
+      <td>Netherlands (gl=nl)</td>
+      <td>26 entities scored. 8 DSP/SI, 5 Resellers. Includes CopterZ, Heliguy, DroneboticS NL.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Country Registry Campaigns</h3>
+<table>
+  <thead>
+    <tr><th>Run</th><th>Source</th><th>Country</th><th>Registry</th><th>Results</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>FR-SIRENE</strong></td>
+      <td>Country Registry Parser</td>
+      <td>France</td>
+      <td>SIRENE (INSEE)</td>
+      <td>Drone/UAV activity codes filtered. Waterfall scored. QA review in progress.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-green">
+  <div class="callout-title">The Flywheel Effect</div>
+  Every partner we sign becomes a signal source. Their LinkedIn posts about FlytBase deployments surface their customers and peers → who become the next wave of prospects. The tool gets smarter as the partner base grows.
+</div>
+
+<hr>
+
+<div class="callout callout-green" style="margin-top: 24px;">
+  <div class="callout-title">Summary: What Changes, What Stays</div>
+  <table style="margin: 8px 0 0; font-size: 10pt;">
+    <thead>
+      <tr><th>Component</th><th>Change</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Collection (7 sources: 2 bulk, 2 on-demand, 1 scheduled, 1 AI, 1 manual)</td><td>No change — each keeps its own UI and workflow</td></tr>
+      <tr><td>Scoring</td><td>Standardize to 0-100 / HIGH-MEDIUM-LOW across all sources</td></tr>
+      <tr><td><code>discovered_companies</code> table</td><td>Add <code>source_signals</code> (JSONB), <code>source_count</code>, <code>confidence</code></td></tr>
+      <tr><td>Each source utility</td><td>Add "Push to Partner Queue" button</td></tr>
+      <tr><td>Partner Dashboard</td><td>Tab 2 becomes the unified review screen with source badges</td></tr>
+      <tr><td>Top 25 Targets</td><td>Moves to Tools as a quick overview</td></tr>
+      <tr><td>New tables</td><td>None — reuse <code>discovered_companies</code> as the merge layer</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footnote">Built by FlytBase Growth — internal use only</div>
+
+</body>
+</html>

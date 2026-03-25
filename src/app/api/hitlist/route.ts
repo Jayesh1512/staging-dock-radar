@@ -32,9 +32,10 @@ export async function GET(req: Request) {
     ]);
 
     // Build lookup: normalized_name → enrichment data from discovered_companies
-    const discoveredMap = new Map<string, { website: string | null; linkedin: string | null; linkedin_followers: number | null; countries: string[]; industries: string[] }>();
+    const discoveredMap = new Map<string, { website: string | null; linkedin: string | null; linkedin_followers: number | null; countries: string[]; industries: string[]; enriched_by: string | null; employee_count: string | null; founded_year: number | null; city: string | null; source: string | null }>();
     for (const dc of discoveredCompanies) {
-      discoveredMap.set(dc.normalized_name, { website: dc.website, linkedin: dc.linkedin, linkedin_followers: dc.linkedin_followers ?? null, countries: dc.countries ?? [], industries: dc.industries ?? [] });
+      const extra = dc as unknown as Record<string, unknown>;
+      discoveredMap.set(dc.normalized_name, { website: dc.website, linkedin: dc.linkedin, linkedin_followers: dc.linkedin_followers ?? null, countries: dc.countries ?? [], industries: dc.industries ?? [], enriched_by: extra.enriched_by as string | null ?? null, employee_count: extra.employee_count as string | null ?? null, founded_year: extra.founded_year as number | null ?? null, city: extra.city as string | null ?? null, source: extra.source as string | null ?? null });
     }
 
     if (articles.length === 0) {
@@ -212,6 +213,11 @@ export async function GET(req: Request) {
         linkedin_followers: discoveredMap.get(normalizedName)?.linkedin_followers ?? undefined,
         isFlytbasePartner,
         key_contact: topPerson?.data ?? null,
+        enriched_by: discoveredMap.get(normalizedName)?.enriched_by ?? null,
+        employee_count: discoveredMap.get(normalizedName)?.employee_count ?? null,
+        founded_year: discoveredMap.get(normalizedName)?.founded_year ?? null,
+        city: discoveredMap.get(normalizedName)?.city ?? null,
+        source: discoveredMap.get(normalizedName)?.source ?? null,
       };
 
       if (isFlytbasePartner) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from 'react';
-import Link from 'next/link';
+import { Navbar } from '@/components/shared/Navbar';
 
 type GoogleNewsRow = {
   title: string;
@@ -65,19 +65,11 @@ export default function DjiDockResearchPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#F3F4F6' }}>
+      <Navbar />
       <div className="mx-auto" style={{ maxWidth: 1100, padding: '24px 32px 64px' }}>
-        <div className="flex items-center gap-3 flex-wrap" style={{ marginBottom: 20 }}>
-          <Link
-            href="/"
-            style={{ fontSize: 13, fontWeight: 600, color: 'var(--dr-blue)', textDecoration: 'none' }}
-          >
-            ← Dashboard
-          </Link>
-          <span style={{ color: 'var(--dr-border)' }}>|</span>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--dr-text)', margin: 0 }}>
-            DJI Dock — raw snapshot
-          </h1>
-        </div>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--dr-text)', margin: '0 0 20px' }}>
+          DJI Dock — Raw Snapshot
+        </h1>
 
         <div
           className="bg-white"

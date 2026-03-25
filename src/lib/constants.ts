@@ -263,11 +263,77 @@ export function getMacroRegionLabel(countries: string[]): string {
  * Normalized to lowercase for matching.
  */
 export const OEM_NAMES = new Set([
-  'dji', 'skydio', 'autel', 'autel robotics', 'parrot', 'sensefly',
+  'dji', 'skydio', 'autel', 'autel robotics', 'parrot', 'parrot drones', 'sensefly',
   'zipline', 'wing', 'joby', 'joby aviation', 'manna', 'matternet',
   'ehang', 'flytrex', 'elbit systems', 'aerovironment',
+  // Drone-in-a-box / autonomy competitors
+  'percepto', 'azur drones', 'elistair', 'asylon',
   // FlytBase is our own product — must never surface as a DSP target in Tab 2/3
   'flytbase',
   // Competitors — excluded from DSP hit list
   'high-lander', 'high lander', 'highlander',
 ]);
+
+/**
+ * ── Classification Constants Reference (for leadership reporting) ──
+ *
+ * OEM_NAMES: Hardware manufacturers (DJI, Skydio, Autel, Parrot, etc.)
+ *   - These companies BUILD drones. They are NOT FlytBase partner targets.
+ *   - Used to filter them OUT of the DSP hit list and registry review.
+ *
+ * Competitors: Companies offering drone-in-a-box / autonomy platforms
+ *   - Percepto, Azur Drones, Elistair, Asylon, High-Lander
+ *   - Tracked for competitive intelligence but excluded from partner pipeline.
+ *
+ * DSP/SI Targets: The companies FlytBase wants to partner with
+ *   - Drone Service Providers who OPERATE fleets for end-clients
+ *   - Systems Integrators who DEPLOY drone solutions
+ *   - These are identified by: "drone" in company name + engineering/R&D activity code
+ *   - NOT in OEM_NAMES, NOT in competitors list
+ *
+ * Buyers: End-users who operate drones for internal use
+ *   - Police, fire departments, utilities, hospitals, government agencies
+ *   - These are NOT FlytBase DSP partners — they are the DSPs' customers
+ *   - Filtered by BUYER_KEYWORDS pattern in hitlist route
+ *
+ * ── Data Architecture (for leadership reporting) ──
+ *
+ * TABLE: discovered_companies
+ *   - Central registry of ALL potential partner companies identified by Dock Radar
+ *   - Companies arrive from multiple signal sources:
+ *     • source = 'article'           — discovered via Google News / LinkedIn / NewsAPI article scoring
+ *     • source = 'country_registry'  — imported from govt business registries (SIRENE FR, Companies House UK)
+ *     • source = 'manual'            — manually added by BD team
+ *     • source = 'dji_reseller'      — scraped from DJI Enterprise partner pages
+ *   - Each company has: normalized_name (PK), display_name, website, linkedin,
+ *     countries, industries, signal_types, mention_count, employee_count, founded_year, city
+ *   - enriched_by field tracks how the company was enriched:
+ *     • 'scoring'        — auto-enriched during article scoring pipeline
+ *     • 'registry_merge' — enriched from country registry data (employee count, founded year, city)
+ *     • 'comet'          — enriched via Comet web scraper
+ *     • 'manual'         — manually enriched by BD team
+ *   - This table feeds the Partner Hit List (Tab 2) via /api/hitlist
+ *   - BD team reviews companies here and promotes them to pipeline_leads when ready
+ *
+ * TABLE: country_registered_companies
+ *   - Staging table for govt business registry data (SIRENE, Companies House, etc.)
+ *   - Companies land here first with qa_status = 'pending'
+ *   - BD team reviews via /utilities/country-wise-registry-review
+ *   - qa_status workflow: pending → approved/rejected → merged (to discovered_companies)
+ *   - Each row has: composite_score (waterfall score), confidence (high/medium/low),
+ *     score_breakdown (JSON), match_keyword, employee_band, activity_code
+ *   - NOT directly visible in Partner Hit List — must be approved + merged first
+ *
+ * TABLE: flytbase_partners
+ *   - Known existing FlytBase partners (imported from CSV)
+ *   - Used for dedup: companies matching this list get "Known Partner" badge
+ *   - NOT editable through the UI — updated via CSV upload
+ *
+ * TABLE: pipeline_leads
+ *   - Kanban-style deal tracking for companies promoted from discovered_companies
+ *   - Stages: prospect → connecting_linkedin → connecting_email → scheduling_meeting → sent_to_crm → lost_archived
+ *   - Companies in terminal stages (sent_to_crm, lost_archived) auto-drop from active Partner Hit List view
+ *
+ * FLOW: Signal Sources → discovered_companies → Partner Hit List (review) → pipeline_leads (outreach)
+ *       Country Registry → country_registered_companies → QA review → merge to discovered_companies
+ */

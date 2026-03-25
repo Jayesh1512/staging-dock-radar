@@ -1,0 +1,162 @@
+<style>
+.card{border-radius:var(--border-radius-lg);padding:20px 24px;margin-bottom:16px}
+.card h3{font-size:16px;font-weight:500;margin:0 0 14px;color:var(--color-text-primary)}
+.row{display:flex;gap:16px;margin-bottom:12px}
+.col{flex:1;min-width:0}
+.stage{border-radius:var(--border-radius-md);padding:10px 14px;margin-bottom:8px;position:relative}
+.stage .label{font-size:12px;font-weight:500;margin:0 0 2px}
+.stage .num{font-size:18px;font-weight:500;margin:0}
+.stage .sub{font-size:11px;margin:2px 0 0;opacity:0.75}
+.v1{background:var(--color-background-secondary)}
+.v1 .label,.v1 .num{color:var(--color-text-secondary)}
+.v2{background:#E1F5EE}.v2 .label{color:#085041}.v2 .num{color:#04342C}.v2 .sub{color:#0F6E56}
+.delta{background:#FAECE7;border-radius:var(--border-radius-md);padding:6px 10px;font-size:11px;color:#712B13;margin-bottom:8px}
+.delta b{font-weight:500}
+.arrow-down{text-align:center;color:var(--color-text-tertiary);font-size:12px;margin:4px 0}
+.fix{background:#FAEEDA;border-radius:6px;padding:4px 8px;font-size:11px;color:#633806;display:inline-block;margin:2px 0}
+.drop{background:#FCEBEB;border-radius:6px;padding:4px 8px;font-size:11px;color:#791F1F;display:inline-block;margin:2px 0}
+.add{background:#EAF3DE;border-radius:6px;padding:4px 8px;font-size:11px;color:#27500A;display:inline-block;margin:2px 0}
+.keep{background:#E6F1FB;border-radius:6px;padding:4px 8px;font-size:11px;color:#0C447C;display:inline-block;margin:2px 0}
+.section-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--color-border-tertiary)}
+.outcome{border-radius:var(--border-radius-lg);padding:16px;margin-top:12px}
+.outcome-v1{background:var(--color-background-secondary)}
+.outcome-v2{background:#E1F5EE}
+.outcome h4{font-size:14px;font-weight:500;margin:0 0 8px}
+.outcome-v1 h4{color:var(--color-text-secondary)}
+.outcome-v2 h4{color:#04342C}
+.tier-row{display:flex;gap:8px;margin-top:6px}
+.tier{border-radius:6px;padding:6px 10px;text-align:center;flex:1}
+.tier .t-label{font-size:11px;font-weight:500;display:block}
+.tier .t-num{font-size:16px;font-weight:500;display:block;margin-top:2px}
+.tier-a{background:#FAECE7}.tier-a .t-label,.tier-a .t-num{color:#712B13}
+.tier-b{background:#FAEEDA}.tier-b .t-label,.tier-b .t-num{color:#633806}
+.tier-c{background:var(--color-background-secondary)}.tier-c .t-label,.tier-c .t-num{color:var(--color-text-secondary)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0 0;font-size:11px;color:var(--color-text-secondary)}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.bottom-note{font-size:12px;color:var(--color-text-secondary);margin-top:16px;padding:12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+@media(prefers-color-scheme:dark){
+.v2{background:#085041}.v2 .label{color:#9FE1CB}.v2 .num{color:#E1F5EE}.v2 .sub{color:#5DCAA5}
+.delta{background:#4A1B0C}.delta,.delta b{color:#F5C4B3}
+.fix{background:#412402;color:#FAC775}
+.drop{background:#501313;color:#F7C1C1}
+.add{background:#173404;color:#C0DD97}
+.keep{background:#042C53;color:#B5D4F4}
+.outcome-v2{background:#085041}
+.outcome-v2 h4{color:#E1F5EE}
+.tier-a{background:#4A1B0C}.tier-a .t-label,.tier-a .t-num{color:#F5C4B3}
+.tier-b{background:#412402}.tier-b .t-label,.tier-b .t-num{color:#FAC775}
+}
+</style>
+
+<div class="legend">
+<span><i style="background:#FCEBEB"></i> Removed in v2</span>
+<span><i style="background:#FAEEDA"></i> Fixed in v2</span>
+<span><i style="background:#EAF3DE"></i> Added in v2</span>
+<span><i style="background:#E6F1FB"></i> Retained</span>
+</div>
+
+<div class="section-title">Stage 1 — Source (identical)</div>
+<div class="row">
+<div class="col">
+<div class="stage v1"><p class="label">v1</p><p class="num">16,851,670</p><p class="sub">Active SIRENE entities</p></div>
+</div>
+<div class="col">
+<div class="stage v2"><p class="label">v2</p><p class="num">16,851,670</p><p class="sub">Same source, same filter</p></div>
+</div>
+</div>
+
+<div class="section-title">Stage 2 — Keyword matching</div>
+<div class="row">
+<div class="col">
+<div class="stage v1"><p class="label">v1: substring match</p><p class="num">1,855</p><p class="sub">DRONE + UAV + RPAS (substring)</p></div>
+<div class="drop">131 false positives passed through: ACQUAVIVA, GUAVA, SHERPAS, CYBERPASTA</div>
+</div>
+<div class="col">
+<div class="stage v2"><p class="label">v2: word-boundary match</p><p class="num">1,326</p><p class="sub">DRONE* + \bUAV\b + \bRPAS\b</p></div>
+<div class="fix">527 false positives removed (UAV: 424, RPAS: 103)</div>
+<div class="add">+0 false positive rate</div>
+</div>
+</div>
+<div class="delta"><b>Delta:</b> v2 removes 529 noise entries by requiring drone keywords to appear as whole words, not substrings of ACQUAVIVA or SHERPAS</div>
+
+<div class="section-title">Stage 3 — NAF code filtering</div>
+<div class="row">
+<div class="col">
+<div class="stage v1"><p class="label">v1: light blacklist</p><p class="num">955</p><p class="sub">Removed real estate, retail, sports</p></div>
+<div class="keep">Kept: 269 photography (74.20Z)</div>
+<div class="keep">Kept: 69 video production (59.11B)</div>
+<div class="keep">Kept: 77 cleaning/spray (81.22Z)</div>
+<p style="font-size:11px;color:var(--color-text-secondary);margin:4px 0">These use DJI Mavic / spray drones — not DJI Dock</p>
+</div>
+<div class="col">
+<div class="stage v2"><p class="label">v2: Dock-focused NAF filter</p><p class="num">378</p><p class="sub">Only Dock-relevant NAF codes retained</p></div>
+<div class="drop">Removed: 504 photo/video/cleaning</div>
+<div class="add">Kept: engineering, testing, security, air transport, software</div>
+<p style="font-size:11px;color:var(--color-text-secondary);margin:4px 0">Only companies in DJI Dock verticals pass</p>
+</div>
+</div>
+<div class="delta"><b>Delta:</b> v2 removes 504 drone operators that use DJI Mavic/spray drones (not Dock). These are real companies but a different market segment — kept in table, tagged as "non_dock_drone"</div>
+
+<div class="section-title">Stage 4 — Scoring model</div>
+<div class="row">
+<div class="col">
+<div class="stage v1"><p class="label">v1: ad-hoc scoring</p><p class="num">0–48 scale</p><p class="sub">Hard cutoffs on age and employees</p></div>
+<p style="font-size:11px;color:var(--color-text-secondary);margin:4px 0">Young companies (&lt;1yr) excluded from top ranks. Employee ≥5 required for top 50. Not normalised to /100.</p>
+</div>
+<div class="col">
+<div class="stage v2"><p class="label">v2: normalised /100 scoring</p><p class="num">50–95 scale</p><p class="sub">No hard cutoffs, 5 weighted signals</p></div>
+<div class="fix">Age: not scored (industry too young)</div>
+<div class="fix">Size flipped: PME/micro = 15, ETI/GE = 5</div>
+<div class="add">NAF alignment: 30pts (core Dock verticals)</div>
+</div>
+</div>
+<div class="delta"><b>Delta:</b> v2 scoring doesn't penalise young or small companies — a 6-month-old DSP deploying DJI Dock 3 scores as high as a 10-year-old firm. Size scoring flipped because DSPs are typically small firms funded by enterprise clients.</div>
+
+<div class="section-title">Outcome — side by side</div>
+<div class="row">
+<div class="col">
+<div class="outcome outcome-v1">
+<h4>v1 result: 955</h4>
+<p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 4px">818 real drone cos + 137 false positives</p>
+<p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px">Broad: all drone segments mixed together</p>
+<p style="font-size:12px;color:var(--color-text-secondary);margin:0">Instadrone: rank #5, score 39/48</p>
+</div>
+</div>
+<div class="col">
+<div class="outcome outcome-v2">
+<h4>v2 result: 378</h4>
+<p style="font-size:12px;color:#0F6E56;margin:0 0 4px">378 Dock-relevant + 0 false positives</p>
+<p style="font-size:12px;color:#0F6E56;margin:0 0 8px">Focused: only DJI Dock partner candidates</p>
+<p style="font-size:12px;color:#0F6E56;margin:0">Instadrone: rank #24, score 85/100</p>
+</div>
+</div>
+</div>
+
+<div class="row" style="margin-top:12px">
+<div class="col">
+<div class="tier-row">
+<div class="tier tier-c"><span class="t-label">Scored</span><span class="t-num">955</span></div>
+<div class="tier tier-c"><span class="t-label">All segments</span><span class="t-num">mixed</span></div>
+</div>
+</div>
+<div class="col">
+<div class="tier-row">
+<div class="tier tier-a"><span class="t-label">Tier A (75+)</span><span class="t-num">138</span></div>
+<div class="tier tier-b"><span class="t-label">Tier B (60-74)</span><span class="t-num">201</span></div>
+<div class="tier tier-c"><span class="t-label">Tier C (45-59)</span><span class="t-num">39</span></div>
+</div>
+</div>
+</div>
+
+<div class="section-title">Migration strategy — enrich, don't replace</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+<span class="keep">266 companies in both: add dock_score + tag "dock_relevant"</span>
+<span class="add">112 v2-only: insert as new rows, tag "dock_relevant_new"</span>
+<span class="drop">504 photo/video/cleaning: tag "non_dock_drone" (keep in table)</span>
+<span class="fix">137 false positives: tag "false_positive" (keep for audit)</span>
+</div>
+
+<div class="bottom-note">
+<b>Why v2 exists:</b> v1 mixed DJI Dock candidates with aerial photographers and spray drone operators, making BD outreach unfocused. v2 narrows to 378 Dock-relevant companies with a /100 scoring model that doesn't penalise young or small firms. The 504 non-Dock drone operators stay in the table for future market intelligence — we enrich, not replace.
+</div>

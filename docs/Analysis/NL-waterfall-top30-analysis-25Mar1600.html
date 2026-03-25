@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netherlands — DSP/SI Waterfall Analysis &amp; Top 30</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F8FAFC; color: #111827; font-size: 13px; max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  h1 span { color: #2563EB; }
+  .subtitle { font-size: 12px; color: #6B7280; margin-bottom: 24px; }
+  h2 { font-size: 15px; font-weight: 700; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #E5E7EB; }
+  h3 { font-size: 13px; font-weight: 700; margin: 16px 0 8px; color: #374151; }
+
+  /* Cards */
+  .card { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+  .card-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6B7280; margin-bottom: 8px; }
+
+  /* Stats row */
+  .stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 12px 16px; min-width: 120px; text-align: center; }
+  .stat .num { font-size: 22px; font-weight: 800; }
+  .stat .num.blue { color: #2563EB; }
+  .stat .num.green { color: #16A34A; }
+  .stat .num.amber { color: #D97706; }
+  .stat .lbl { font-size: 10px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+
+  /* Funnel */
+  .funnel { display: flex; flex-direction: column; gap: 0; margin: 16px 0 20px; }
+  .funnel-step { display: flex; align-items: center; border-bottom: 1px solid #F3F4F6; }
+  .funnel-step:last-child { border-bottom: none; }
+  .funnel-bar { height: 36px; border-radius: 4px; display: flex; align-items: center; padding: 0 12px; font-size: 11px; font-weight: 600; color: #fff; min-width: 50px; transition: width 0.3s; }
+  .funnel-label { font-size: 11px; color: #374151; padding: 8px 12px; min-width: 200px; }
+  .funnel-count { font-size: 13px; font-weight: 700; color: #111827; min-width: 50px; text-align: right; padding-right: 12px; }
+  .funnel-note { font-size: 10px; color: #9CA3AF; padding: 0 8px; flex: 1; }
+
+  /* Source table */
+  .src-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
+  .src-table th { text-align: left; padding: 6px 10px; background: #F9FAFB; border-bottom: 1px solid #E5E7EB; font-weight: 600; color: #6B7280; font-size: 11px; }
+  .src-table td { padding: 6px 10px; border-bottom: 1px solid #F3F4F6; color: #374151; }
+  .src-table .num-cell { text-align: right; font-weight: 600; }
+
+  /* Top 30 table */
+  .top-table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 8px 0; }
+  .top-table th { text-align: left; padding: 7px 8px; background: #F9FAFB; border-bottom: 2px solid #E5E7EB; font-weight: 700; color: #6B7280; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; position: sticky; top: 0; }
+  .top-table td { padding: 6px 8px; border-bottom: 1px solid #F3F4F6; vertical-align: top; }
+  .top-table tr:hover { background: #F9FAFB; }
+
+  .rank { display: inline-block; width: 20px; height: 20px; border-radius: 50%; text-align: center; line-height: 20px; font-size: 10px; font-weight: 700; color: #fff; }
+  .rank-t1 { background: #DC2626; }
+  .rank-t2 { background: #D97706; }
+  .rank-t3 { background: #2563EB; }
+  .rank-t4 { background: #7C3AED; }
+
+  .tier-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .tier-t1 { background: #FEE2E2; color: #DC2626; }
+  .tier-t2 { background: #FEF3C7; color: #D97706; }
+  .tier-t3 { background: #DBEAFE; color: #2563EB; }
+  .tier-t4 { background: #EDE9FE; color: #7C3AED; }
+
+  .src-chip { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 500; margin: 1px 2px; white-space: nowrap; }
+  .src-comet { background: #DBEAFE; color: #1D4ED8; }
+  .src-dji { background: #FEE2E2; color: #DC2626; }
+  .src-ilt { background: #D1FAE5; color: #065F46; }
+  .src-dcro { background: #FEF3C7; color: #92400E; }
+  .src-drones { background: #E5E7EB; color: #374151; }
+
+  .note-text { font-size: 10px; color: #6B7280; line-height: 1.3; max-width: 250px; }
+  .enrich-ok { font-size: 9px; color: #16A34A; }
+  .enrich-need { display: inline-block; padding: 1px 5px; border-radius: 6px; font-size: 9px; font-weight: 500; background: #FEF3C7; color: #92400E; white-space: nowrap; margin: 1px 0; }
+  a { color: #2563EB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .company-name { font-weight: 600; color: #111827; }
+
+  /* Data cleanup section */
+  .cleanup-list { list-style: none; padding: 0; }
+  .cleanup-list li { padding: 6px 0; border-bottom: 1px solid #F3F4F6; font-size: 12px; display: flex; align-items: flex-start; gap: 8px; }
+  .cleanup-list li:last-child { border-bottom: none; }
+  .cleanup-icon { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; margin-top: 1px; }
+  .cleanup-icon.fix { background: #16A34A; }
+  .cleanup-icon.skip { background: #D97706; }
+  .cleanup-icon.keep { background: #2563EB; }
+
+  .footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #E5E7EB; font-size: 10px; color: #9CA3AF; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1><span>Dock Radar</span> — Netherlands DSP/SI Analysis</h1>
+<p class="subtitle">Waterfall funnel &amp; Top 30 shortlist &middot; 25 March 2026 &middot; Prepared for founder review</p>
+
+<!-- KPI row -->
+<div class="stats">
+  <div class="stat"><div class="num">484</div><div class="lbl">Raw Records</div></div>
+  <div class="stat"><div class="num blue">398</div><div class="lbl">Unique Companies</div></div>
+  <div class="stat"><div class="num">5</div><div class="lbl">Data Sources</div></div>
+  <div class="stat"><div class="num green">12</div><div class="lbl">Top Targets (T1+T2)</div></div>
+  <div class="stat"><div class="num amber">30</div><div class="lbl">Shortlisted</div></div>
+</div>
+
+<!-- Sources -->
+<h2>1. Data Sources</h2>
+<div class="card">
+  <table class="src-table">
+    <thead><tr><th>Source</th><th>Type</th><th class="num-cell">Records</th><th class="num-cell">Unique Cos</th><th>Access</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>ILT OA Register</td><td>Aviation Authority</td><td class="num-cell">341</td><td class="num-cell">330</td><td>Open</td><td>Dutch CAA — basic operator authorization</td></tr>
+      <tr><td>DCRO</td><td>Aviation Authority</td><td class="num-cell">56</td><td class="num-cell">56</td><td>Open</td><td>Certified operator body (OA holders, &euro;500/yr)</td></tr>
+      <tr><td>Drones.nl Directory</td><td>Public Directory</td><td class="num-cell">52</td><td class="num-cell">52</td><td>Open</td><td>Industry directory with category tags</td></tr>
+      <tr><td>Comet Browser</td><td>AI-Assisted</td><td class="num-cell">19</td><td class="num-cell">18</td><td>Open</td><td>Targeted research — highest signal quality</td></tr>
+      <tr><td>ILT STS Register</td><td>Aviation Authority</td><td class="num-cell">9</td><td class="num-cell">9</td><td>Open</td><td>SORA-category operators (higher bar)</td></tr>
+      <tr><td>DJI Enterprise Website</td><td>DJI Resellers</td><td class="num-cell">7</td><td class="num-cell">7</td><td>Open</td><td>Official Enterprise Dealer list</td></tr>
+    </tbody>
+    <tfoot><tr style="font-weight: 700; border-top: 2px solid #E5E7EB;"><td>Total</td><td></td><td class="num-cell">484</td><td class="num-cell">398*</td><td></td><td><span style="font-weight: 400; color: #9CA3AF;">*after dedup + domain merge</span></td></tr></tfoot>
+  </table>
+</div>
+
+<!-- Funnel -->
+<h2>2. Waterfall Funnel: 484 &rarr; 30</h2>
+<div class="card">
+  <div class="funnel">
+    <div class="funnel-step">
+      <div class="funnel-count">484</div>
+      <div class="funnel-label">Raw Excel rows</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 100%; background: #94A3B8;">484 rows</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count">-86</div>
+      <div class="funnel-label">Dedup &amp; data cleanup</div>
+      <div class="funnel-note">11 dual-auth merges, 29 cross-source dups (kept higher score), 1 exact dup, 45 domain merges</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count">398</div>
+      <div class="funnel-label">Unique companies</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 82%; background: #64748B;">398</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count">4</div>
+      <div class="funnel-label" style="font-weight: 700; color: #DC2626;">T1 — DJI Dock Signal</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 5%; background: #DC2626;">4</div></div>
+      <div class="funnel-note">Direct evidence of DJI Dock hardware</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count">8</div>
+      <div class="funnel-label" style="font-weight: 700; color: #D97706;">T2 — BVLOS / LUC Operator</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 8%; background: #D97706;">8</div></div>
+      <div class="funnel-note">Active BVLOS ops — highest conversion intent</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count">18</div>
+      <div class="funnel-label" style="font-weight: 700; color: #2563EB;">T3 — Multi-Source (top 18)</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 15%; background: #2563EB;">18 of 47</div></div>
+      <div class="funnel-note">Corroborated across 2-3 independent sources, ranked by score + enrichment</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count" style="color: #16A34A; font-weight: 800;">= 30</div>
+      <div class="funnel-label" style="font-weight: 800; color: #16A34A;">Shortlisted for BD Review</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 25%; background: #16A34A;">Top 30</div></div>
+    </div>
+    <div class="funnel-step" style="opacity: 0.5;">
+      <div class="funnel-count">368</div>
+      <div class="funnel-label">Remaining (in DB, not prioritized)</div>
+      <div class="funnel-note">29 more T3 + 1 T4 + 12 T5 + 326 generic OA operators</div>
+    </div>
+  </div>
+  <div style="margin-top: 8px; padding: 8px 14px; background: #F0FDF4; border-radius: 6px; border-left: 3px solid #16A34A; font-size: 11px; color: #166534; line-height: 1.5;">
+    <strong>No elimination by missing data:</strong> Companies are ranked purely by signal strength (Dock mention &rarr; BVLOS &rarr; source corroboration). Missing website or LinkedIn does <em>not</em> reduce rank or exclude from the top 30. Blank fields are filled post-shortlisting via enrichment.
+  </div>
+</div>
+
+<!-- Filter logic detail -->
+<h2>2a. Filter Logic — Field-Level Detail</h2>
+<div class="card">
+  <table class="src-table" style="font-size: 11px;">
+    <thead>
+      <tr><th style="width: 50px;">Step</th><th style="width: 140px;">Filter</th><th>Fields Checked</th><th>Matching Values</th><th style="width: 50px;">In</th><th style="width: 50px;">Out</th></tr>
+    </thead>
+    <tbody>
+      <tr style="background: #F9FAFB;">
+        <td colspan="6" style="font-weight: 700; color: #6B7280; padding: 8px 10px;">STAGE 1: Dedup &amp; Cleanup (484 &rarr; 398)</td>
+      </tr>
+      <tr>
+        <td>1a</td>
+        <td>ILT dual-auth merge</td>
+        <td><code>Source</code> = same, <code>Company Name</code> = same, <code>ILT Auth #</code> differs (suffix P vs G)</td>
+        <td>e.g. NLD-OAT-004/<strong>02P</strong> &amp; NLD-OAT-004/<strong>07G</strong> &mdash; merged into one record with both auth numbers</td>
+        <td>484</td>
+        <td style="font-weight: 600;">473</td>
+      </tr>
+      <tr>
+        <td>1b</td>
+        <td>Cross-source dedup</td>
+        <td><code>source_type</code> (mapped enum) + <code>normalized_name</code></td>
+        <td>Same company in ILT OA + DCRO &rarr; both map to <code>aviation_authority</code>. Keep higher score (DCRO=50 beats ILT OA=30). Process order: ILT STS &rarr; DCRO &rarr; ILT OA</td>
+        <td>473</td>
+        <td style="font-weight: 600;">445</td>
+      </tr>
+      <tr>
+        <td>1c</td>
+        <td>Domain-based merge</td>
+        <td><code>normalized_domain</code> extracted from <code>Website</code></td>
+        <td>Different names, same domain &mdash; e.g. "Falcker Drone Robotics" (Comet) + "Falcker Innovations" (ILT OA) both &rarr; <code>falcker.com</code>. Merged in grouped view.</td>
+        <td>445</td>
+        <td style="font-weight: 600;">398</td>
+      </tr>
+      <tr>
+        <td>1d</td>
+        <td>Drones.nl domain fix</td>
+        <td><code>Source</code> = "Drones.nl Directory"</td>
+        <td>All 52 entries had website = <code>drones.nl/bedrijven/...</code>. Set <code>normalized_domain = null</code> to prevent false merge of all 52 into one company.</td>
+        <td colspan="2" style="color: #6B7280; text-align: center;">fix only</td>
+      </tr>
+      <tr>
+        <td>1e</td>
+        <td>LUC keyword fix</td>
+        <td><code>Category</code>, <code>Operations Type</code></td>
+        <td>"lucht<strong>vaart</strong>" and "lucht<strong>fotografie</strong>" contain substring "luc". Fixed: match <code>\bluc\b</code> (word boundary) so only standalone "LUC" matches.</td>
+        <td colspan="2" style="color: #6B7280; text-align: center;">fix only</td>
+      </tr>
+
+      <tr style="background: #F9FAFB;">
+        <td colspan="6" style="font-weight: 700; color: #6B7280; padding: 8px 10px;">STAGE 2: Tier Assignment (398 &rarr; T1/T2/T3/T4/T5/Bulk)</td>
+      </tr>
+      <tr style="background: #FEF2F2;">
+        <td>T1</td>
+        <td style="font-weight: 700; color: #DC2626;">Dock Signal</td>
+        <td><code>Operations Type</code> + <code>Notes</code></td>
+        <td>Contains: <code>"dji dock"</code>, <code>"dock 2"</code>, <code>"dock 3"</code>, or <code>"dock installer"</code> (case-insensitive substring match)</td>
+        <td colspan="2" style="font-weight: 700; text-align: center;">4</td>
+      </tr>
+      <tr style="background: #FFFBEB;">
+        <td>T2</td>
+        <td style="font-weight: 700; color: #D97706;">BVLOS / LUC</td>
+        <td><code>Operations Type</code> + <code>Notes</code> + <code>Category</code> (excl. Drones.nl category)</td>
+        <td>Contains: <code>"bvlos"</code>, <code>\bluc\b</code> (word boundary), or <code>"drone-in-a-box"</code>. Excludes companies already in T1.</td>
+        <td colspan="2" style="font-weight: 700; text-align: center;">8</td>
+      </tr>
+      <tr style="background: #EFF6FF;">
+        <td>T3</td>
+        <td style="font-weight: 700; color: #2563EB;">Multi-Source</td>
+        <td>Count of distinct <code>Source</code> values per <code>normalized_name</code></td>
+        <td>Company appears in &ge;2 independent sources (e.g. Comet + DJI, or ILT OA + DCRO). Excludes T1 and T2.</td>
+        <td colspan="2" style="font-weight: 700; text-align: center;">47</td>
+      </tr>
+      <tr>
+        <td>T4</td>
+        <td>DJI Dealer</td>
+        <td><code>Category</code> or <code>Operations Type</code></td>
+        <td>Contains <code>"dealer"</code> or <code>"reseller"</code>. Excludes T1-T3.</td>
+        <td colspan="2" style="text-align: center;">1</td>
+      </tr>
+      <tr>
+        <td>T5</td>
+        <td>Industrial Vertical</td>
+        <td><code>Category</code></td>
+        <td>Contains <code>"inspectie"</code> or <code>"agrarisch"</code>. Excludes T1-T4.</td>
+        <td colspan="2" style="text-align: center;">12</td>
+      </tr>
+      <tr style="opacity: 0.5;">
+        <td>Bulk</td>
+        <td>Everything else</td>
+        <td>&mdash;</td>
+        <td>Single-source, no dock/BVLOS/industrial signal. Generic OA operators.</td>
+        <td colspan="2" style="text-align: center;">326</td>
+      </tr>
+
+      <tr style="background: #F9FAFB;">
+        <td colspan="6" style="font-weight: 700; color: #6B7280; padding: 8px 10px;">STAGE 3: Rank within tiers &amp; cut to 30</td>
+      </tr>
+      <tr>
+        <td>3a</td>
+        <td>Scoring formula</td>
+        <td colspan="4">
+          <code style="font-size: 10px; background: #F3F4F6; padding: 2px 6px; border-radius: 3px;">
+            score = (dock? +40) + (bvlos? +25) + (source_count &times; 15) + (has_notes? +3)
+          </code>
+          <br><span style="font-size: 10px; color: #9CA3AF;">Website/LinkedIn presence does NOT affect score. Enrichment gaps are not penalized.</span>
+        </td>
+      </tr>
+      <tr>
+        <td>3b</td>
+        <td>Sort &amp; cut</td>
+        <td colspan="4">
+          <span style="font-size: 11px;">Sort by: <strong>tier ASC</strong> (T1 first), then <strong>score DESC</strong>. Take top 30.</span>
+          <br><span style="font-size: 10px; color: #9CA3AF;">T1 (4) + T2 (8) = 12 companies all included. Remaining 18 slots filled from top-scoring T3 companies.</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Data cleanup -->
+<h2>3. Data Cleanup Applied</h2>
+<div class="card">
+  <ul class="cleanup-list">
+    <li><div class="cleanup-icon fix">1</div><div><strong>ILT dual-authorization merge</strong> — 11 companies held both P (Private) and G (Governmental) authorizations as separate rows. Merged into single record with auth_numbers array. No data lost.</div></li>
+    <li><div class="cleanup-icon fix">2</div><div><strong>Cross-source priority ordering</strong> — ILT OA (score 30), DCRO (50), and ILT STS (65) all map to aviation_authority. 27 companies appeared in both DCRO + ILT OA. Processed DCRO first so higher-score record wins.</div></li>
+    <li><div class="cleanup-icon fix">3</div><div><strong>"LUC" keyword false positive</strong> — Dutch words "luchtvaart" (aviation) and "luchtfotografie" (aerial photography) contain substring "luc". Fixed with word-boundary matching to only detect "LUC" as a standalone certification keyword.</div></li>
+    <li><div class="cleanup-icon fix">4</div><div><strong>Drones.nl domain collision</strong> — All 52 Drones.nl entries had website = drones.nl/bedrijven/... which would merge all into one company. Set normalized_domain = null for this source.</div></li>
+    <li><div class="cleanup-icon fix">5</div><div><strong>Name mismatch across sources</strong> — Same company with different names (e.g., "Falcker Drone Robotics" vs "Falcker Innovations" vs "Falcker") resolved by domain-based dedup in grouped API (all share falcker.com).</div></li>
+    <li><div class="cleanup-icon keep">6</div><div><strong>58 records with no website/LinkedIn</strong> — 55 ILT OA + 3 ILT STS. These are <strong>not eliminated</strong> — they remain eligible for all tiers and the top 30. Missing contact data is an enrichment gap, not a disqualification. Queued for website/LinkedIn enrichment via Apollo, LinkedIn search, or manual lookup.</div></li>
+  </ul>
+  <div style="margin-top: 12px; padding: 10px 14px; background: #EFF6FF; border-radius: 6px; border-left: 3px solid #2563EB; font-size: 11px; color: #1E40AF; line-height: 1.5;">
+    <strong>Enrichment approach:</strong> No company is excluded from ranking due to missing website or LinkedIn. Blank fields are enrichment opportunities, not elimination criteria. After the top 30 is finalized, we run enrichment (Apollo / LinkedIn lookup / manual search) to fill gaps before BD outreach.
+  </div>
+</div>
+
+<!-- Tier Logic -->
+<h2>4. Shortlisting Logic</h2>
+<div class="card">
+  <table class="src-table">
+    <thead><tr><th>Tier</th><th>Signal</th><th>Count</th><th>In Top 30?</th><th>Scoring</th></tr></thead>
+    <tbody>
+      <tr style="background: #FEF2F2;"><td><span class="tier-badge tier-t1">T1</span></td><td>"DJI Dock" or "Dock Installer" in operations/notes</td><td>4</td><td>All 4</td><td>Base 85 + sources&times;15 + intel notes bonus</td></tr>
+      <tr style="background: #FFFBEB;"><td><span class="tier-badge tier-t2">T2</span></td><td>BVLOS, LUC certified, or Drone-in-a-Box in ops</td><td>8</td><td>All 8</td><td>Base 70 + sources&times;15 + intel notes bonus</td></tr>
+      <tr style="background: #EFF6FF;"><td><span class="tier-badge tier-t3">T3</span></td><td>Appears in 2+ independent sources</td><td>47</td><td>Top 18</td><td>sources&times;15 + intel notes bonus, ranked</td></tr>
+      <tr><td><span class="tier-badge tier-t4">T4</span></td><td>DJI Enterprise Dealer (not in T1-T3)</td><td>1</td><td>0</td><td>Already captured in T1/T3 via multi-source</td></tr>
+      <tr><td>T5</td><td>Industrial vertical (inspectie, agrarisch)</td><td>12</td><td>0</td><td>Weaker signal — backlog for later review</td></tr>
+      <tr style="opacity: 0.5;"><td>Bulk</td><td>Single-source generic OA operators</td><td>326</td><td>0</td><td>Basic license only — no conversion signal</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Top 30 Table -->
+<h2>5. Top 30 — Netherlands</h2>
+<div class="card" style="padding: 12px; overflow-x: auto;">
+  <table class="top-table">
+    <thead>
+      <tr>
+        <th style="width: 30px;">#</th>
+        <th>Tier</th>
+        <th>Company</th>
+        <th>Sources</th>
+        <th style="width: 50px;">Src#</th>
+        <th>Operations</th>
+        <th>Key Intelligence</th>
+        <th>Enrich</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- T1: Dock Signal -->
+      <tr>
+        <td><span class="rank rank-t1">1</span></td>
+        <td><span class="tier-badge tier-t1">T1 Dock</span></td>
+        <td><span class="company-name">Skeye</span><br><a href="https://www.skeye.com" target="_blank">skeye.com</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-dcro">DCRO</span><span class="src-chip src-ilt">ILT OA</span></td>
+        <td style="text-align: center; font-weight: 700;">3</td>
+        <td>BVLOS, DJI Dock, LUC Certified</td>
+        <td class="note-text">First Dutch company with LUC; BVLOS at Shell Rotterdam (Europort &amp; Pernis). Terra Drone Europe subsidiary.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t1">2</span></td>
+        <td><span class="tier-badge tier-t1">T1 Dock</span></td>
+        <td><span class="company-name">Drone Class B.V.</span><br><a href="https://www.dronelicense.eu" target="_blank">dronelicense.eu</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">3</td>
+        <td>BVLOS, DJI Dock</td>
+        <td class="note-text">First DJI Dock deployment in NL (2022); BVLOS training &amp; operations.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t1">3</span></td>
+        <td><span class="tier-badge tier-t1">T1 Dock</span></td>
+        <td><span class="company-name">DroneLand (Dutch Drone Group)</span><br><a href="https://www.droneland.nl" target="_blank">droneland.nl</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-drones">Drones.nl</span><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dji">DJI</span></td>
+        <td style="text-align: center; font-weight: 700;">4</td>
+        <td>DJI Dock Installer</td>
+        <td class="note-text">Largest DJI Enterprise dealer in Benelux; official DJI Dock dealer. Almere.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t1">4</span></td>
+        <td><span class="tier-badge tier-t1">T1 Dock</span></td>
+        <td><span class="company-name">Vortex Hardware &amp; Maintenance</span><br><a href="https://www.vortex-hardware.com" target="_blank">vortex-hardware.com</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-dji">DJI</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>BVLOS, DJI Dock</td>
+        <td class="note-text">Heinenoord; drone integration &amp; maintenance; Port of Rotterdam BVLOS ops.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+
+      <!-- T2: BVLOS -->
+      <tr>
+        <td><span class="rank rank-t2">5</span></td>
+        <td><span class="tier-badge tier-t2">T2 BVLOS</span></td>
+        <td><span class="company-name">Avy</span><br><a href="https://www.avy.eu" target="_blank">avy.eu</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-dcro">DCRO</span><span class="src-chip src-ilt">ILT OA</span></td>
+        <td style="text-align: center; font-weight: 700;">3</td>
+        <td>BVLOS, Drone-in-a-Box</td>
+        <td class="note-text">Amsterdam; autonomous VTOL BVLOS for emergency response &amp; medical delivery.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t2">6</span></td>
+        <td><span class="tier-badge tier-t2">T2 BVLOS</span></td>
+        <td><span class="company-name">Falcker Drone Robotics</span><br><a href="https://www.falcker.com" target="_blank">falcker.com</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">3</td>
+        <td>BVLOS, Drone-in-a-Box (Percepto)</td>
+        <td class="note-text">First BVLOS approval in NL (2022); Percepto distributor; tank inspections.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t2">7</span></td>
+        <td><span class="tier-badge tier-t2">T2 BVLOS</span></td>
+        <td><span class="company-name">DDC - Smart Inspections</span><br><a href="https://ddc.works" target="_blank">ddc.works</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-dcro">DCRO</span><span class="src-chip src-ilt">ILT OA</span></td>
+        <td style="text-align: center; font-weight: 700;">3</td>
+        <td>BVLOS</td>
+        <td class="note-text">Rotterdam; first BVLOS corridor in Port of Rotterdam.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t2">8</span></td>
+        <td><span class="tier-badge tier-t2">T2 BVLOS</span></td>
+        <td><span class="company-name">Dronebotics B.V.</span><br><a href="https://dronebotics.nl" target="_blank">dronebotics.nl</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">3</td>
+        <td>BVLOS, Drone-in-a-Box</td>
+        <td class="note-text">Drone automation; BVLOS operations in Netherlands.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t2">9</span></td>
+        <td><span class="tier-badge tier-t2">T2 BVLOS</span></td>
+        <td><span class="company-name">ANWB Medical Drones</span><br><a href="https://www.anwb.nl/gezondheid/anwb-medical-drones" target="_blank">anwb.nl</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-ilt">ILT OA</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>BVLOS (Medical Logistics)</td>
+        <td class="note-text">Medical drone logistics BVLOS; ANWB Medical Air Assistance initiative.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t2">10</span></td>
+        <td><span class="tier-badge tier-t2">T2 BVLOS</span></td>
+        <td><span class="company-name">Ecowende</span><br><a href="https://www.ecowende.nl" target="_blank">ecowende.nl</a></td>
+        <td><span class="src-chip src-comet">Comet</span></td>
+        <td style="text-align: center;">1</td>
+        <td>BVLOS (Offshore Wind)</td>
+        <td class="note-text">First offshore BVLOS flight in NL (Jan 2026); Hollandse Kust West wind farm.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t2">11</span></td>
+        <td><span class="tier-badge tier-t2">T2 BVLOS</span></td>
+        <td><span class="company-name">KPN (IoT/Drone division)</span><br><a href="https://www.kpn.com" target="_blank">kpn.com</a></td>
+        <td><span class="src-chip src-comet">Comet</span></td>
+        <td style="text-align: center;">1</td>
+        <td>BVLOS Connectivity</td>
+        <td class="note-text">BVLOS connectivity infrastructure; partnership with TEOCO &amp; LVNL.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t2">12</span></td>
+        <td><span class="tier-badge tier-t2">T2 BVLOS</span></td>
+        <td><span class="company-name">Unisphere</span><br><a href="https://unisphere.io" target="_blank">unisphere.io</a></td>
+        <td><span class="src-chip src-comet">Comet</span></td>
+        <td style="text-align: center;">1</td>
+        <td>BVLOS / SORA / UTM</td>
+        <td class="note-text">U-Space / UTM for BVLOS in NL (VUTURA project).</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+
+      <!-- T3: Multi-Source (top 18 by score) -->
+      <tr>
+        <td><span class="rank rank-t3">13</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Droneshop.nl</span><br><a href="https://droneshop.nl" target="_blank">droneshop.nl</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-drones">Drones.nl</span><span class="src-chip src-dji">DJI</span></td>
+        <td style="text-align: center; font-weight: 700;">3</td>
+        <td>DJI Authorized Dealer</td>
+        <td class="note-text">'s-Hertogenbosch; official DJI dealer.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">14</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Dronestars B.V.</span><br><a href="https://dronestars.nl" target="_blank">dronestars.nl</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dji">DJI</span></td>
+        <td style="text-align: center; font-weight: 700;">3</td>
+        <td>DJI Enterprise Dealer</td>
+        <td class="note-text">Hoofddorp; enterprise drone solutions Benelux.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">15</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Vliegend.nl</span><br><a href="https://www.vliegend.nl" target="_blank">vliegend.nl</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-drones">Drones.nl</span><span class="src-chip src-dji">DJI</span></td>
+        <td style="text-align: center; font-weight: 700;">3</td>
+        <td>DJI Authorized Dealer</td>
+        <td class="note-text">Raard (Friesland); professional UAV supplier &amp; repair.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">16</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Geodirect B.V.</span><br><a href="https://www.geodirect.nl" target="_blank">geodirect.nl</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-dji">DJI</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DJI Enterprise Dealer</td>
+        <td class="note-text">Mijdrecht; GIS &amp; drone solutions; DJI enterprise.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">17</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Geocentrum V.O.F.</span><br><a href="https://geocentrum.nl" target="_blank">geocentrum.nl</a></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-dji">DJI</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DJI Authorized Dealer</td>
+        <td class="note-text">Delft area; DJI dealer.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">18</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Euro Drone Inspections</span><br><a href="https://www.eurodronesinspections.com" target="_blank">eurodronesinspections.com</a></td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-drones">Drones.nl</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>Inspections</td>
+        <td class="note-text">Inspection-focused; corroborated across ILT + Drones.nl directory.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">19</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Delft Dynamics B.V.</span><br><a href="https://www.delftdynamics.nl" target="_blank">delftdynamics.nl</a></td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DCRO Certified</td>
+        <td class="note-text">DCRO certified; engineering/R&amp;D focused drone company.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">20</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">OmniDrones B.V.</span><br><a href="https://omnidrones.nl" target="_blank">omnidrones.nl</a></td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DCRO Certified</td>
+        <td class="note-text">DCRO certified operator.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">21</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Eyewings B.V.</span><br><a href="https://www.eye-wings.com" target="_blank">eye-wings.com</a></td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DCRO Certified</td>
+        <td class="note-text">DCRO certified operator.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">22</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Terra Inspectioneering</span><br><a href="https://terra-inspectioneering.com" target="_blank">terra-inspectioneering.com</a></td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DCRO Certified</td>
+        <td class="note-text">Inspection-focused; DCRO certified.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">23</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Aerial Intelligence B.V.</span><br><a href="https://aerialintelligence.nl" target="_blank">aerialintelligence.nl</a></td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DCRO Certified</td>
+        <td class="note-text">DCRO certified operator.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">24</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">ShipShot</span><br>—</td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DCRO Certified</td>
+        <td class="note-text">DCRO certified; maritime-focused drone ops.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">25</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Haviq Inspect</span><br>—</td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DCRO Certified</td>
+        <td class="note-text">Inspection-focused; DCRO certified.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">26</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">SkyLynx Productions</span><br><a href="https://www.skylynx.nl" target="_blank">skylynx.nl</a></td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DCRO Certified</td>
+        <td class="note-text">DCRO certified.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">27</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">FLOAT 360</span><br><a href="https://www.float360.nl" target="_blank">float360.nl</a></td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DCRO Certified</td>
+        <td class="note-text">DCRO certified.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">28</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Droneview</span><br><a href="https://www.droneview.nl" target="_blank">droneview.nl</a></td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DCRO Certified</td>
+        <td class="note-text">DCRO certified.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">29</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Dutch Aerial Works</span><br>—</td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DCRO Certified</td>
+        <td class="note-text">DCRO certified.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">30</span></td>
+        <td><span class="tier-badge tier-t3">T3 Multi</span></td>
+        <td><span class="company-name">Geometius B.V.</span><br><a href="https://geometius.nl" target="_blank">geometius.nl</a></td>
+        <td><span class="src-chip src-ilt">ILT OA</span><span class="src-chip src-dcro">DCRO</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DCRO Certified</td>
+        <td class="note-text">Geospatial + drone; DCRO certified.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top: 10px; padding: 8px 14px; background: #FFFBEB; border-radius: 6px; border-left: 3px solid #D97706; font-size: 11px; color: #92400E; line-height: 1.5;">
+    <strong>Enrichment summary:</strong> 17 of 30 are fully enriched (website + LinkedIn). 10 need LinkedIn lookup. 3 need both website + LinkedIn. Enrichment is a <em>post-shortlisting step</em> — these companies made the top 30 on signal strength alone.
+  </div>
+</div>
+
+<!-- Rollback -->
+<h2>6. Rollback &amp; Safety</h2>
+<div class="card">
+  <p style="font-size: 12px; line-height: 1.6;">
+    All 445 records will be loaded into <code>source_candidates</code> with <code>country_code = 'NL'</code>. If needed, the entire NL load can be cleanly removed with:
+  </p>
+  <pre style="background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 6px; padding: 8px 12px; margin: 8px 0; font-size: 11px; color: #374151;">DELETE FROM source_candidates WHERE country_code = 'NL';</pre>
+  <p style="font-size: 12px; line-height: 1.6; color: #6B7280;">
+    Source Excel file is preserved as-is. No modifications to the original data. Import run is logged in <code>source_import_runs</code> for full traceability.
+  </p>
+</div>
+
+<div class="footer">
+  Dock Radar &middot; Netherlands DSP/SI Waterfall Analysis &middot; Generated 25 Mar 2026 &middot; Data: 5 sources, 484 raw records &rarr; Top 30
+</div>
+
+</body>
+</html>

@@ -1,0 +1,190 @@
+<style>
+.row{display:flex;gap:14px;margin-bottom:10px}
+.col{flex:1;min-width:0}
+.stage{border-radius:8px;padding:10px 12px;margin-bottom:6px}
+.stage .label{font-size:11px;font-weight:500;margin:0 0 1px}
+.stage .num{font-size:17px;font-weight:500;margin:0}
+.stage .sub{font-size:11px;margin:2px 0 0;opacity:0.75}
+.v1{background:var(--color-background-secondary)}.v1 .label,.v1 .num{color:var(--color-text-secondary)}
+.v2{background:#E1F5EE}.v2 .label{color:#085041}.v2 .num{color:#04342C}.v2 .sub{color:#0F6E56}
+.delta{background:#FAECE7;border-radius:8px;padding:8px 10px;font-size:11px;color:#712B13;margin-bottom:10px}
+.delta b{font-weight:500}
+.fix{background:#FAEEDA;border-radius:6px;padding:3px 7px;font-size:11px;color:#633806;display:inline-block;margin:2px 0}
+.drop{background:#FCEBEB;border-radius:6px;padding:3px 7px;font-size:11px;color:#791F1F;display:inline-block;margin:2px 0}
+.add{background:#EAF3DE;border-radius:6px;padding:3px 7px;font-size:11px;color:#27500A;display:inline-block;margin:2px 0}
+.keep{background:#E6F1FB;border-radius:6px;padding:3px 7px;font-size:11px;color:#0C447C;display:inline-block;margin:2px 0}
+.info{background:#EEEDFE;border-radius:6px;padding:3px 7px;font-size:11px;color:#3C3489;display:inline-block;margin:2px 0}
+.sec{font-size:13px;font-weight:500;color:var(--color-text-primary);margin:18px 0 6px;padding-bottom:3px;border-bottom:1px solid var(--color-border-tertiary)}
+.rationale{background:var(--color-background-secondary);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--color-text-secondary);margin-bottom:10px;line-height:1.5}
+.rationale b{font-weight:500;color:var(--color-text-primary)}
+.outcome{border-radius:12px;padding:14px}
+.outcome-v1{background:var(--color-background-secondary)}
+.outcome-v2{background:#E1F5EE}
+.outcome h4{font-size:13px;font-weight:500;margin:0 0 6px}
+.outcome-v1 h4{color:var(--color-text-secondary)}
+.outcome-v2 h4{color:#04342C}
+.tier-row{display:flex;gap:6px;margin-top:6px}
+.tier{border-radius:6px;padding:5px 8px;text-align:center;flex:1}
+.tier .t-label{font-size:10px;font-weight:500;display:block}
+.tier .t-num{font-size:15px;font-weight:500;display:block;margin-top:1px}
+.tier-a{background:#FAECE7}.tier-a .t-label,.tier-a .t-num{color:#712B13}
+.tier-b{background:#FAEEDA}.tier-b .t-label,.tier-b .t-num{color:#633806}
+.tier-c{background:var(--color-background-secondary)}.tier-c .t-label,.tier-c .t-num{color:var(--color-text-secondary)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0;font-size:10px;color:var(--color-text-secondary)}
+.legend span{display:inline-flex;align-items:center;gap:3px}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.bottom-note{font-size:11px;color:var(--color-text-secondary);margin-top:14px;padding:10px 12px;background:var(--color-background-secondary);border-radius:8px;line-height:1.5}
+.bottom-note b{font-weight:500;color:var(--color-text-primary)}
+.breakout{border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--color-text-secondary);margin:6px 0 10px;line-height:1.5}
+.breakout b{font-weight:500;color:var(--color-text-primary)}
+@media(prefers-color-scheme:dark){
+.v2{background:#085041}.v2 .label{color:#9FE1CB}.v2 .num{color:#E1F5EE}.v2 .sub{color:#5DCAA5}
+.delta{background:#4A1B0C}.delta,.delta b{color:#F5C4B3}
+.fix{background:#412402;color:#FAC775}.drop{background:#501313;color:#F7C1C1}
+.add{background:#173404;color:#C0DD97}.keep{background:#042C53;color:#B5D4F4}
+.info{background:#26215C;color:#CECBF6}
+.outcome-v2{background:#085041}.outcome-v2 h4{color:#E1F5EE}
+.tier-a{background:#4A1B0C}.tier-a .t-label,.tier-a .t-num{color:#F5C4B3}
+.tier-b{background:#412402}.tier-b .t-label,.tier-b .t-num{color:#FAC775}
+.rationale b{color:var(--color-text-primary)}
+.breakout b{color:var(--color-text-primary)}
+.bottom-note b{color:var(--color-text-primary)}
+}
+</style>
+
+<div class="legend">
+<span><i style="background:#FCEBEB"></i> Removed</span>
+<span><i style="background:#FAEEDA"></i> Fixed</span>
+<span><i style="background:#EAF3DE"></i> Added</span>
+<span><i style="background:#E6F1FB"></i> Retained</span>
+<span><i style="background:#EEEDFE"></i> Limitation</span>
+</div>
+
+<div class="sec">Stage 1 — Source database (identical)</div>
+<div class="row">
+<div class="col">
+<div class="stage v1"><p class="label">v1</p><p class="num">16,851,670</p><p class="sub">Active SIRENE entities</p></div>
+</div>
+<div class="col">
+<div class="stage v2"><p class="label">v2</p><p class="num">16,851,670</p><p class="sub">Same source, same filter</p></div>
+</div>
+</div>
+<div class="rationale"><b>What is 16.8M?</b> Every active legal unit in France: 7.7M sole proprietors, 2.5M real estate SCIs, 1.5M associations, 5.0M structured companies. INSEE confirms only ~5-6M are economically active enterprises (1 per 13 inhabitants). Source: data.gouv.fr/sirene (free, CC-BY).</div>
+
+<div class="sec">Stage 2 — Keyword matching (biggest drop: 16.8M to ~1.3K)</div>
+<div class="row">
+<div class="col">
+<div class="stage v1"><p class="label">v1: substring match</p><p class="num">1,855</p><p class="sub">"drone" + "uav" + "rpas" as substrings</p></div>
+<div class="drop">131+ false positives leaked: ACQUAVIVA, GUAVA, SHERPAS, CYBERPASTA</div>
+</div>
+<div class="col">
+<div class="stage v2"><p class="label">v2: word-boundary match</p><p class="num">1,326</p><p class="sub">DRONE* + \bUAV\b + \bRPAS\b</p></div>
+<div class="fix">527 false positives blocked (UAV: 424, RPAS: 103)</div>
+<div class="add">0% false positive rate</div>
+</div>
+</div>
+
+<div class="breakout">
+<b>Why the 16.8M → ~1.3K drop?</b> We are filtering on <b>company name only</b>. SIRENE has only 3 searchable fields per company: registered name, trade name, and acronym. Out of 16.8M entities, exactly 1,326 contain the words "drone", "UAV", "RPAS", or "telepilot" in these name fields. The other 16,850,344 entities are simply not drone-related by name.
+<br><br>
+<b>What's excluded in this drop (16,850,344 entities):</b><br>
+- 7.7M sole proprietors (auto-entrepreneurs, freelancers — vast majority not in drones)<br>
+- 2.5M SCI real estate holding companies<br>
+- 1.5M non-profit associations (sports clubs, charities)<br>
+- ~5.0M structured companies in every other industry (restaurants, shops, tech firms, factories...)
+<br><br>
+<b>What we CANNOT do to reduce this drop:</b><br>
+<span class="info">No company descriptions</span> SIRENE has no free-text "objet social" (corporate purpose) field. Only a NAF activity code (e.g., "71.12B") and the company name. Descriptions exist only in the RCS (Registre du Commerce) via Infogreffe — paid per document, no bulk access.<br>
+<span class="info">No website / email / LinkedIn</span> SIRENE contains zero digital contact data. No way to crawl company websites from the registry alone.<br>
+<span class="info">No keyword in activity description</span> NAF codes are broad categories (e.g., "Private security activities") — they don't mention "drone" even if the company deploys drones.
+</div>
+
+<div class="delta"><b>Why this matters:</b> Companies like <b>Groupe Protect</b> (registered as "GROUPE PROTECTOR", NAF 80.10Z — security) and <b>Altametris</b> (registered as "ALTAMETRIS", NAF 63.11Z — data processing) are real drone operators but have zero drone-related text in their SIRENE record. They cannot be found by any name-based waterfall. This is a fundamental ceiling of the SIRENE-only approach — catching these "invisible operators" requires external signals (Google Search Crawler, LinkedIn, DJI Partner Scanner).</div>
+
+<div class="sec">Stage 3 — NAF code filtering</div>
+<div class="row">
+<div class="col">
+<div class="stage v1"><p class="label">v1: light blacklist</p><p class="num">955</p><p class="sub">Removed real estate, retail, sports only</p></div>
+<div class="keep">Kept: 269 photography (74.20Z)</div>
+<div class="keep">Kept: 69 video (59.11B) + 20 film (59.11A)</div>
+<div class="keep">Kept: 77 cleaning/spray (81.22Z)</div>
+</div>
+<div class="col">
+<div class="stage v2"><p class="label">v2: Dock-focused NAF filter</p><p class="num">378</p><p class="sub">Only DJI Dock-relevant NAFs retained</p></div>
+<div class="drop">Removed: 504 photo/video/cleaning</div>
+<div class="add">Kept: inspection, testing, security, air transport</div>
+</div>
+</div>
+
+<div class="breakout">
+<b>Why remove 504 photo/video/cleaning drone companies?</b><br>
+We verified via web search that these are legitimate drone operators — but in a <b>different market segment</b> from DJI Dock:<br>
+- <b>74.20Z photography (269)</b>: aerial photographers using DJI Mavic/Phantom for weddings, real estate, events. Manned flights, not autonomous Dock.<br>
+- <b>59.11B video (69)</b>: aerial videographers using DJI Inspire. Same — manned creative flights.<br>
+- <b>81.22Z cleaning (77)</b>: spray drone operators using Drone Volt Hercules / Lucid Bots Sherpa for facade washing. DJI Dock has no spray capability.<br>
+<br>
+<b>v2 keeps these in the Supabase table</b> — tagged as "non_dock_drone" — for future market intelligence. They're just excluded from the Dock-focused scoring and BD outreach list.
+</div>
+
+<div class="sec">Stage 4 — Scoring model</div>
+<div class="row">
+<div class="col">
+<div class="stage v1"><p class="label">v1: ad-hoc scoring</p><p class="num">0–48 scale</p><p class="sub">Hard cutoffs on age + employees</p></div>
+<p style="font-size:11px;color:var(--color-text-secondary);margin:4px 0">Young (&lt;1yr) excluded. Employee ≥5 for top 50. ETI/GE scored higher.</p>
+</div>
+<div class="col">
+<div class="stage v2"><p class="label">v2: normalised /100</p><p class="num">50–95 scale</p><p class="sub">No hard cutoffs, 5 weighted signals</p></div>
+<div class="fix">Age: not scored (industry too young)</div>
+<div class="fix">Size flipped: PME/micro=15, ETI/GE=5</div>
+</div>
+</div>
+
+<div class="breakout">
+<b>Why flip the size scoring?</b> Drone service providers are typically small firms (3-20 employees) funded by enterprise clients for inspection/surveillance projects. A PME with 10 employees deploying DJI Dock is a hotter lead than an ETI with 500 employees that merely has a small drone division. <b>Why not score age?</b> The DJI Dock market started growing in 2022-2023. A 6-month-old company deploying Dock 3 is as valuable as a 10-year-old firm. Penalising youth would exclude exactly the early adopters we want.
+</div>
+
+<div class="sec">Outcome — side by side</div>
+<div class="row">
+<div class="col">
+<div class="outcome outcome-v1">
+<h4>v1: 955 companies</h4>
+<p style="font-size:11px;color:var(--color-text-secondary);margin:0 0 3px">818 real drone cos + 137 false positives</p>
+<p style="font-size:11px;color:var(--color-text-secondary);margin:0 0 3px">All drone segments mixed</p>
+<p style="font-size:11px;color:var(--color-text-secondary);margin:0">Instadrone: rank #5, score 39/48</p>
+</div>
+</div>
+<div class="col">
+<div class="outcome outcome-v2">
+<h4>v2: 378 companies</h4>
+<p style="font-size:11px;color:#0F6E56;margin:0 0 3px">378 Dock-relevant + 0 false positives</p>
+<p style="font-size:11px;color:#0F6E56;margin:0 0 3px">Only DJI Dock partner candidates</p>
+<p style="font-size:11px;color:#0F6E56;margin:0">Instadrone: rank #24, score 85/100</p>
+</div>
+</div>
+</div>
+<div class="row" style="margin-top:8px">
+<div class="col">
+<div class="tier-row">
+<div class="tier tier-c"><span class="t-label">All segments</span><span class="t-num">955</span></div>
+</div>
+</div>
+<div class="col">
+<div class="tier-row">
+<div class="tier tier-a"><span class="t-label">Tier A (75+)</span><span class="t-num">138</span></div>
+<div class="tier tier-b"><span class="t-label">Tier B (60-74)</span><span class="t-num">201</span></div>
+<div class="tier tier-c"><span class="t-label">Tier C</span><span class="t-num">39</span></div>
+</div>
+</div>
+</div>
+
+<div class="sec">Migration strategy — enrich v1, don't replace</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+<span class="keep">266 in both: add dock_score + tag "dock_relevant"</span>
+<span class="add">112 v2-only: insert new rows, tag "dock_relevant_new"</span>
+<span class="drop">504 photo/video/cleaning: tag "non_dock_drone" (keep)</span>
+<span class="fix">137 false positives: tag "false_positive" (keep for audit)</span>
+</div>
+
+<div class="bottom-note">
+<b>Known ceiling of SIRENE-only approach:</b> This waterfall finds companies with "drone" in their name — ~13-20% of the total French drone market (~5,000-8,000 operators per DGAC estimates). The remaining 80% don't have "drone" in their registered name. SIRENE provides <b>no company description, no website, no contact data, and no keyword-searchable activity field</b> — only the company name + a broad NAF code. Companies like Groupe Protect and Altametris are invisible to any registry-based filter and require external signal sources (Google Search Crawler, LinkedIn company posts, DJI Partner Scanner) to discover. These form <b>Track B</b> of the discovery pipeline, planned as a future phase.
+</div>

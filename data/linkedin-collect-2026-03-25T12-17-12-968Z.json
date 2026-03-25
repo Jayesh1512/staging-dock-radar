@@ -1,0 +1,111 @@
+{
+  "run": {
+    "id": "run_li_202603251208344",
+    "keywords": [
+      "DJI Dock",
+      "DJI Dock 3",
+      "autonomous drone station",
+      "Drone-in-a-box",
+      "Drone Dock"
+    ],
+    "sources": [
+      "linkedin"
+    ],
+    "regions": [],
+    "filter_days": 3,
+    "min_score": 40,
+    "max_articles": 50,
+    "status": "completed",
+    "articles_fetched": 94,
+    "articles_stored": 6,
+    "dedup_removed": 88,
+    "created_at": "2026-03-25T12:17:12.968Z",
+    "completed_at": "2026-03-25T12:17:12.968Z"
+  },
+  "stats": {
+    "totalFetched": 94,
+    "afterDateFilter": 10,
+    "afterDedup": 6,
+    "stored": 6
+  },
+  "articles": [
+    {
+      "id": "li_run_li_202603251208344_1774440680771_0",
+      "run_id": "run_li_202603251208344",
+      "source": "linkedin",
+      "title": "Alpine operations present serious challenges freezing temperatures, strong winds, and difficult terrain. DJI Dock 3 enables automated drone ",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7442445513750364160/",
+      "publisher_url": "https://www.linkedin.com/company/aerosmartuav/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7442445513750364160",
+      "snippet": "Alpine operations present serious challenges freezing temperatures, strong winds, and difficult terrain. DJI Dock 3 enables automated drone deployments that maintain inspection reliability even in extreme environments. ✔️ Remote drone deployment in cold-weather conditions ✔️ Consistent, repeatable inspection missions ✔️ Reliable aerial data across remote mountain locations ✔️ Reduced on-site exposure for field teams ✔️ Continuous workflows despite harsh weather Dock-based operations allow organizations to maintain safety, efficiency, and operational continuity in the most demanding environments. How could dock-based drone automation improve reliability in your operations? Aerosmart Sales Details Email : sales@aerosmart.ae Website: https://aerosmart.ae hashtag #DJIEnterprise hashtag #DJIDock3 hashtag #MountainOperations hashtag #DroneInspection hashtag #ColdWeatherOperations hashtag #Aerosmart",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-25T06:11:20.772Z",
+      "created_at": "2026-03-25T12:11:20.771Z"
+    },
+    {
+      "id": "li_run_li_202603251208344_1774440680771_2",
+      "run_id": "run_li_202603251208344",
+      "source": "linkedin",
+      "title": "Drone technology is advancing rapidly, fundamentally changing the way we operate.❗️ With systems like DJI Dock 3 and DJI Matrice 4D, inspect",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7439634239966314496/",
+      "publisher_url": "https://www.linkedin.com/company/the-drone-consultants/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7439634239966314496",
+      "snippet": "Drone technology is advancing rapidly, fundamentally changing the way we operate.❗️ With systems like DJI Dock 3 and DJI Matrice 4D, inspections are becoming more efficient, scalable, and highly precise... even allowing keyboard-controlled operations. This goes beyond innovation, it’s a shift toward smarter, fully integrated aerial workflows. 💻 At The Drone Consultants, we remain ready to harness the latest advancements to deliver a meaningful impact. The future of drone operations is already here.🚀 hashtag #DroneTechnology hashtag #Innovation hashtag #AerialSolutions hashtag #DroneAutomation",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-24T14:11:20.772Z",
+      "created_at": "2026-03-25T12:11:20.771Z"
+    },
+    {
+      "id": "li_run_li_202603251208344_1774440680771_3",
+      "run_id": "run_li_202603251208344",
+      "source": "linkedin",
+      "title": "Transforming Security with the DJI Dock 3 & Matrice 4 Series ​In modern security, speed isn't just an advantage—it's a requirement. The inte",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7441715556459913216/",
+      "publisher_url": "https://www.linkedin.com/in/kabaso-mwansa-153708268",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7441715556459913216",
+      "snippet": "Transforming Security with the DJI Dock 3 & Matrice 4 Series ​In modern security, speed isn't just an advantage—it's a requirement. The integration of the DJI Dock 3 and the Matrice 4 Series is redefining how we protect large-scale assets and respond to emergencies. ​Key Breakthroughs for Security Teams: ​10-Second Deployment: Launch a Matrice 4TD almost instantly for rapid incident assessment and real-time tracking. ​Mobile Flexibility: The Dock 3 supports vehicle-mounted operations, allowing security units to maintain a persistent aerial \"eye\" even while on the move. ​54-Minute Endurance: Cover more ground and stay on-station longer, reducing the gaps in surveillance during critical missions. ​All-Weather Resilience: With an IP56 rating and a temperature range of -30°C to 50°C, this system is built for the toughest environments—from intense heat to heavy rain. ​BVLOS Ready: Designed for Beyond Visual Line of Sight operations, enabling remote patrols of perimeters and high-risk zones ",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-23T12:11:20.772Z",
+      "created_at": "2026-03-25T12:11:20.771Z"
+    },
+    {
+      "id": "li_run_li_202603251208344_1774440680771_5",
+      "run_id": "run_li_202603251208344",
+      "source": "linkedin",
+      "title": "Solar farms are scaling fast… but inspection methods haven’t caught up. With DJI Dock 3 + Matrice 4D, AERONEX enables fully automated, data-",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7442510608509485057/",
+      "publisher_url": "https://www.linkedin.com/company/aeronex-fzco/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7442510608509485057",
+      "snippet": "Solar farms are scaling fast… but inspection methods haven’t caught up. With DJI Dock 3 + Matrice 4D, AERONEX enables fully automated, data-driven solar inspections. 👉 Discover how: www.aeronex.ae hashtag #AERONEX hashtag #DJIEnterprise hashtag #SolarEnergy hashtag #DroneInspection hashtag #Automation hashtag #Matrice4D hashtag #DJIDock3 🚁",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-25T10:11:20.772Z",
+      "created_at": "2026-03-25T12:11:20.771Z"
+    },
+    {
+      "id": "li_run_li_202603251208344_1774440848332_17",
+      "run_id": "run_li_202603251208344",
+      "source": "linkedin",
+      "title": "In large commercial farms, fire prevention is about early detection not reaction. With thermal drone monitoring, teams can: 🚒 Identify heat",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7442193519836045313/",
+      "publisher_url": "https://www.linkedin.com/company/aerosmartuav/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7442193519836045313",
+      "snippet": "In large commercial farms, fire prevention is about early detection not reaction. With thermal drone monitoring, teams can: 🚒 Identify heat anomalies before flames appear 🚒 Detect hotspots across wide agricultural areas 🚒 Monitor remote zones beyond watchtower visibility 🚒 Respond earlier to prevent fire escalation 🚒 Strengthen operational safety across farms DJI Dock 3 enables automated thermal inspections, helping farm operators shift from reactive firefighting to proactive risk management. Thermal technology is redefining safety standards in agriculture. Aerosmart Sales Details Email : sales@aerosmart.ae Website: https://aerosmart.ae hashtag #DJIEnterprise hashtag #ThermalDrone hashtag #FirePrevention hashtag #Agriculture hashtag #SmartFarming hashtag #DroneSolutions",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-24T13:14:08.333Z",
+      "created_at": "2026-03-25T12:14:08.332Z"
+    },
+    {
+      "id": "li_run_li_202603251208344_1774441032741_11",
+      "run_id": "run_li_202603251208344",
+      "source": "linkedin",
+      "title": "Routine inspections don’t have to be complex, time-consuming, or reactive. With Spectro-AI's SAI-HUB, scheduling and executing autonomous dr",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7442178579695624192/",
+      "publisher_url": "https://www.linkedin.com/company/spectroai/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7442178579695624192",
+      "snippet": "Routine inspections don’t have to be complex, time-consuming, or reactive. With Spectro-AI's SAI-HUB, scheduling and executing autonomous drone missions becomes straightforward. Plan inspections daily, hourly, or continuously with dual-dock setups, and let your operations run with minimal manual intervention. Transform data into actionable insights using our AI algorithms. Our pre-loaded models detect vehicles, objects, smoke, and more, across both RGB and thermal sensors, enabling faster response times and better decision-making. We deliver a complete hardware and software solution that turns drone dock infrastructure into intelligent detection systems, without the need of an internet connection. Designed for industrial sites, inspection companies, and large-scale operations that require reliable off-grid aerial monitoring. If you are looking to streamline inspections, improve safety, and gain real-time situational awareness, we would be glad to show you how it works. Info@spectroai.a",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-24T12:17:12.741Z",
+      "created_at": "2026-03-25T12:17:12.741Z"
+    }
+  ]
+}

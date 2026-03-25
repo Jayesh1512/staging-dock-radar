@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DJI Reseller List Analysis — 2026-03-24</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F8FAFC; color: #111827; line-height: 1.6; padding: 40px 20px; }
+  .container { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 24px; font-weight: 800; color: #111827; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #6B7280; margin-bottom: 32px; }
+  h2 { font-size: 17px; font-weight: 700; color: #1D4ED8; margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #DBEAFE; }
+  h3 { font-size: 14px; font-weight: 700; color: #374151; margin: 20px 0 8px; }
+  p, li { font-size: 13.5px; color: #374151; }
+  ul, ol { padding-left: 20px; margin-bottom: 12px; }
+  li { margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+  th { background: #F1F5F9; color: #475569; font-weight: 700; text-align: left; padding: 8px 12px; border-bottom: 2px solid #E2E8F0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { padding: 7px 12px; border-bottom: 1px solid #F1F5F9; color: #374151; }
+  tr:hover td { background: #F8FAFC; }
+  .card { background: #fff; border: 1px solid #E5E7EB; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .kpi { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 16px; text-align: center; }
+  .kpi-value { font-size: 28px; font-weight: 800; color: #1D4ED8; }
+  .kpi-label { font-size: 11px; font-weight: 600; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .pill-high { background: #DCFCE7; color: #15803D; }
+  .pill-med { background: #FEF3C7; color: #92400E; }
+  .pill-low { background: #F3F4F6; color: #6B7280; }
+  .pill-blue { background: #DBEAFE; color: #1D4ED8; }
+  .flow { background: #1E293B; color: #E2E8F0; border-radius: 8px; padding: 16px 20px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; white-space: pre; overflow-x: auto; margin: 12px 0 20px; line-height: 1.7; }
+  .callout { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 12px 16px; margin: 16px 0; font-size: 13px; }
+  .callout-title { font-weight: 700; color: #92400E; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin-right: 4px; }
+  .badge-enterprise { background: #DBEAFE; color: #1D4ED8; }
+  .badge-professional { background: #F3E8FF; color: #6D28D9; }
+  .badge-authorized { background: #FEF3C7; color: #92400E; }
+  .badge-retail { background: #F3F4F6; color: #6B7280; }
+  .badge-agriculture { background: #DCFCE7; color: #15803D; }
+  .badge-delivery { background: #FEE2E2; color: #991B1B; }
+  footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #E5E7EB; font-size: 11px; color: #9CA3AF; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>DJI Reseller List Analysis</h1>
+<p class="subtitle">Dock Radar &middot; FlytBase BD Intelligence &middot; Generated 2026-03-24</p>
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-value">4,227</div>
+    <div class="kpi-label">Total Resellers</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value">547</div>
+    <div class="kpi-label">High Priority</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value">243</div>
+    <div class="kpi-label">LinkedIn Enriched</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value">6</div>
+    <div class="kpi-label">DJI API Endpoints</div>
+  </div>
+</div>
+
+<h2>1. What Was Built</h2>
+<div class="card">
+  <p>A Puppeteer-based scraper that hits <strong>6 different DJI "Where to Buy" API endpoints</strong> to discover every authorized DJI dealer globally. Data is stored in the <code>dji_resellers</code> Supabase table. A Phase 1 LinkedIn scanning script (Puppeteer + GPT-4o) classifies the most promising dealers by their DJI Dock deployment activity.</p>
+  <h3>DJI API Endpoints Scraped</h3>
+  <table>
+    <thead><tr><th>Endpoint</th><th>Dealer Type</th><th>Records</th></tr></thead>
+    <tbody>
+      <tr><td>where-to-buy/partners (Enterprise)</td><td><span class="badge badge-enterprise">Enterprise Dealer</span></td><td>1,222</td></tr>
+      <tr><td>where-to-buy/partners (Authorized)</td><td><span class="badge badge-authorized">Authorized Dealer</span></td><td>268</td></tr>
+      <tr><td>where-to-buy/partners (Retail)</td><td><span class="badge badge-retail">Retail Store</span></td><td>1,154</td></tr>
+      <tr><td>where-to-buy/agriculture-dealer-maps</td><td><span class="badge badge-agriculture">Agriculture Dealer</span></td><td>1,410</td></tr>
+      <tr><td>where-to-buy/professional-dealers</td><td><span class="badge badge-professional">Professional Dealer</span></td><td>68</td></tr>
+      <tr><td>where-to-buy/delivery-dealer-maps</td><td><span class="badge badge-delivery">Delivery Dealer</span></td><td>105</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="2"><strong>Total</strong></td><td><strong>4,227</strong></td></tr></tfoot>
+  </table>
+</div>
+
+<h2>2. Priority Classification</h2>
+<div class="card">
+  <table>
+    <thead><tr><th>Priority</th><th>Count</th><th>Rule</th><th>Rationale</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="pill pill-high">HIGH</span></td>
+        <td><strong>547</strong></td>
+        <td>Enterprise Dealer OR Professional Dealer, outside China</td>
+        <td>These dealers sell DJI enterprise hardware (Dock, Matrice, etc.) to commercial clients. Most likely to be DSPs/SIs or have DSP/SI customers.</td>
+      </tr>
+      <tr>
+        <td><span class="pill pill-med">MEDIUM</span></td>
+        <td><strong>1,011</strong></td>
+        <td>Authorized Dealer outside China + all dealer types in China</td>
+        <td>Authorized dealers may sell enterprise products but also consumer. China dealers are medium because market dynamics differ.</td>
+      </tr>
+      <tr>
+        <td><span class="pill pill-low">LOW</span></td>
+        <td><strong>2,669</strong></td>
+        <td>Retail Store, Agriculture Dealer, Delivery Dealer</td>
+        <td>Retail stores sell to consumers. Agriculture dealers sell crop sprayers. Delivery dealers sell logistics drones. None are FlytBase Dock partner targets.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-title">Classification Approach</div>
+    <p>Priority is <strong>rule-based</strong> (no LLM). Dealer type + country determines priority. The 547 high-priority dealers are the primary prospecting list for FlytBase BD.</p>
+  </div>
+</div>
+
+<h2>3. By Dealer Type</h2>
+<div class="card">
+  <table>
+    <thead><tr><th>Type</th><th>Count</th><th>Priority</th><th>FlytBase Relevance</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-enterprise">Enterprise Dealer</span></td><td>1,222</td><td><span class="pill pill-high">HIGH</span> (excl. China)</td><td>Sells DJI Dock, Matrice to commercial clients. Top target.</td></tr>
+      <tr><td><span class="badge badge-professional">Professional Dealer</span></td><td>68</td><td><span class="pill pill-high">HIGH</span></td><td>Specialized professional drone solutions. High-value niche.</td></tr>
+      <tr><td><span class="badge badge-authorized">Authorized Dealer</span></td><td>268</td><td><span class="pill pill-med">MEDIUM</span></td><td>Mix of enterprise + consumer. Needs qualification.</td></tr>
+      <tr><td><span class="badge badge-agriculture">Agriculture Dealer</span></td><td>1,410</td><td><span class="pill pill-low">LOW</span></td><td>Crop spraying focus. Not Dock-relevant.</td></tr>
+      <tr><td><span class="badge badge-retail">Retail Store</span></td><td>1,154</td><td><span class="pill pill-low">LOW</span></td><td>Consumer sales. Not a partner target.</td></tr>
+      <tr><td><span class="badge badge-delivery">Delivery Dealer</span></td><td>105</td><td><span class="pill pill-low">LOW</span></td><td>Logistics/delivery drones. Different segment.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>4. Geographic Distribution (Top 15 Countries)</h2>
+<div class="card">
+  <table>
+    <thead><tr><th>Country</th><th>Total Dealers</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>China</td><td>750</td><td>Largest market. All classified as MEDIUM (domestic market dynamics).</td></tr>
+      <tr><td>Germany</td><td>19</td><td>Key European market. Strong enterprise dealer presence.</td></tr>
+      <tr><td>France</td><td>19</td><td>Overlaps with SIRENE registry data (cross-reference opportunity).</td></tr>
+      <tr><td>South Korea</td><td>18</td><td>Strong DJI enterprise adoption in APAC.</td></tr>
+      <tr><td>Indonesia</td><td>15</td><td>Growing drone market in Southeast Asia.</td></tr>
+      <tr><td>Spain</td><td>13</td><td>European market with infrastructure inspection demand.</td></tr>
+      <tr><td>Poland</td><td>12</td><td>Emerging drone services market in Eastern Europe.</td></tr>
+      <tr><td>Mexico</td><td>11</td><td>Latin American presence.</td></tr>
+      <tr><td>Philippines</td><td>11</td><td>Island geography drives drone demand.</td></tr>
+      <tr><td>Thailand</td><td>10</td><td>Southeast Asian hub.</td></tr>
+      <tr><td>Austria</td><td>9</td><td>Alpine/infrastructure inspection.</td></tr>
+      <tr><td>Turkey</td><td>9</td><td>Growing enterprise drone adoption.</td></tr>
+      <tr><td>Malaysia</td><td>9</td><td>APAC market.</td></tr>
+      <tr><td>Denmark</td><td>8</td><td>Nordic market with strong tech adoption.</td></tr>
+      <tr><td>United Kingdom</td><td>8</td><td>Key market. Overlaps with Companies House registry (future).</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>5. LinkedIn Enrichment</h2>
+<div class="card">
+  <p><strong>243 of 547 high-priority dealers</strong> have been enriched with LinkedIn company URLs (44% coverage). These were found via automated domain-to-LinkedIn matching.</p>
+
+  <h3>Phase 1 LinkedIn Scan (Proof of Concept)</h3>
+  <p>A Puppeteer + GPT-4o pipeline was run on <strong>10 hand-picked dealers</strong> to classify their DJI Dock activity:</p>
+  <table>
+    <thead><tr><th>Company</th><th>Country</th><th>Classification</th></tr></thead>
+    <tbody>
+      <tr><td>Coptrz Ltd</td><td>UK</td><td rowspan="10" style="vertical-align: middle; font-style: italic; color: #6B7280;">Results stored in scan output files.<br>Classifications: <strong>Deployer</strong> (real field deployments), <strong>Reseller</strong> (product marketing only), <strong>Inactive</strong> (no dock posts).</td></tr>
+      <tr><td>Heliguy</td><td>UK</td></tr>
+      <tr><td>Drone Nerds Inc.</td><td>US</td></tr>
+      <tr><td>Frontier Precision Inc</td><td>US</td></tr>
+      <tr><td>Airteam Aerial Intelligence GmbH</td><td>Germany</td></tr>
+      <tr><td>Droneparts GmbH</td><td>Germany</td></tr>
+      <tr><td>Escadrone</td><td>France</td></tr>
+      <tr><td>Aermatica 3D</td><td>Italy</td></tr>
+      <tr><td>Skydata Oy</td><td>Finland</td></tr>
+      <tr><td>Drone Volt Scandinavia ApS</td><td>Denmark</td></tr>
+    </tbody>
+  </table>
+
+  <h3>LLM Classification Criteria</h3>
+  <table>
+    <thead><tr><th>Classification</th><th>Signal</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill pill-high">Deployer</span></td><td>Real client implementations, installations, case studies, field deployments of DJI Dock</td></tr>
+      <tr><td><span class="pill pill-med">Reseller</span></td><td>Product marketing, unboxing, specs, trade show demos, training &mdash; no real deployments</td></tr>
+      <tr><td><span class="pill pill-low">Inactive</span></td><td>No dock-related posts found on LinkedIn</td></tr>
+    </tbody>
+  </table>
+
+  <h3>LLM Extracts (per company)</h3>
+  <ul>
+    <li>Dock models mentioned (Dock 2, Dock 3, FlightHub 2)</li>
+    <li>Deployment signals (installations, case studies, client names)</li>
+    <li>Industries served</li>
+    <li>Other drone brands mentioned (competitive intel)</li>
+    <li>Confidence level (high / medium / low)</li>
+  </ul>
+</div>
+
+<h2>6. Data Architecture</h2>
+<div class="card">
+  <div class="flow">Signal Sources:
+  Google News / LinkedIn articles  &rarr; scored_articles &rarr; discovered_companies &rarr; Partner Hit List
+  Country Registries (SIRENE)      &rarr; country_registered_companies &rarr; QA &rarr; merge to discovered_companies
+  DJI Where-to-Buy scrape          &rarr; dji_resellers (4,227 records, 547 high priority)
+                                      &uarr; NOT YET connected to discovered_companies</div>
+
+  <h3>Database Table: <code>dji_resellers</code></h3>
+  <table>
+    <thead><tr><th>Column</th><th>Type</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>name</td><td>TEXT</td><td>Company name from DJI</td></tr>
+      <tr><td>dealer_type</td><td>TEXT</td><td>6 types (Enterprise, Professional, Authorized, Retail, Agriculture, Delivery)</td></tr>
+      <tr><td>priority</td><td>TEXT</td><td>HIGH / MEDIUM / LOW (rule-based)</td></tr>
+      <tr><td>address, city, state, country, country_code</td><td>TEXT</td><td>Full address from DJI listing</td></tr>
+      <tr><td>continent</td><td>TEXT</td><td>Continent grouping</td></tr>
+      <tr><td>phone, email, website</td><td>TEXT</td><td>Contact info from DJI listing</td></tr>
+      <tr><td>latitude, longitude</td><td>DOUBLE</td><td>Geolocation for mapping</td></tr>
+      <tr><td>linkedin_url</td><td>TEXT</td><td>Company LinkedIn page (enriched)</td></tr>
+      <tr><td>linkedin_scanned_at</td><td>TIMESTAMPTZ</td><td>When LinkedIn scan was run</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>7. What's Not Done Yet</h2>
+<div class="card">
+  <table>
+    <thead><tr><th>Gap</th><th>Description</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr><td>Phase 2 LinkedIn scan</td><td>Only 10 of 243 LinkedIn-enriched dealers scanned. Remaining 233 need GPT-4o classification.</td><td><span class="pill pill-high">HIGH</span></td></tr>
+      <tr><td>Cross-reference with discovered_companies</td><td>No dedup between dji_resellers and companies found via articles/registries.</td><td><span class="pill pill-high">HIGH</span></td></tr>
+      <tr><td>QA review UI for resellers</td><td>No UI to browse, filter, approve/reject the 547 high-priority dealers. Data only accessible via DB.</td><td><span class="pill pill-med">MEDIUM</span></td></tr>
+      <tr><td>Merge to discovered_companies</td><td>Approved resellers need a merge path to appear in Partner Hit List.</td><td><span class="pill pill-med">MEDIUM</span></td></tr>
+      <tr><td>DSP vs pure reseller classification</td><td>Enterprise dealers include both DSPs (who deploy) and pure resellers (who only sell hardware). Phase 2 LinkedIn scan distinguishes these.</td><td><span class="pill pill-high">HIGH</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>8. Key Insight for Leadership</h2>
+<div class="card">
+  <div class="callout">
+    <div class="callout-title">The 547 High-Priority Dealers Are FlytBase's Warmest Prospecting List</div>
+    <p>These are companies that <strong>officially sell DJI enterprise hardware</strong> (Dock, Matrice) to commercial clients. They are either deploying DJI Dock for their customers (DSPs/SIs &mdash; direct FlytBase partner candidates) or reselling the hardware (channel partners who could bundle FlytBase software). Either way, they are the highest-intent audience for FlytBase's drone-in-a-box platform.</p>
+    <p style="margin-top: 8px;">The Phase 2 LinkedIn scan will separate <strong>deployers</strong> (who actually install and operate Dock solutions) from <strong>pure resellers</strong> (who only sell the hardware). Deployers are the top-tier targets.</p>
+  </div>
+
+  <h3>Constants & Classification Reference</h3>
+  <p>All classification rules are maintained in <code>src/lib/constants.ts</code>:</p>
+  <ul>
+    <li><strong>OEM_NAMES</strong> &mdash; Hardware manufacturers (DJI, Skydio, Autel, Parrot). Excluded from partner pipeline.</li>
+    <li><strong>Competitors</strong> &mdash; Drone-in-a-box platforms (Percepto, Azur Drones, Elistair, Asylon). Tracked for competitive intel.</li>
+    <li><strong>DSP/SI Targets</strong> &mdash; Companies that OPERATE or DEPLOY drone solutions. Identified by activity codes + name keywords.</li>
+    <li><strong>Buyers</strong> &mdash; End-users (police, utilities, hospitals). These are the DSPs' customers, not FlytBase partners.</li>
+  </ul>
+
+  <h3>Data Tables Summary</h3>
+  <table>
+    <thead><tr><th>Table</th><th>Purpose</th><th>Records</th><th>BD Review</th></tr></thead>
+    <tbody>
+      <tr><td><code>discovered_companies</code></td><td>Central registry of ALL potential partner companies</td><td>~90</td><td>Visible in Partner Hit List. Promoted to pipeline_leads when actioned.</td></tr>
+      <tr><td><code>country_registered_companies</code></td><td>Govt business registry staging (SIRENE FR)</td><td>944</td><td>QA via /utilities/country-wise-registry-review. Approved rows merge to discovered_companies.</td></tr>
+      <tr><td><code>dji_resellers</code></td><td>DJI Where-to-Buy scrape</td><td>4,227</td><td>No QA UI yet. 547 high-priority await review.</td></tr>
+      <tr><td><code>flytbase_partners</code></td><td>Known existing FlytBase partners</td><td>81</td><td>Used for dedup ("Known Partner" badge).</td></tr>
+      <tr><td><code>pipeline_leads</code></td><td>Kanban deal tracking</td><td>varies</td><td>Companies promoted from Partner Hit List for outreach.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>
+  Dock Radar &middot; FlytBase BD Intelligence &middot; Analysis generated 2026-03-24 &middot; Data source: DJI Where-to-Buy API (scraped 2026-03-21)
+</footer>
+
+</div>
+</body>
+</html>

@@ -31,29 +31,30 @@ interface SearchParams {
   onPageDone?: (page: number, results: SerperResult[]) => void;
 }
 
-const COUNTRY_CONFIG: Record<string, { gl: string; hl: string }> = {
-  FR: { gl: 'fr', hl: 'fr' },
-  DE: { gl: 'de', hl: 'de' },
-  UK: { gl: 'uk', hl: 'en' },
-  AU: { gl: 'au', hl: 'en' },
-  US: { gl: 'us', hl: 'en' },
-  IN: { gl: 'in', hl: 'en' },
-  AE: { gl: 'ae', hl: 'en' },
-  SA: { gl: 'sa', hl: 'en' },
-  JP: { gl: 'jp', hl: 'ja' },
-  KR: { gl: 'kr', hl: 'ko' },
-  BR: { gl: 'br', hl: 'pt' },
-  IT: { gl: 'it', hl: 'it' },
-  ES: { gl: 'es', hl: 'es' },
-  SG: { gl: 'sg', hl: 'en' },
+const COUNTRY_CONFIG: Record<string, { gl: string; hl: string; name: string }> = {
+  FR: { gl: 'fr', hl: 'fr', name: 'France' },
+  DE: { gl: 'de', hl: 'de', name: 'Germany' },
+  UK: { gl: 'uk', hl: 'en', name: 'United Kingdom' },
+  AU: { gl: 'au', hl: 'en', name: 'Australia' },
+  US: { gl: 'us', hl: 'en', name: 'United States' },
+  IN: { gl: 'in', hl: 'en', name: 'India' },
+  AE: { gl: 'ae', hl: 'en', name: 'UAE' },
+  SA: { gl: 'sa', hl: 'en', name: 'Saudi Arabia' },
+  JP: { gl: 'jp', hl: 'ja', name: 'Japan' },
+  KR: { gl: 'kr', hl: 'ko', name: 'South Korea' },
+  BR: { gl: 'br', hl: 'pt', name: 'Brazil' },
+  IT: { gl: 'it', hl: 'it', name: 'Italy' },
+  ES: { gl: 'es', hl: 'es', name: 'Spain' },
+  NL: { gl: 'nl', hl: 'nl', name: 'Netherlands' },
+  SG: { gl: 'sg', hl: 'en', name: 'Singapore' },
 };
 
 export async function searchGoogle(
   params: SearchParams,
   apiKey: string,
 ): Promise<SerperResult[]> {
-  const config = COUNTRY_CONFIG[params.country.toUpperCase()] ?? { gl: params.country.toLowerCase(), hl: 'en' };
-  const query = `"${params.keyword}" ${params.country}`;
+  const config = COUNTRY_CONFIG[params.country.toUpperCase()] ?? { gl: params.country.toLowerCase(), hl: 'en', name: params.country };
+  const query = `"${params.keyword}" ${config.name}`;
 
   const allResults: SerperResult[] = [];
 
@@ -66,22 +67,39 @@ export async function searchGoogle(
       page,
     };
 
-    const res = await fetch('https://google.serper.dev/search', {
-      method: 'POST',
-      headers: {
-        'X-API-KEY': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+    let results: SerperResult[] = [];
+    let retries = 2;
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Serper API error (${res.status}): ${text}`);
+    while (retries >= 0) {
+      try {
+        const res = await fetch('https://google.serper.dev/search', {
+          method: 'POST',
+          headers: {
+            'X-API-KEY': apiKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Serper API error (${res.status}): ${text}`);
+        }
+
+        const data: SerperResponse = await res.json();
+        results = data.organic ?? [];
+        break; // success
+      } catch (err) {
+        if (retries > 0) {
+          retries--;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+          // Log but don't crash — continue with partial results
+          params.onPageDone?.(page, []);
+          break;
+        }
+      }
     }
-
-    const data: SerperResponse = await res.json();
-    const results = data.organic ?? [];
 
     // Normalize positions to be globally unique across pages
     const offset = (page - 1) * 10;
@@ -95,7 +113,7 @@ export async function searchGoogle(
 
     // Small delay between pages to be polite
     if (page < params.pages) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
 

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dock Radar — Coverage Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F8FAFC; color: #111827; font-size: 13px; padding: 28px 32px; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .header h1 { font-size: 18px; font-weight: 700; color: #111827; }
+  .header h1 span { color: #2563EB; }
+  .btn { padding: 6px 14px; border-radius: 6px; border: 1px solid #D1D5DB; background: #fff; color: #374151; font-size: 12px; cursor: pointer; font-weight: 500; }
+  .btn:hover { background: #F3F4F6; }
+  .btn-primary { background: #2563EB; border-color: #2563EB; color: #fff; }
+  .btn-primary:hover { background: #1D4ED8; }
+
+  /* Summary */
+  .summary-strip { display: flex; gap: 12px; margin-bottom: 20px; }
+  .summary-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 12px 18px; }
+  .summary-card .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #6B7280; margin-bottom: 2px; }
+  .summary-card .value { font-size: 20px; font-weight: 700; color: #111827; }
+  .summary-card .value.green { color: #16A34A; }
+  .summary-card .value.amber { color: #D97706; }
+
+  /* Matrix */
+  .matrix-container { background: #fff; border: 1px solid #E5E7EB; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+  .matrix-title { padding: 12px 20px 10px; font-size: 13px; font-weight: 700; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; gap: 8px; }
+  .matrix-title .badge { font-size: 10px; background: #F3F4F6; padding: 2px 8px; border-radius: 10px; color: #6B7280; font-weight: 400; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: #F9FAFB; padding: 10px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: #6B7280; font-weight: 600; text-align: center; border-bottom: 1px solid #E5E7EB; }
+  thead th:first-child { text-align: left; padding-left: 20px; width: 140px; }
+  thead th .th-sub { font-size: 9px; font-weight: 400; text-transform: none; letter-spacing: 0; color: #9CA3AF; margin-top: 1px; }
+  .group-label { font-size: 9px; color: #2563EB; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px; font-weight: 700; }
+  .group-border { border-left: 2px solid #2563EB !important; }
+  .section-border { border-left: 2px solid #E5E7EB !important; }
+
+  tbody tr { border-bottom: 1px solid #F3F4F6; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 0; text-align: center; vertical-align: top; }
+  tbody td:first-child { text-align: left; padding: 12px 10px 12px 20px; vertical-align: middle; }
+
+  .region-name { font-size: 13px; font-weight: 600; color: #111827; }
+  .region-code { font-size: 10px; color: #2563EB; font-weight: 600; margin-left: 4px; }
+  .region-total { font-size: 10px; color: #9CA3AF; margin-top: 1px; }
+
+  /* Cell */
+  .cell { padding: 10px 6px; border-left: 1px solid #F3F4F6; min-width: 130px; }
+  .cell.done { background: rgba(22, 163, 74, 0.03); }
+  .cell.partial { background: rgba(217, 119, 6, 0.03); }
+  .cell.na { background: #FAFAFA; }
+
+  .cell-top { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 3px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot.green { background: #16A34A; }
+  .dot.amber { background: #D97706; }
+  .dot.gray { background: #D1D5DB; }
+  .cell-count { font-size: 15px; font-weight: 700; color: #111827; }
+  .cell-count.zero { color: #D1D5DB; font-weight: 400; font-size: 13px; }
+  .cell-date { font-size: 9px; color: #9CA3AF; margin-bottom: 5px; }
+  .access-label { font-size: 9px; color: #9CA3AF; font-style: italic; margin-bottom: 4px; }
+
+  /* Remark — editable inline */
+  .remark-wrap { width: calc(100% - 10px); margin: 0 auto; position: relative; }
+  .remark-display { display: flex; align-items: flex-start; gap: 4px; min-height: 20px; cursor: default; }
+  .remark-text { font-size: 10px; color: #6B7280; line-height: 1.4; text-align: left; flex: 1; word-break: break-word; }
+  .remark-text.empty { color: #D1D5DB; font-style: italic; }
+  .remark-edit-btn { flex-shrink: 0; width: 16px; height: 16px; background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 3px; color: #D1D5DB; margin-top: 1px; }
+  .remark-edit-btn:hover { color: #2563EB; background: #EFF6FF; }
+  .remark-edit-btn svg { width: 11px; height: 11px; }
+
+  .remark-editor { display: none; }
+  .remark-editor.active { display: flex; gap: 4px; align-items: flex-start; }
+  .remark-display.hidden { display: none; }
+  .remark-input { flex: 1; padding: 3px 6px; font-size: 10px; background: #fff; border: 1px solid #2563EB; border-radius: 4px; color: #374151; outline: none; resize: none; font-family: inherit; line-height: 1.4; box-shadow: 0 0 0 2px #DBEAFE; }
+  .remark-save-btn { flex-shrink: 0; width: 20px; height: 20px; background: #16A34A; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 4px; color: #fff; margin-top: 1px; }
+  .remark-save-btn:hover { background: #15803D; }
+  .remark-save-btn svg { width: 12px; height: 12px; }
+
+  /* Coverage cols */
+  .cov-cell { padding: 12px 8px; border-left: 2px solid #E5E7EB; vertical-align: middle; width: 65px; }
+  .cov-val { font-size: 12px; font-weight: 700; }
+  .cov-val.green { color: #16A34A; }
+  .cov-val.amber { color: #D97706; }
+  .cov-val.gray { color: #D1D5DB; }
+  .cov-sub { font-size: 9px; color: #9CA3AF; }
+
+  /* Add region */
+  .add-row td { padding: 10px 20px; }
+  .add-btn { display: flex; align-items: center; gap: 5px; color: #9CA3AF; font-size: 11px; cursor: pointer; background: none; border: none; font-family: inherit; }
+  .add-btn:hover { color: #2563EB; }
+
+  /* Legend */
+  .legend { display: flex; gap: 14px; padding: 8px 20px; border-top: 1px solid #E5E7EB; background: #F9FAFB; font-size: 10px; color: #9CA3AF; align-items: center; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+
+  /* History */
+  .history-table { width: 100%; font-size: 12px; }
+  .history-table th { padding: 6px 10px; text-align: left; color: #6B7280; font-weight: 600; border-bottom: 1px solid #E5E7EB; background: #F9FAFB; text-transform: none; letter-spacing: 0; font-size: 11px; }
+  .history-table td { padding: 6px 10px; color: #374151; border-bottom: 1px solid #F3F4F6; }
+  .status-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+  .status-badge.completed { background: #DCFCE7; color: #16A34A; }
+  .status-badge.not-staged { background: #FEF3C7; color: #D97706; }
+
+  @media (max-width: 1100px) {
+    .matrix-container { overflow-x: auto; }
+    table { min-width: 950px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1><span>Dock Radar</span> — Coverage Dashboard</h1>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <span style="font-size: 10px; color: #9CA3AF;">Counts auto-derived from DB</span>
+    <button class="btn btn-primary">+ Add Region</button>
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="summary-strip">
+  <div class="summary-card">
+    <div class="label">Regions</div>
+    <div class="value">2</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Total Staged</div>
+    <div class="value">395</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Open Sources</div>
+    <div class="value green">4 / 6</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Region-Specific Sources</div>
+    <div class="value amber">1 / 4</div>
+  </div>
+</div>
+
+<!-- Coverage Matrix -->
+<div class="matrix-container">
+  <div class="matrix-title">
+    Region &times; Source Matrix
+    <span class="badge">2 regions &middot; 5 sources</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Region</th>
+        <th class="group-border">
+          <div class="group-label">Open Sources</div>
+          DJI Resellers
+          <div class="th-sub">Dealer directory</div>
+        </th>
+        <th>
+          Google Search
+          <div class="th-sub">Web signals</div>
+        </th>
+        <th>
+          Comet
+          <div class="th-sub">AI-assisted</div>
+        </th>
+        <th class="group-border">
+          <div class="group-label">Region-Specific Sources</div>
+          Govt Registry
+          <div class="th-sub">Company register</div>
+        </th>
+        <th>
+          Aviation Auth
+          <div class="th-sub">Operator permits</div>
+        </th>
+        <th class="section-border" style="width: 60px;">Open</th>
+        <th style="width: 60px;">All</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- ═══ FRANCE ═══ -->
+      <tr>
+        <td>
+          <div class="region-name">France <span class="region-code">FR</span></div>
+          <div class="region-total">395 candidates</div>
+        </td>
+
+        <!-- DJI Resellers -->
+        <td>
+          <div class="cell done">
+            <div class="cell-top"><div class="dot green"></div><span class="cell-count">12</span></div>
+            <div class="cell-date">24 Mar</div>
+            <div class="remark-wrap">
+              <div class="remark-display">
+                <span class="remark-text">Enterprise Dealers. Enriched.</span>
+                <button class="remark-edit-btn" onclick="startEdit(this)" title="Edit remark"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.13 1.72a1.77 1.77 0 012.5 2.5L5.42 12.44l-3.32.83.83-3.32 8.2-8.23z"/></svg></button>
+              </div>
+              <div class="remark-editor">
+                <textarea class="remark-input" rows="2">Enterprise Dealers. Enriched.</textarea>
+                <button class="remark-save-btn" onclick="saveEdit(this)" title="Save"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <!-- Google Search -->
+        <td>
+          <div class="cell partial">
+            <div class="cell-top"><div class="dot amber"></div><span class="cell-count">~40</span></div>
+            <div class="cell-date">22 Mar</div>
+            <div class="remark-wrap">
+              <div class="remark-display">
+                <span class="remark-text">Done, not staged to DB yet.</span>
+                <button class="remark-edit-btn" onclick="startEdit(this)" title="Edit remark"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.13 1.72a1.77 1.77 0 012.5 2.5L5.42 12.44l-3.32.83.83-3.32 8.2-8.23z"/></svg></button>
+              </div>
+              <div class="remark-editor">
+                <textarea class="remark-input" rows="2">Done, not staged to DB yet.</textarea>
+                <button class="remark-save-btn" onclick="saveEdit(this)" title="Save"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <!-- Comet -->
+        <td>
+          <div class="cell done">
+            <div class="cell-top"><div class="dot green"></div><span class="cell-count">18</span></div>
+            <div class="cell-date">24 Mar</div>
+            <div class="remark-wrap">
+              <div class="remark-display">
+                <span class="remark-text">7 BVLOS + 11 dealers. Dock 3: Abot, Flying Eye.</span>
+                <button class="remark-edit-btn" onclick="startEdit(this)" title="Edit remark"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.13 1.72a1.77 1.77 0 012.5 2.5L5.42 12.44l-3.32.83.83-3.32 8.2-8.23z"/></svg></button>
+              </div>
+              <div class="remark-editor">
+                <textarea class="remark-input" rows="2">7 BVLOS + 11 dealers. Dock 3: Abot, Flying Eye.</textarea>
+                <button class="remark-save-btn" onclick="saveEdit(this)" title="Save"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <!-- Govt Registry -->
+        <td>
+          <div class="cell done">
+            <div class="cell-top"><div class="dot green"></div><span class="cell-count">365</span></div>
+            <div class="cell-date">24 Mar</div>
+            <div class="remark-wrap">
+              <div class="remark-display">
+                <span class="remark-text">SIRENE v2. 138 need website enrichment.</span>
+                <button class="remark-edit-btn" onclick="startEdit(this)" title="Edit remark"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.13 1.72a1.77 1.77 0 012.5 2.5L5.42 12.44l-3.32.83.83-3.32 8.2-8.23z"/></svg></button>
+              </div>
+              <div class="remark-editor">
+                <textarea class="remark-input" rows="2">SIRENE v2. 138 need website enrichment.</textarea>
+                <button class="remark-save-btn" onclick="saveEdit(this)" title="Save"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <!-- Aviation Auth -->
+        <td>
+          <div class="cell na">
+            <div class="cell-top"><div class="dot gray"></div><span class="cell-count zero">&mdash;</span></div>
+            <div class="access-label">Access restricted</div>
+            <div class="remark-wrap">
+              <div class="remark-display">
+                <span class="remark-text">DGAC / AlphaTango — login required.</span>
+                <button class="remark-edit-btn" onclick="startEdit(this)" title="Edit remark"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.13 1.72a1.77 1.77 0 012.5 2.5L5.42 12.44l-3.32.83.83-3.32 8.2-8.23z"/></svg></button>
+              </div>
+              <div class="remark-editor">
+                <textarea class="remark-input" rows="2">DGAC / AlphaTango — login required.</textarea>
+                <button class="remark-save-btn" onclick="saveEdit(this)" title="Save"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <td class="cov-cell">
+          <div class="cov-val green">3 / 3</div>
+        </td>
+        <td class="cov-cell" style="border-left: 1px solid #F3F4F6;">
+          <div class="cov-val amber">4 / 5</div>
+          <div class="cov-sub">1 pending</div>
+        </td>
+      </tr>
+
+      <!-- ═══ NETHERLANDS ═══ -->
+      <tr>
+        <td>
+          <div class="region-name">Netherlands <span class="region-code">NL</span></div>
+          <div class="region-total">0 candidates</div>
+        </td>
+
+        <!-- DJI Resellers -->
+        <td>
+          <div class="cell">
+            <div class="cell-top"><div class="dot gray"></div><span class="cell-count zero">&mdash;</span></div>
+            <div class="cell-date">Not started</div>
+            <div class="remark-wrap">
+              <div class="remark-display">
+                <span class="remark-text">Data in DB. Ready to import.</span>
+                <button class="remark-edit-btn" onclick="startEdit(this)" title="Edit remark"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.13 1.72a1.77 1.77 0 012.5 2.5L5.42 12.44l-3.32.83.83-3.32 8.2-8.23z"/></svg></button>
+              </div>
+              <div class="remark-editor">
+                <textarea class="remark-input" rows="2">Data in DB. Ready to import.</textarea>
+                <button class="remark-save-btn" onclick="saveEdit(this)" title="Save"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <!-- Google Search -->
+        <td>
+          <div class="cell">
+            <div class="cell-top"><div class="dot gray"></div><span class="cell-count zero">&mdash;</span></div>
+            <div class="cell-date">Not started</div>
+            <div class="remark-wrap">
+              <div class="remark-display">
+                <span class="remark-text">Crawler supports NL. Ready to run.</span>
+                <button class="remark-edit-btn" onclick="startEdit(this)" title="Edit remark"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.13 1.72a1.77 1.77 0 012.5 2.5L5.42 12.44l-3.32.83.83-3.32 8.2-8.23z"/></svg></button>
+              </div>
+              <div class="remark-editor">
+                <textarea class="remark-input" rows="2">Crawler supports NL. Ready to run.</textarea>
+                <button class="remark-save-btn" onclick="saveEdit(this)" title="Save"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <!-- Comet -->
+        <td>
+          <div class="cell">
+            <div class="cell-top"><div class="dot gray"></div><span class="cell-count zero">&mdash;</span></div>
+            <div class="cell-date">Not started</div>
+            <div class="remark-wrap">
+              <div class="remark-display">
+                <span class="remark-text">Queue Comet search for NL DSPs.</span>
+                <button class="remark-edit-btn" onclick="startEdit(this)" title="Edit remark"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.13 1.72a1.77 1.77 0 012.5 2.5L5.42 12.44l-3.32.83.83-3.32 8.2-8.23z"/></svg></button>
+              </div>
+              <div class="remark-editor">
+                <textarea class="remark-input" rows="2">Queue Comet search for NL DSPs.</textarea>
+                <button class="remark-save-btn" onclick="saveEdit(this)" title="Save"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <!-- Govt Registry -->
+        <td>
+          <div class="cell">
+            <div class="cell-top"><div class="dot gray"></div><span class="cell-count zero">&mdash;</span></div>
+            <div class="cell-date">Not started</div>
+            <div class="remark-wrap">
+              <div class="remark-display">
+                <span class="remark-text">KVK — paid API. Check bulk CSV.</span>
+                <button class="remark-edit-btn" onclick="startEdit(this)" title="Edit remark"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.13 1.72a1.77 1.77 0 012.5 2.5L5.42 12.44l-3.32.83.83-3.32 8.2-8.23z"/></svg></button>
+              </div>
+              <div class="remark-editor">
+                <textarea class="remark-input" rows="2">KVK — paid API. Check bulk CSV.</textarea>
+                <button class="remark-save-btn" onclick="saveEdit(this)" title="Save"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <!-- Aviation Auth -->
+        <td>
+          <div class="cell">
+            <div class="cell-top"><div class="dot gray"></div><span class="cell-count zero">&mdash;</span></div>
+            <div class="access-label">Open (ILT public)</div>
+            <div class="remark-wrap">
+              <div class="remark-display">
+                <span class="remark-text">ILT SORA registry — publicly listed.</span>
+                <button class="remark-edit-btn" onclick="startEdit(this)" title="Edit remark"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.13 1.72a1.77 1.77 0 012.5 2.5L5.42 12.44l-3.32.83.83-3.32 8.2-8.23z"/></svg></button>
+              </div>
+              <div class="remark-editor">
+                <textarea class="remark-input" rows="2">ILT SORA registry — publicly listed.</textarea>
+                <button class="remark-save-btn" onclick="saveEdit(this)" title="Save"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <td class="cov-cell">
+          <div class="cov-val gray">0 / 3</div>
+        </td>
+        <td class="cov-cell" style="border-left: 1px solid #F3F4F6;">
+          <div class="cov-val gray">0 / 5</div>
+        </td>
+      </tr>
+
+      <!-- Add region -->
+      <tr class="add-row">
+        <td colspan="8">
+          <button class="add-btn">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a.75.75 0 01.75.75v5.5h5.5a.75.75 0 010 1.5h-5.5v5.5a.75.75 0 01-1.5 0v-5.5h-5.5a.75.75 0 010-1.5h5.5v-5.5A.75.75 0 018 1z"/></svg>
+            Add region (Germany, UK, Spain, Italy ...)
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="legend">
+    <div class="legend-item"><div class="dot green"></div> Staged</div>
+    <div class="legend-item"><div class="dot amber"></div> Run done, not staged</div>
+    <div class="legend-item"><div class="dot gray"></div> Not started</div>
+    <span style="margin-left: auto; color: #9CA3AF; font-size: 9px;">Counts from source_import_runs</span>
+  </div>
+</div>
+
+<!-- Recent Imports -->
+<div class="matrix-container">
+  <div class="matrix-title">
+    Recent Imports
+    <span class="badge">source_import_runs</span>
+  </div>
+  <table class="history-table">
+    <thead>
+      <tr>
+        <th style="width: 110px;">Date</th>
+        <th style="width: 50px;">Region</th>
+        <th style="width: 140px;">Source</th>
+        <th style="width: 60px;">Input</th>
+        <th style="width: 70px;">Imported</th>
+        <th style="width: 60px;">Skipped</th>
+        <th style="width: 80px;">Status</th>
+        <th>Label</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>24 Mar, 19:12</td>
+        <td>FR</td>
+        <td>Govt Registry</td>
+        <td>378</td>
+        <td>365</td>
+        <td>13</td>
+        <td><span class="status-badge completed">Completed</span></td>
+        <td>SIRENE v2 — NAF + word-boundary</td>
+      </tr>
+      <tr>
+        <td>24 Mar, 18:45</td>
+        <td>FR</td>
+        <td>Comet</td>
+        <td>18</td>
+        <td>18</td>
+        <td>0</td>
+        <td><span class="status-badge completed">Completed</span></td>
+        <td>BVLOS operators + DJI dealers</td>
+      </tr>
+      <tr>
+        <td>24 Mar, 17:30</td>
+        <td>FR</td>
+        <td>DJI Resellers</td>
+        <td>12</td>
+        <td>12</td>
+        <td>0</td>
+        <td><span class="status-badge completed">Completed</span></td>
+        <td>Enterprise Dealers — France</td>
+      </tr>
+      <tr>
+        <td>22 Mar, 20:03</td>
+        <td>FR</td>
+        <td>Google Search</td>
+        <td>~40</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+        <td><span class="status-badge not-staged">Not staged</span></td>
+        <td>"DJI Dock" gl=FR — 4 pages</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+function startEdit(btn) {
+  const wrap = btn.closest('.remark-wrap');
+  const display = wrap.querySelector('.remark-display');
+  const editor = wrap.querySelector('.remark-editor');
+  const textarea = editor.querySelector('textarea');
+  const text = wrap.querySelector('.remark-text').textContent;
+  textarea.value = text;
+  display.classList.add('hidden');
+  editor.classList.add('active');
+  textarea.focus();
+}
+
+function saveEdit(btn) {
+  const wrap = btn.closest('.remark-wrap');
+  const display = wrap.querySelector('.remark-display');
+  const editor = wrap.querySelector('.remark-editor');
+  const textarea = editor.querySelector('textarea');
+  const textSpan = wrap.querySelector('.remark-text');
+  const newText = textarea.value.trim();
+  if (newText) {
+    textSpan.textContent = newText;
+    textSpan.classList.remove('empty');
+  } else {
+    textSpan.textContent = 'Add remark...';
+    textSpan.classList.add('empty');
+  }
+  editor.classList.remove('active');
+  display.classList.remove('hidden');
+}
+</script>
+
+</body>
+</html>
