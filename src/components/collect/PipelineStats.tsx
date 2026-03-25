@@ -7,11 +7,21 @@ interface PipelineStatsProps {
 
 function fetchSourceSubtitle(stats: PipelineStatsType): string | null {
   const g = stats.fetchedGoogleNews;
+  const gd = stats.dateFilteredGoogleNews;
   const l = stats.fetchedLinkedin;
+  const ld = stats.dateFilteredLinkedin;
   if (g === undefined && l === undefined) return null;
   const parts: string[] = [];
-  if (g !== undefined) parts.push(`Google News ${g}`);
-  if (l !== undefined) parts.push(`LinkedIn ${l}`);
+  if (g !== undefined) {
+    parts.push(
+      gd !== undefined ? `Google News ${g} -> ${gd} after date filter` : `Google News ${g}`,
+    );
+  }
+  if (l !== undefined) {
+    parts.push(
+      ld !== undefined ? `LinkedIn ${l} -> ${ld} after date filter` : `LinkedIn ${l}`,
+    );
+  }
   return parts.join(' · ');
 }
 

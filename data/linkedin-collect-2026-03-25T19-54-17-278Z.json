@@ -1,0 +1,55 @@
+{
+  "run": {
+    "id": "run_li_202603251953171",
+    "keywords": [
+      "DJI Dock"
+    ],
+    "sources": [
+      "linkedin"
+    ],
+    "regions": [],
+    "filter_days": 1,
+    "min_score": 40,
+    "max_articles": 50,
+    "status": "completed",
+    "articles_fetched": 27,
+    "articles_stored": 2,
+    "dedup_removed": 25,
+    "created_at": "2026-03-25T19:54:17.278Z",
+    "completed_at": "2026-03-25T19:54:17.278Z"
+  },
+  "stats": {
+    "totalFetched": 27,
+    "afterDateFilter": 2,
+    "afterDedup": 2,
+    "stored": 2
+  },
+  "articles": [
+    {
+      "id": "li_run_li_202603251953171_1774468457008_0",
+      "run_id": "run_li_202603251953171",
+      "source": "linkedin",
+      "title": "Alpine operations present serious challenges freezing temperatures, strong winds, and difficult terrain. DJI Dock 3 enables automated drone ",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7442445513750364160/",
+      "publisher_url": "https://www.linkedin.com/company/aerosmartuav/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7442445513750364160",
+      "snippet": "Alpine operations present serious challenges freezing temperatures, strong winds, and difficult terrain. DJI Dock 3 enables automated drone deployments that maintain inspection reliability even in extreme environments. ✔️ Remote drone deployment in cold-weather conditions ✔️ Consistent, repeatable inspection missions ✔️ Reliable aerial data across remote mountain locations ✔️ Reduced on-site exposure for field teams ✔️ Continuous workflows despite harsh weather Dock-based operations allow organizations to maintain safety, efficiency, and operational continuity in the most demanding environments. How could dock-based drone automation improve reliability in your operations? Aerosmart Sales Details Email : sales@aerosmart.ae Website: https://aerosmart.ae hashtag #DJIEnterprise hashtag #DJIDock3 hashtag #MountainOperations hashtag #DroneInspection hashtag #ColdWeatherOperations hashtag #Aerosmart",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-25T05:54:17.008Z",
+      "created_at": "2026-03-25T19:54:17.008Z"
+    },
+    {
+      "id": "li_run_li_202603251953171_1774468457008_4",
+      "run_id": "run_li_202603251953171",
+      "source": "linkedin",
+      "title": "Solar farms are scaling fast… but inspection methods haven’t caught up. With DJI Dock 3 + Matrice 4D, AERONEX enables fully automated, data-",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7442510608509485057/",
+      "publisher_url": "https://www.linkedin.com/company/aeronex-fzco/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7442510608509485057",
+      "snippet": "Solar farms are scaling fast… but inspection methods haven’t caught up. With DJI Dock 3 + Matrice 4D, AERONEX enables fully automated, data-driven solar inspections. 👉 Discover how: www.aeronex.ae hashtag #AERONEX hashtag #DJIEnterprise hashtag #SolarEnergy hashtag #DroneInspection hashtag #Automation hashtag #Matrice4D hashtag #DJIDock3 🚁",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-25T10:54:17.008Z",
+      "created_at": "2026-03-25T19:54:17.008Z"
+    }
+  ]
+}

@@ -18,7 +18,13 @@ function mergePipelineStats(a: PipelineStats, b: PipelineStats): PipelineStats {
 
 /** Strip per-source fetch annotations before summing stats (avoid double-counting in merges). */
 function stripFetchBreakdown(s: PipelineStats): PipelineStats {
-  const { fetchedGoogleNews: _g, fetchedLinkedin: _l, ...rest } = s;
+  const {
+    fetchedGoogleNews: _g,
+    dateFilteredGoogleNews: _gd,
+    fetchedLinkedin: _l,
+    dateFilteredLinkedin: _ld,
+    ...rest
+  } = s;
   return rest;
 }
 
@@ -221,7 +227,9 @@ export function useCollect() {
             stored: deduped.length,
             dedupRemoved: mergedStats.dedupRemoved + removedCount,
             fetchedGoogleNews: newsResult.stats.totalFetched,
+            dateFilteredGoogleNews: newsResult.stats.afterDateFilter,
             fetchedLinkedin: liResult.stats.totalFetched,
+            dateFilteredLinkedin: liResult.stats.afterDateFilter,
           },
           secondaryParts: [...(newsResult.secondaryParts ?? []), liResult],
         };
@@ -240,9 +248,17 @@ export function useCollect() {
       const single = applyCrossSourceDedup(base);
       const singleStats: PipelineStats =
         newsResult && !liResult
-          ? { ...single.stats, fetchedGoogleNews: newsResult.stats.totalFetched }
+          ? {
+              ...single.stats,
+              fetchedGoogleNews: newsResult.stats.totalFetched,
+              dateFilteredGoogleNews: newsResult.stats.afterDateFilter,
+            }
           : !newsResult && liResult
-            ? { ...single.stats, fetchedLinkedin: liResult.stats.totalFetched }
+            ? {
+                ...single.stats,
+                fetchedLinkedin: liResult.stats.totalFetched,
+                dateFilteredLinkedin: liResult.stats.afterDateFilter,
+              }
             : single.stats;
       setStats(singleStats);
 

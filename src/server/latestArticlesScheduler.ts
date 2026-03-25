@@ -1,6 +1,8 @@
 import { loadLatestArticlesScheduleConfig, saveLatestArticlesScheduleConfig, computeNextRunAt } from './latestArticlesScheduleStore';
 import { runLatestArticlesFlow } from './runLatestArticlesFlow';
 import type { LatestArticlesScheduleConfig } from './latestArticlesScheduleStore';
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
 
 type SchedulerState = {
   started: boolean;
@@ -9,6 +11,50 @@ type SchedulerState = {
 };
 
 const SCHEDULER_POLL_MS = 15_000;
+
+async function notifyCronRunByEmail(subject: string, message: string) {
+  // Next dev sometimes doesn't hot-reload updated `.env` values for the running process.
+  // Reloading ensures we use the latest SMTP credentials without a server restart.
+  dotenv.config({ override: true });
+
+  const host = process.env.EMAIL_SMTP_HOST;
+  const portRaw = process.env.EMAIL_SMTP_PORT;
+  const user = process.env.EMAIL_SMTP_USER;
+  const pass = process.env.EMAIL_SMTP_PASS;
+  const from = process.env.EMAIL_SMTP_FROM;
+  const to = process.env.LATEST_ARTICLES_CRON_EMAIL_TO;
+
+  if (!host || !portRaw || !user || !pass || !from || !to) return;
+
+  const port = Number(portRaw);
+  if (Number.isNaN(port)) {
+    console.error('[latest-articles-scheduler] Invalid EMAIL_SMTP_PORT value');
+    return;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+  });
+
+  try {
+    const info = await transporter.sendMail({
+      from,
+      to,
+      subject,
+      text: message,
+    });
+    console.log('[latest-articles-scheduler] Email notification sent', {
+      to,
+      subject,
+      messageId: info.messageId,
+    });
+  } catch (err) {
+    console.error('[latest-articles-scheduler] Email notification error:', err);
+  }
+}
 
 function getGlobalState(): SchedulerState {
   const g = globalThis as unknown as { __latestArticlesScheduler?: SchedulerState };
@@ -44,7 +90,7 @@ async function tick() {
     const runningConfig: LatestArticlesScheduleConfig = { ...config, lastStatus: 'running' };
     await saveLatestArticlesScheduleConfig(runningConfig);
     console.log('[latest-articles-scheduler] Triggering scheduled run at', new Date().toISOString());
-    await runLatestArticlesFlow(runningConfig);
+    const result = await runLatestArticlesFlow(runningConfig);
 
     const nextRunAt = computeNextRunAt(config.timeOfDay, new Date());
     await saveLatestArticlesScheduleConfig({
@@ -53,6 +99,14 @@ async function tick() {
       lastStatus: 'success',
       nextRunAt,
     });
+    await notifyCronRunByEmail(
+      'Latest Articles cron: SUCCESS',
+      [
+        `time=${new Date().toISOString()}`,
+        `google=${result.googleCount}, linkedin=${result.linkedinCount}, merged=${result.mergedCount}`,
+        `nextRunAt=${nextRunAt}`,
+      ].join('\n'),
+    );
   } catch (err) {
     console.error('[latest-articles-scheduler] Scheduled run failed:', err);
     const nextRunAt = computeNextRunAt(config.timeOfDay, new Date());
@@ -62,6 +116,15 @@ async function tick() {
       lastStatus: 'failed',
       nextRunAt,
     });
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    await notifyCronRunByEmail(
+      'Latest Articles cron: FAILED',
+      [
+        `time=${new Date().toISOString()}`,
+        `error=${message}`,
+        `nextRunAt=${nextRunAt}`,
+      ].join('\n'),
+    );
   } finally {
     state.running = false;
   }

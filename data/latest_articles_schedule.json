@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "timeOfDay": "01:36",
+  "minScore": 50,
+  "maxArticles": 50,
+  "linkedin30SecScrape": false,
+  "linkedinHeadless": false,
+  "browserTimeoutMs": 180000,
+  "nextRunAt": "2000-01-01T00:00:00.000Z",
+  "lastRunAt": "2026-03-25T20:10:32.957Z",
+  "lastStatus": "success"
+}
