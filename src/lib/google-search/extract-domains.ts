@@ -6,13 +6,22 @@
 
 import type { SerperResult } from './serper';
 
-// Only exclude manufacturer, encyclopedias, marketplaces, govt — NOT social platforms
+// Exclude manufacturer, encyclopedias, marketplaces, govt — global coverage
 const EXCLUDE_DOMAINS = [
+  // DJI own domains
   'dji.com',
+  // Encyclopedias
   'wikipedia.org',
-  'amazon.fr', 'amazon.com', 'amazon.de', 'amazon.co.uk',
-  'cdiscount.com', 'ebay.fr', 'ebay.com',
-  'gouv.fr',
+  // Marketplaces (global)
+  'amazon.com', 'amazon.fr', 'amazon.de', 'amazon.co.uk', 'amazon.co.jp',
+  'amazon.in', 'amazon.com.au', 'amazon.sg', 'amazon.com.br', 'amazon.it',
+  'amazon.es', 'amazon.ca', 'amazon.com.tr', 'amazon.pl', 'amazon.sa',
+  'ebay.com', 'ebay.fr', 'ebay.de', 'ebay.co.uk', 'ebay.com.au',
+  'cdiscount.com', 'alibaba.com', 'aliexpress.com',
+  'mercadolibre.com', 'rakuten.co.jp', 'flipkart.com',
+  // Government
+  'gouv.fr', 'gov.uk', 'gov.au', 'go.jp', 'gov.in', 'gov.sa', 'gov.ae',
+  // FlytBase (own product)
   'flytbase.com',
 ];
 

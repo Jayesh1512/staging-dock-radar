@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Article } from '@/lib/types';
+import { DEFAULTS } from '@/lib/constants';
 
 type Status = 'idle' | 'collecting' | 'done' | 'error';
 
@@ -164,7 +165,7 @@ export function LinkedinCompanyPostsUtility() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             articles: batch,
-            minScore: 50,
+            minScore: DEFAULTS.minScore,
           }),
         });
 

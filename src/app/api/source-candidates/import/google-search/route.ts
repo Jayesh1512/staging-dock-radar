@@ -169,14 +169,10 @@ function filterCompanies(companies: CompanyResult[]): FilterResult {
   const filtered: FilterResult['filtered'] = [];
 
   for (const c of companies) {
-    // Skip zero-score
-    if (c.normalizedScore === 0) {
-      filtered.push({ company: c, reason: 'zero_score' });
-      continue;
-    }
-    // Skip media without tier1
-    if (c.entityType === 'media' && !c.tier1Hit) {
-      filtered.push({ company: c, reason: 'media_no_dock_signal' });
+    // GATE: Tier 1 must be present — "DJI Dock" / "Dock 2" / "Dock 3" must appear.
+    // If T1 = 0, the company is irrelevant regardless of T2/T3 scores.
+    if (!c.tier1Hit) {
+      filtered.push({ company: c, reason: 'no_dock_keyword' });
       continue;
     }
     // Skip if ALL domains are excluded social only (youtube/tiktok/reddit/twitter/instagram)

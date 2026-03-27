@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState, useCallback } from 'react';
 import type { AnalyticsData, AnalyticsCountryRow, DrilldownArticle } from '@/app/api/analytics/route';
+import { SocialLeaderboard } from './SocialLeaderboard';
 
 // ── Signal palette (condensed 5) ──────────────────────────────────────────
 const SIGNAL_COLORS: Record<string, { bg: string; text: string; bar: string }> = {
@@ -179,7 +180,10 @@ function DrilldownPanel({
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────
+type AnalyticsView = 'signals' | 'leaderboard';
+
 export function AnalyticsPage({ onClose }: { onClose: () => void }) {
+  const [activeView, setActiveView] = useState<AnalyticsView>('leaderboard');
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -205,12 +209,29 @@ export function AnalyticsPage({ onClose }: { onClose: () => void }) {
   return (
     <div style={{ maxWidth: 'var(--dr-max-w)', margin: '0 auto', padding: '24px 32px 64px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* Page header */}
+      {/* Page header + sub-tabs */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--dr-text)' }}>Radar Analytics</div>
-          <div style={{ fontSize: 13, color: 'var(--dr-text-muted)', marginTop: 3 }}>
-            Geographic distribution across all queue-eligible signals · click any country to see the articles
+          <div style={{ display: 'flex', gap: 0, marginTop: 10, borderBottom: '1px solid var(--dr-border)' }}>
+            {([
+              { key: 'leaderboard' as const, label: 'Social Leaderboard' },
+              { key: 'signals' as const, label: 'Signal Overview' },
+            ]).map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveView(tab.key)}
+                style={{
+                  fontSize: 13, fontWeight: activeView === tab.key ? 600 : 500,
+                  padding: '8px 16px', cursor: 'pointer',
+                  background: 'none', border: 'none',
+                  borderBottom: activeView === tab.key ? '2px solid var(--dr-blue)' : '2px solid transparent',
+                  color: activeView === tab.key ? 'var(--dr-blue)' : 'var(--dr-text-muted)',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
         <button
@@ -221,19 +242,22 @@ export function AnalyticsPage({ onClose }: { onClose: () => void }) {
         </button>
       </div>
 
-      {/* Loading / error */}
-      {loading && (
+      {/* Social Leaderboard view */}
+      {activeView === 'leaderboard' && <SocialLeaderboard />}
+
+      {/* Signal Overview: Loading / error */}
+      {activeView === 'signals' && loading && (
         <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--dr-text-muted)', fontSize: 13 }}>
           Loading analytics…
         </div>
       )}
-      {error && (
+      {activeView === 'signals' && error && (
         <div style={{ padding: '16px 20px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, fontSize: 13, color: '#991B1B' }}>
           ✕ {error}
         </div>
       )}
 
-      {data && (
+      {activeView === 'signals' && data && (
         <>
           {/* Stat cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
@@ -317,8 +341,8 @@ export function AnalyticsPage({ onClose }: { onClose: () => void }) {
         </>
       )}
 
-      {/* Drill-down panel */}
-      {selectedCountry && (
+      {/* Drill-down panel (signals view only) */}
+      {activeView === 'signals' && selectedCountry && (
         <DrilldownPanel
           country={selectedCountry}
           onClose={() => setSelectedCountry(null)}

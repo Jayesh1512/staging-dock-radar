@@ -1,0 +1,660 @@
+priority,company_name,normalized_name,country,city,signal_source,dock_qa_status,dock_verified,website,linkedin,normalized_domain,missing,notes
+P1,DJI Paris (Boutique),dji paris,FR,Paris,google_search,verified,true,https://boutique.dji-paris.com,,boutique.dji-paris.com,linkedin,Official DJI retail store France.
+P1,EPC France (EPC Groupe),epc france,FR,Vignats (Normandy),chatgpt,verified,true,,,,website+linkedin,Dock 2 test at Vignats quarry.
+P1,i-TechGroup (i-Techdrone),i techgroup,FR,Pau (Nouvelle-Aquitaine),chatgpt,verified,true,,,,website+linkedin,First in France to test DJI Dock (2023).
+P1,Drone Parts Center,drone parts center,NL,,google_search,verified,true,https://drone-parts-center.com,,drone-parts-center.com,linkedin,Dock 3 product pages.
+P1,Shell (Pernis / Europort),shell,NL,Rotterdam,chatgpt,verified,true,,,,website+linkedin,Multiple DJI Dock at Pernis & Europort. 1+ year.
+P1,Skeye (Terra Drone Europe),skeye,NL,Heinenoord,chatgpt,verified,true,https://www.skeye.com,,skeye.com,linkedin,BVLOS Dock ops for Shell. First EASA LUC in NL.
+P1,Tata Steel Nederland,tata steel,NL,IJmuiden,chatgpt,verified,true,,,,website+linkedin,Dock 2+Matrice 3D for daily stockpile mapping.
+P3,Powerloop,powerloop,FR,,comet,verified,false,https://www.powerloop.fr,,powerloop.fr,linkedin,Dock 3 on LinkedIn/social. Zero on website.
+P3,058nu,058nu,NL,"Issued: 22-08-2025, Expiry: 22-08-2027",ilt_sts,enriched,,https://058nu.nl,,058nu.nl,linkedin,"Issued: 22-08-2025, Expiry: 22-08-2027"
+P3,11 Shots Media,11 shots media,NL,,drones_nl,enriched,,https://www.drones.nl/bedrijven/11shotsmedia,,drones.nl,linkedin,
+P3,3D GeoData,3d geodata,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://3dgeodata.com/,,3dgeodata.com,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,3DE Systems,3de systems,NL,,ilt_oa,enriched,,https://www.3desystems.com,,3desystems.com,linkedin,
+P3,AB Drone,ab drone,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.abdrone.nl/,,abdrone.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Adcim B.V.,adcim b.v.,NL,,ilt_oa,enriched,,https://www.adcim.nl,,adcim.nl,linkedin,
+P3,Aerial Intelligence,aerial intelligence,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://aerialintelligence.nl/,,aerialintelligence.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Aerinspect,aerinspect,NL,,ilt_oa,enriched,,https://aerinspect.com,,aerinspect.com,linkedin,
+P3,Aerocam Company B.V.,aerocam company b.v.,NL,,ilt_oa,enriched,,https://www.aerocam.com,,aerocam.com,linkedin,
+P3,Air Vision,air vision,NL,,ilt_oa,enriched,,https://www.airvision.nl,,airvision.nl,linkedin,
+P3,AIRfootage BV.,airfootage bv.,NL,,ilt_oa,enriched,,https://airfootage.com,,airfootage.com,linkedin,
+P3,AlfaDrone B.V.,alfadrone b.v.,NL,,ilt_oa,enriched,,https://www.alfadrone.nl,,alfadrone.nl,linkedin,
+P3,Aule B.V. / Airscope.nl,aule b.v. / airscope.nl,NL,,ilt_oa,enriched,,https://www.airscope.nl,,airscope.nl,linkedin,
+P3,Aurea Imaging,aurea imaging,NL,,ilt_oa,enriched,,https://www.aureaimaging.nl,,aureaimaging.nl,linkedin,
+P3,Auricom,auricom,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://auricom.nl/,,auricom.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,AutoStickerOriginal,autostickeroriginal,NL,,ilt_oa,enriched,,https://www.autostickeroriginal.nl,,autostickeroriginal.nl,linkedin,
+P3,B-Focus B.V.,b-focus b.v.,NL,,ilt_oa,enriched,,https://b-focus.nl,,b-focus.nl,linkedin,
+P3,B3D Design B.V.,b3d design b.v.,NL,,ilt_oa,enriched,,https://www.b3d-design.nl,,b3d-design.nl,linkedin,
+P3,BartFPV,bartfpv,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.bartfpv.com/,,bartfpv.com,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,BIBI Droneworks,bibi droneworks,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.bibi-droneworks.com/,,bibi-droneworks.com,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,binnAir,binnair,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.binnair.nl/,,binnair.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,BVL De Winter,bvl de winter,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,http://www.bvldewinter.nl/,,bvldewinter.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,C-24 BV,c-24 bv,NL,,ilt_oa,enriched,,https://www.c24.nl,,c24.nl,linkedin,
+P3,Celemation B.V.,celemation b.v.,NL,,ilt_oa,enriched,,https://www.celemation.com,,celemation.com,linkedin,
+P3,Certicon Kwaliteitskeuringen B.V.,certicon kwaliteitskeuringen b.v.,NL,,ilt_oa,enriched,,https://www.certicon.nl,,certicon.nl,linkedin,
+P3,Cinerebels B.V.,cinerebels b.v.,NL,,ilt_oa,enriched,,https://www.cinerebels.com,,cinerebels.com,linkedin,
+P3,Cineshoots,cineshoots,NL,,ilt_oa,enriched,,https://www.cineshoots.nl,,cineshoots.nl,linkedin,
+P3,Cloudshots,cloudshots,NL,,ilt_oa,enriched,,https://www.cloudshots.nl,,cloudshots.nl,linkedin,
+P3,Company Power,company power,NL,,ilt_oa,enriched,,https://www.companypower.nl,,companypower.nl,linkedin,
+P3,Croonwolter&Dros B.V.,croonwolter&dros b.v.,NL,,ilt_oa,enriched,,https://www.croonwolterdros.nl,,croonwolterdros.nl,linkedin,
+P3,DB Visuals,db visuals,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://dbvisuals.nl/,,dbvisuals.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,De Kruijter Openbare Verlichting B.V.,de kruijter openbare verlichting b.v.,NL,,ilt_oa,enriched,,https://www.dekruijter.nl,,dekruijter.nl,linkedin,
+P3,De Landmeters B.V.,de landmeters b.v.,NL,,ilt_oa,enriched,,https://www.delandmeters.nl,,delandmeters.nl,linkedin,
+P3,Delft Dynamics,delft dynamics,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.delftdynamics.nl/,,delftdynamics.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,"Dienst Justitiële Inrichtingen, penitentiaire inrichting Alphen aan den Rijn","dienst justitiële inrichtingen, penitentiaire inrichting alphen aan den rijn",NL,,ilt_oa,enriched,,https://www.dji.nl,,dji.nl,linkedin,
+P3,Dixtone Netherlands N.V.,dixtone netherlands n.v.,NL,,ilt_oa,enriched,,https://www.dixtone.nl,,dixtone.nl,linkedin,
+P3,Drone Addicts,drone addicts,NL,,ilt_oa,enriched,,https://www.droneaddicts.nl,,droneaddicts.nl,linkedin,
+P3,Drone Aerial,drone aerial,NL,,ilt_oa,enriched,,https://droneaerial.nl,,droneaerial.nl,linkedin,
+P3,Drone Aviation,drone aviation,NL,,ilt_oa,enriched,,https://www.droneaviation.com,,droneaviation.com,linkedin,
+P3,Drone Chiefs,drone chiefs,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.nederlandsedronebeelden.nl/,,nederlandsedronebeelden.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Drone Directions,drone directions,NL,,ilt_oa,enriched,,https://dronedirections.nl,,dronedirections.nl,linkedin,
+P3,Drone Experience,drone experience,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://drone-experience.nl/,,drone-experience.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Drone Eye,drone eye,NL,,ilt_oa,enriched,,https://www.droneeye.nl,,droneeye.nl,linkedin,
+P3,Drone Films,drone films,NL,,ilt_oa,enriched,,https://drone-films.nl,,drone-films.nl,linkedin,
+P3,Drone Productions,drone productions,NL,,ilt_oa,enriched,,https://droneproductions.nl,,droneproductions.nl,linkedin,
+P3,Drone Security (kassatoezicht.online),drone security (kassatoezicht.online),NL,,ilt_oa,enriched,,https://kassatoezicht.online,,kassatoezicht.online,linkedin,
+P3,Drone Survey Map,drone survey map,NL,,ilt_oa,enriched,,https://dronesurveymap.nl,,dronesurveymap.nl,linkedin,
+P3,Drone Up,drone up,NL,,ilt_oa,enriched,,https://www.droneup.nl,,droneup.nl,linkedin,
+P3,Drone Visual BV,drone visual bv,NL,,ilt_oa,enriched,,https://www.dronevisual.nl,,dronevisual.nl,linkedin,
+P3,Drone with a Mission,drone with a mission,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://dronewithamission.nl/,,dronewithamission.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Dronebeeld B.V.,dronebeeld b.v.,NL,,ilt_oa,enriched,,https://www.dronebeeld.nl,,dronebeeld.nl,linkedin,
+P3,Dronebestemming,dronebestemming,NL,,ilt_oa,enriched,,https://www.dronebestemming.nl,,dronebestemming.nl,linkedin,
+P3,Dronecapture,dronecapture,NL,,ilt_oa,enriched,,https://dronecapture.nl,,dronecapture.nl,linkedin,
+P3,DroneFlight Academy,droneflight academy,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.droneflightacademy.eu/,,droneflightacademy.eu,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Dronelex,dronelex,NL,,ilt_oa,enriched,,https://dronelex.nl,,dronelex.nl,linkedin,
+P3,droneoperator.nl,droneoperator.nl,NL,,ilt_oa,enriched,,https://droneoperator.nl,,droneoperator.nl,linkedin,
+P3,DronePlan,droneplan,NL,,ilt_oa,enriched,,https://droneplan.nl,,droneplan.nl,linkedin,
+P3,DronePoint,dronepoint,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://dronepoint.nl/,,dronepoint.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,DroneScenario,dronescenario,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.dronescenario.nl/,,dronescenario.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,DroneSpec,dronespec,NL,,ilt_oa,enriched,,https://www.dronespec.nl,,dronespec.nl,linkedin,
+P3,DroneView,droneview,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.droneview.nl/,,droneview.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Dronevlucht.eu (Aboriginal Beheer B.V.),dronevlucht.eu (aboriginal beheer b.v.),NL,,ilt_oa,enriched,,https://dronevlucht.eu,,dronevlucht.eu,linkedin,
+P3,DroneWatch,dronewatch,NL,,google_search,verified,false,https://www.dronewatch.nl,,dronewatch.nl,linkedin,"Dutch drone news. Media, not a partner."
+P3,DroneXcellent,dronexcellent,NL,,ilt_oa,enriched,,https://dronexcellent.nl,,dronexcellent.nl,linkedin,
+P3,Droning4solar BV.,droning4solar bv.,NL,,ilt_oa,enriched,,https://www.droning4solar.nl,,droning4solar.nl,linkedin,
+P3,Droones Aerial Works,droones aerial works,NL,,ilt_oa,enriched,,https://www.droones.nl,,droones.nl,linkedin,
+P3,DSDP B.V.,dsdp b.v.,NL,,ilt_oa,enriched,,https://dsdp.com,,dsdp.com,linkedin,
+P3,Dutch Aerial Works,dutch aerial works,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.dedicateddrones.nl/,,dedicateddrones.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Dutch Drone Gods,dutch drone gods,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.dutchdronegods.com/,,dutchdronegods.com,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Dutch Drone Shows,dutch drone shows,NL,,ilt_oa,enriched,,https://dutchdroneshows.nl,,dutchdroneshows.nl,linkedin,
+P3,Dutch Drone Survey BV.,dutch drone survey bv.,NL,,ilt_oa,enriched,,https://dutchdronesurvey.nl,,dutchdronesurvey.nl,linkedin,
+P3,Dutch Inspect B.V.,dutch inspect b.v.,NL,,ilt_oa,enriched,,https://dutchinspect.nl,,dutchinspect.nl,linkedin,
+P3,Dutchman DC,dutchman dc,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.dutchmandc.com/,,dutchmandc.com,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Eagle Eye Inspection Services B.V.,eagle eye inspection services b.v.,NL,,ilt_oa,enriched,,https://eagle-eye-inspection.nl,,eagle-eye-inspection.nl,linkedin,
+P3,Eagle Geomatics,eagle geomatics,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://eagle-geomatics.nl/,,eagle-geomatics.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,EBN Veiligheidsdienst,ebn veiligheidsdienst,NL,,ilt_oa,enriched,,https://www.ebn.nl,,ebn.nl,linkedin,
+P3,Energielabel Oost,energielabel oost,NL,,ilt_oa,enriched,,https://www.energielabeloost.nl,,energielabeloost.nl,linkedin,
+P3,Enevate,enevate,NL,,ilt_oa,enriched,,https://www.enevate.com,,enevate.com,linkedin,
+P3,Epic Aero,epic aero,NL,,ilt_oa,enriched,,https://epic-aero.com,,epic-aero.com,linkedin,
+P3,Eye Watch Security Group B.V,eye watch security group b.v,NL,,ilt_oa,enriched,,https://www.eyewatchsecuritygroup.nl,,eyewatchsecuritygroup.nl,linkedin,
+P3,EyeFly,eyefly,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.eyefly.nl/,,eyefly.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Eyewings,eyewings,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.eye-wings.com/,,eye-wings.com,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Faculteit Lucht- en Ruimtevaarttechniek,faculteit lucht- en ruimtevaarttechniek,NL,,ilt_oa,enriched,,https://www.tudelft.nl/lr,,tudelft.nl,linkedin,
+P3,Feniks Film,feniks film,NL,,ilt_oa,enriched,,https://www.feniksfilm.nl,,feniksfilm.nl,linkedin,
+P3,Float 360,float 360,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.float360.nl/,,float360.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Flying Eye,flying eye,NL,,ilt_oa,enriched,,https://www.flying-eye.com,,flying-eye.com,linkedin,
+P3,Flying Media,flying media,NL,,ilt_oa,enriched,,https://flyingmedia.com,,flyingmedia.com,linkedin,
+P3,Fotopiloot,fotopiloot,NL,,ilt_oa,enriched,,https://fotopiloot.nl,,fotopiloot.nl,linkedin,
+P3,Fuchszeug B.V.,fuchszeug b.v.,NL,,ilt_oa,enriched,,https://www.fuchszeug.com,,fuchszeug.com,linkedin,
+P3,Gemeente Ede,gemeente ede,NL,,ilt_oa,enriched,,https://www.ede.nl,,ede.nl,linkedin,
+P3,Gemeente Emmen,gemeente emmen,NL,,ilt_oa,enriched,,https://www.gemeente-emmen.nl,,gemeente-emmen.nl,linkedin,
+P3,Gemeente Groningen,gemeente groningen,NL,,ilt_oa,enriched,,https://gemeente.groningen.nl,,gemeente.groningen.nl,linkedin,
+P3,Gemeente Hoeksche Waard,gemeente hoeksche waard,NL,,ilt_oa,enriched,,https://www.gemeentehw.nl,,gemeentehw.nl,linkedin,
+P3,Gemeente Losser,gemeente losser,NL,,ilt_oa,enriched,,https://www.losser.nl,,losser.nl,linkedin,
+P3,Gemeente Rotterdam,gemeente rotterdam,NL,,ilt_oa,enriched,,https://www.rotterdam.nl,,rotterdam.nl,linkedin,
+P3,Gemeente Texel,gemeente texel,NL,,ilt_oa,enriched,,https://www.texel.nl,,texel.nl,linkedin,
+P3,Gemeente Venlo,gemeente venlo,NL,,ilt_oa,enriched,,https://www.venlo.nl,,venlo.nl,linkedin,
+P3,Geo Infra,geo infra,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,http://www.geoinfra.nl/,,geoinfra.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Geo-Verde,geo-verde,NL,,ilt_oa,enriched,,https://geo-verde.com,,geo-verde.com,linkedin,
+P3,Geometius,geometius,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.geometius.nl/,,geometius.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,GeoZICHT,geozicht,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://geozicht.nl/,,geozicht.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Gnaut B.V.,gnaut b.v.,NL,"Issued: 26-09-2024, Expiry: 19-09-2026",ilt_sts,enriched,,https://www.gnaut.com,,gnaut.com,linkedin,"Issued: 26-09-2024, Expiry: 19-09-2026"
+P3,GP Drones,gp drones,NL,,ilt_oa,enriched,,https://www.gpdrones.com,,gpdrones.com,linkedin,
+P3,Green Leaves Productions B.V.,green leaves productions b.v.,NL,,ilt_oa,enriched,,https://www.greenleaves.nl,,greenleaves.nl,linkedin,
+P3,Harteman Verhuur B.V.,harteman verhuur b.v.,NL,,ilt_oa,enriched,,https://www.hartemanverhuur.com,,hartemanverhuur.com,linkedin,
+P3,Haviq Inspect,haviq inspect,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://haviqinspect.nl/,,haviqinspect.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,HES Bulk Terminal Rotterdam B.V.,hes bulk terminal rotterdam b.v.,NL,,ilt_oa,enriched,,https://www.hfrgroup.nl,,hfrgroup.nl,linkedin,
+P3,HighScan Drone Solutions,highscan drone solutions,NL,,ilt_oa,enriched,,https://highscan.nl,,highscan.nl,linkedin,
+P3,Holland Luchtfoto,holland luchtfoto,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.hollandluchtfoto.nl/,,hollandluchtfoto.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Hoogheemraadschap Delfland,hoogheemraadschap delfland,NL,,ilt_oa,enriched,,https://www.hhdelfland.nl,,hhdelfland.nl,linkedin,
+P3,Hoogheemraadschap Hollands Noorderkwartier,hoogheemraadschap hollands noorderkwartier,NL,,ilt_oa,enriched,,https://www.hhnk.nl,,hhnk.nl,linkedin,
+P3,Industrial Drone Solutions,industrial drone solutions,NL,,ilt_oa,enriched,,https://www.industrialdronesolutions.com,,industrialdronesolutions.com,linkedin,
+P3,Ingenieursbureau Groothedde,ingenieursbureau groothedde,NL,,ilt_oa,enriched,,https://www.ingenieursbureau-groothedde.nl,,ingenieursbureau-groothedde.nl,linkedin,
+P3,Kiwi Aerial Shots,kiwi aerial shots,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://kiwi-aerialshots.nl/,,kiwi-aerialshots.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,KTV Working Drones,ktv working drones,NL,,ilt_oa,enriched,,https://www.workingdrones.nl,,workingdrones.nl,linkedin,
+P3,Laurentius,laurentius,NL,,ilt_oa,enriched,,https://www.laurentius.nl,,laurentius.nl,linkedin,
+P3,LAV Fotografie,lav fotografie,NL,"Issued: 2025-01-08 00:00:00, Expiry: 2027-01-08 00:00:00",ilt_sts,enriched,,https://www.lavfotografie.nl,,lavfotografie.nl,linkedin,"Issued: 2025-01-08 00:00:00, Expiry: 2027-01-08 00:00:00"
+P3,LBL Communicatie & Contentmarketing B.V.,lbl communicatie & contentmarketing b.v.,NL,,ilt_oa,enriched,,https://www.lbl.nl,,lbl.nl,linkedin,
+P3,Leap 3D,leap 3d,NL,,ilt_oa,enriched,,https://leap3d.nl,,leap3d.nl,linkedin,
+P3,Leemans Speciaalwerken B.V.,leemans speciaalwerken b.v.,NL,,ilt_oa,enriched,,https://www.leemans.nl,,leemans.nl,linkedin,
+P3,Line of Sight,line of sight,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.lineofsight.eu/,,lineofsight.eu,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,LITSTILL,litstill,NL,"Issued: 17-01-2025, Expiry: 17-01-2027",ilt_sts,enriched,,https://www.litstill.com,,litstill.com,linkedin,"Issued: 17-01-2025, Expiry: 17-01-2027"
+P3,Luchtfilm Producties,luchtfilm producties,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://luchtfilmproducties.nl/,,luchtfilmproducties.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Luchtopname.nl,luchtopname.nl,NL,,ilt_oa,enriched,,https://luchtopname.nl,,luchtopname.nl,linkedin,
+P3,LUGN Security,lugn security,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.lugnsecurity.com/,,lugnsecurity.com,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Mapture B.V.,mapture b.v.,NL,,ilt_oa,enriched,,https://www.mapture.nl,,mapture.nl,linkedin,
+P3,Maritime Filming Group,maritime filming group,NL,,ilt_oa,enriched,,https://www.maritimefilminggroup.com,,maritimefilminggroup.com,linkedin,
+P3,Maritimephoto.com,maritimephoto.com,NL,"Issued: 31-01-2025, Expiry: 31-01-2027",ilt_sts,enriched,,https://www.maritimephoto.com,,maritimephoto.com,linkedin,"Issued: 31-01-2025, Expiry: 31-01-2027"
+P3,MDL Agro,mdl agro,NL,,ilt_oa,enriched,,https://mdlagro.nl,,mdlagro.nl,linkedin,
+P3,Media Air Services,media air services,NL,,ilt_oa,enriched,,https://www.mediaairservices.nl,,mediaairservices.nl,linkedin,
+P3,MeetBV,meetbv,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.meetbv.nl/,,meetbv.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,N3 Dronewash,n3 dronewash,NL,,ilt_oa,enriched,,https://www.n3dronewash.nl,,n3dronewash.nl,linkedin,
+P3,Nederland in Vogelvlucht,nederland in vogelvlucht,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://nederlandinvogelvlucht.com/,,nederlandinvogelvlucht.com,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Nederlandse Voedsel- en Warenautoriteit,nederlandse voedsel- en warenautoriteit,NL,,ilt_oa,enriched,,https://www.nvwa.nl,,nvwa.nl,linkedin,
+P3,NextLevel Ops,nextlevel ops,NL,,ilt_oa,enriched,,https://www.nextlevelops.nl,,nextlevelops.nl,linkedin,
+P3,Oceans of Energy B.V.,oceans of energy b.v.,NL,,ilt_oa,enriched,,https://oceansofenergy.blue,,oceansofenergy.blue,linkedin,
+P3,Omgevingsdienst IJmond,omgevingsdienst ijmond,NL,,ilt_oa,enriched,,https://www.odijmond.nl,,odijmond.nl,linkedin,
+P3,Omgevingsdienst NL,omgevingsdienst nl,NL,,ilt_oa,enriched,,https://www.omgevingsdienstnl.nl,,omgevingsdienstnl.nl,linkedin,
+P3,Omnidrones,omnidrones,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://omnidrones.nl/,,omnidrones.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Omroep Gelderland,omroep gelderland,NL,,ilt_oa,enriched,,https://www.gld.nl,,gld.nl,linkedin,
+P3,Onadin B.V.,onadin b.v.,NL,,ilt_oa,enriched,,https://www.onadin.nl,,onadin.nl,linkedin,
+P3,Onderzoeksraad voor de Veiligheid,onderzoeksraad voor de veiligheid,NL,,ilt_oa,enriched,,https://www.onderzoeksraad.nl,,onderzoeksraad.nl,linkedin,
+P3,Orange Aerospace B.V.,orange aerospace b.v.,NL,,ilt_oa,enriched,,https://www.orangeaerospace.com,,orangeaerospace.com,linkedin,
+P3,Perfect-Drone,perfect-drone,NL,,ilt_oa,enriched,,https://perfect-drone.nl,,perfect-drone.nl,linkedin,
+P3,Performance Rotors,performance rotors,NL,,ilt_oa,enriched,,https://www.performance-rotors.com,,performance-rotors.com,linkedin,
+P3,Pilot Media Creations,pilot media creations,NL,,ilt_oa,enriched,,https://pilotmediacreations.nl,,pilotmediacreations.nl,linkedin,
+P3,Pro Aerial,pro aerial,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://proaerial.nl/,,proaerial.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,ProDroneMedia,prodronemedia,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.prodronemedia.nl/,,prodronemedia.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Provincie Limburg,provincie limburg,NL,,ilt_oa,enriched,,https://www.limburg.nl,,limburg.nl,linkedin,
+P3,Public Air Services BV.,public air services bv.,NL,,ilt_oa,enriched,,https://www.publicairservices.nl,,publicairservices.nl,linkedin,
+P3,PWN Waterleidingbedrijf Noord-Holland,pwn waterleidingbedrijf noord-holland,NL,,ilt_oa,enriched,,https://www.pwn.nl,,pwn.nl,linkedin,
+P3,Q intelligence,q intelligence,NL,,ilt_oa,enriched,,https://www.qintelligence.com,,qintelligence.com,linkedin,
+P3,Qirion B.V.,qirion b.v.,NL,,ilt_oa,enriched,,https://www.qirion.nl,,qirion.nl,linkedin,
+P3,R3D Reality,r3d reality,NL,,ilt_oa,enriched,,https://www.r3dreality.nl,,r3dreality.nl,linkedin,
+P3,Raderadvies B.V.,raderadvies b.v.,NL,,ilt_oa,enriched,,https://www.raderadvies.nl,,raderadvies.nl,linkedin,
+P3,Recherchebureau Focus,recherchebureau focus,NL,,ilt_oa,enriched,,https://www.recherchebureau-focus.com,,recherchebureau-focus.com,linkedin,
+P3,Rijksvastgoedbedrijf,rijksvastgoedbedrijf,NL,,ilt_oa,enriched,,https://www.rijksvastgoedbedrijf.nl,,rijksvastgoedbedrijf.nl,linkedin,
+P3,RPAS Services BV.,rpas services bv.,NL,,ilt_oa,enriched,,https://www.rpas-services.nl,,rpas-services.nl,linkedin,
+P3,RR Drone Solutions,rr drone solutions,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://rrdronesolutions.nl/,,rrdronesolutions.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,SchutzDrone,schutzdrone,NL,,ilt_oa,enriched,,https://www.schutzdrone.nl,,schutzdrone.nl,linkedin,
+P3,SeeTree Systems,seetree systems,NL,,ilt_oa,enriched,,https://www.seetree.com,,seetree.com,linkedin,
+P3,ShipShot,shipshot,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://shipshot.nl/,,shipshot.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Shore Monitoring and research,shore monitoring and research,NL,,ilt_oa,enriched,,https://www.shoremonitoring.nl,,shoremonitoring.nl,linkedin,
+P3,Sky Drone Pictures,sky drone pictures,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.skydronepictures.nl/,,skydronepictures.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,SkyLynx,skylynx,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.skylynx.nl/,,skylynx.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,SkyMotion,skymotion,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://skymotion.nl/,,skymotion.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Skytools B.V.,skytools b.v.,NL,,ilt_oa,enriched,,https://skytools.nl,,skytools.nl,linkedin,
+P3,SkyVision,skyvision,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.skyvision-drones.com/home,,skyvision-drones.com,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,SkyWise B.V.,skywise b.v.,NL,,ilt_oa,enriched,,https://www.skywise.nl,,skywise.nl,linkedin,
+P3,SMA Zeeland,sma zeeland,NL,,ilt_oa,enriched,,https://www.smazeeland.nl,,smazeeland.nl,linkedin,
+P3,Smart AIS,smart ais,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.smart-ais.eu/,,smart-ais.eu,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Solar O&M B.V.,solar o&m b.v.,NL,,ilt_oa,enriched,,https://www.solar-om.nl,,solar-om.nl,linkedin,
+P3,Solar Tester B.V.,solar tester b.v.,NL,,ilt_oa,enriched,,https://solartester.nl,,solartester.nl,linkedin,
+P3,Solynta,solynta,NL,,ilt_oa,enriched,,https://www.solynta.com,,solynta.com,linkedin,
+P3,Stadskantoor Gemeente Breda,stadskantoor gemeente breda,NL,,ilt_oa,enriched,,https://www.breda.nl,,breda.nl,linkedin,
+P3,State of Motion B.V.,state of motion b.v.,NL,,ilt_oa,enriched,,https://stateofmotion.com,,stateofmotion.com,linkedin,
+P3,Stichting Aeres Groep,stichting aeres groep,NL,,ilt_oa,enriched,,https://www.aeres.nl,,aeres.nl,linkedin,
+P3,Stichting Behoud Kerkelijke Gebouwen in Midden- en Oost Nederland,stichting behoud kerkelijke gebouwen in midden- en oost nederland,NL,,ilt_oa,enriched,,https://www.kerkgebouwen.nl,,kerkgebouwen.nl,linkedin,
+P3,Stichting de Alliantie,stichting de alliantie,NL,,ilt_oa,enriched,,https://www.de-alliantie.nl,,de-alliantie.nl,linkedin,
+P3,Stichting Het Nationale Park De Hoge Veluwe,stichting het nationale park de hoge veluwe,NL,,ilt_oa,enriched,,https://www.hogeveluwe.nl,,hogeveluwe.nl,linkedin,
+P3,Stichting Monumentenwacht Noord en Oost Nederland,stichting monumentenwacht noord en oost nederland,NL,,ilt_oa,enriched,,https://www.monumentenwacht.nl,,monumentenwacht.nl,linkedin,
+P3,Stichting NHL Stenden Hogeschool,stichting nhl stenden hogeschool,NL,,ilt_oa,enriched,,https://www.nhlstenden.com,,nhlstenden.com,linkedin,
+P3,Stichting Regionaal Opleidingencentrum van Amsterdam,stichting regionaal opleidingencentrum van amsterdam,NL,,ilt_oa,enriched,,https://www.rocva.nl,,rocva.nl,linkedin,
+P3,Stichting Saxion,stichting saxion,NL,,ilt_oa,enriched,,https://www.saxion.nl,,saxion.nl,linkedin,
+P3,Stichting Waternet,stichting waternet,NL,,ilt_oa,enriched,,https://www.waternet.nl,,waternet.nl,linkedin,
+P3,Stichting Woonconcept,stichting woonconcept,NL,,ilt_oa,enriched,,https://www.woonconcept.nl,,woonconcept.nl,linkedin,
+P3,T&A Survey,t&a survey,NL,,ilt_oa,enriched,,https://www.ta-survey.nl,,ta-survey.nl,linkedin,
+P3,Tective,tective,NL,,ilt_oa,enriched,,https://www.tective.nl,,tective.nl,linkedin,
+P3,Terra Inspectioneering,terra inspectioneering,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.terra-inspectioneering.com/,,terra-inspectioneering.com,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Terraspect,terraspect,NL,,ilt_oa,enriched,,https://www.terraspect.nl,,terraspect.nl,linkedin,
+P3,The Flying Dutchmen,the flying dutchmen,NL,,ilt_oa,enriched,,https://www.theflyingdutchmen.com,,theflyingdutchmen.com,linkedin,
+P3,The Postboat,the postboat,NL,,ilt_oa,enriched,,https://thepostboat.nl,,thepostboat.nl,linkedin,
+P3,Thermofly,thermofly,NL,,ilt_oa,enriched,,https://thermofly.nl,,thermofly.nl,linkedin,
+P3,TM Drone Services,tm drone services,NL,,ilt_oa,enriched,,https://www.tmdroneservices.com,,tmdroneservices.com,linkedin,
+P3,Topshots,topshots,NL,,ilt_oa,enriched,,https://www.topshots.com,,topshots.com,linkedin,
+P3,Transportbedrijf Rouwmaat Groenlo B.V.,transportbedrijf rouwmaat groenlo b.v.,NL,,ilt_oa,enriched,,https://www.rouwmaat.nl,,rouwmaat.nl,linkedin,
+P3,UAS Worx,uas worx,NL,,ilt_oa,enriched,,https://uasworx.com,,uasworx.com,linkedin,
+P3,UMV Services B.V.,umv services b.v.,NL,,ilt_oa,enriched,,https://umvservices.com,,umvservices.com,linkedin,
+P3,Unit4Security B.V.,unit4security b.v.,NL,,ilt_oa,enriched,,https://www.unit4security.nl,,unit4security.nl,linkedin,
+P3,Universiteit Utrecht afd. Vastgoed en Campus,universiteit utrecht afd. vastgoed en campus,NL,,ilt_oa,enriched,,https://www.uu.nl,,uu.nl,linkedin,
+P3,Ursa Major Drone Shows B.V.,ursa major drone shows b.v.,NL,,ilt_oa,enriched,,https://www.ursamajordrones.nl,,ursamajordrones.nl,linkedin,
+P3,Uw Drone Service,uw drone service,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://uwdroneservice.nl/,,uwdroneservice.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Van Iperen BV.,van iperen bv.,NL,,ilt_oa,enriched,,https://www.vaniperen.nl,,vaniperen.nl,linkedin,
+P3,VCMI Group B.V.,vcmi group b.v.,NL,,ilt_oa,enriched,,https://www.vcmi.nl,,vcmi.nl,linkedin,
+P3,Veiligheidsregio Twente,veiligheidsregio twente,NL,,ilt_oa,enriched,,https://www.vrtwente.nl,,vrtwente.nl,linkedin,
+P3,Veldhoven Loonwerk B.V.,veldhoven loonwerk b.v.,NL,,ilt_oa,enriched,,https://www.veldhovenloonwerk.nl,,veldhovenloonwerk.nl,linkedin,
+P3,VIVO Fotografie,vivo fotografie,NL,"DCRO member (€500/yr, OA holders only)",dcro,enriched,,https://www.vivofotografie.nl/,,vivofotografie.nl,linkedin,"DCRO member (€500/yr, OA holders only)"
+P3,Vortex Operations,vortex operations,NL,,ilt_oa,enriched,,https://vortexoperations.com,,vortexoperations.com,linkedin,
+P3,Waterschap Aa en Maas,waterschap aa en maas,NL,,ilt_oa,enriched,,https://www.aaenmaas.nl,,aaenmaas.nl,linkedin,
+P3,Waterschap Brabantse Delta,waterschap brabantse delta,NL,,ilt_oa,enriched,,https://www.brabantsedelta.nl,,brabantsedelta.nl,linkedin,
+P3,Waterschap Hunze en Aa's,waterschap hunze en aa's,NL,,ilt_oa,enriched,,https://www.hunzeenaas.nl,,hunzeenaas.nl,linkedin,
+P3,Waterschap Limburg,waterschap limburg,NL,,ilt_oa,enriched,,https://www.waterschaplimburg.nl,,waterschaplimburg.nl,linkedin,
+P3,Waterschap Noorderzijlvest,waterschap noorderzijlvest,NL,,ilt_oa,enriched,,https://www.noorderzijlvest.nl,,noorderzijlvest.nl,linkedin,
+P3,Waterschap Vallei en Veluwe,waterschap vallei en veluwe,NL,,ilt_oa,enriched,,https://www.valleioveruwe.nl,,valleioveruwe.nl,linkedin,
+P3,Waterschap Vechtstromen,waterschap vechtstromen,NL,,ilt_oa,enriched,,https://www.vechtstromen.nl,,vechtstromen.nl,linkedin,
+P3,Waterschap Zuiderzeeland,waterschap zuiderzeeland,NL,,ilt_oa,enriched,,https://www.zuiderzeeland.nl,,zuiderzeeland.nl,linkedin,
+P3,Werkorganisatie HLT samen,werkorganisatie hlt samen,NL,,ilt_oa,enriched,,https://www.hltsamen.nl,,hltsamen.nl,linkedin,
+P3,Zero Gravity B.V.,zero gravity b.v.,NL,,ilt_oa,enriched,,https://www.zerogravity.nl,,zerogravity.nl,linkedin,
+P3,Zzoef.nl,zzoef.nl,NL,,ilt_oa,enriched,,https://zzoef.nl,,zzoef.nl,linkedin,
+P4,2 RUE CLAIRE DRONEAU,2 rue claire droneau,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:55.20Z|generic_name|PME/micro
+P4,ABC DRONE,abc drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:52.23Z|generic_name|structured|PME/micro
+P4,ACCES-DRONE,acces-drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,ACCESS DRONES,access drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,ACTION 3DRONES,action 3drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:81.29A|generic_name|structured|emp:01|PME/micro
+P4,ADRONE +,adrone +,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,AEP DRONE,aep drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|structured|PME/micro
+P4,AERO-DRONE-TECHNIC,aero-drone-technic,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:82.99Z|provider_kw|structured|PME/micro
+P4,AGENIUM DRONES SOLUTIONS,agenium drones solutions,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|PME/micro
+P4,AGI DRONE & CONSEILS,agi drone & conseils,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:70.22Z|generic_name|structured|PME/micro
+P4,AGRIBIO DRONE,agribio drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.61Z|generic_name|structured|PME/micro
+P4,AGRIVIEW DRONE,agriview drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,AGRODRONE,agrodrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:01|PME/micro
+P4,AH DRONE,ah drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:26.11Z|generic_name|structured|PME/micro
+P4,AIR DRONE SOLUTION,air drone solution,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,AIR SPACE DRONE,air space drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:02|PME/micro
+P4,AIRSUB DRONE,airsub drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,AKP-DRONES,akp-drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,ALIZEA DRONE SAS,alizea drone sas,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,ALPHA DRONE OPERATION,alpha drone operation,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:00.00Z|generic_name|structured|PME/micro
+P4,ALTI'DRONE & SERVICES,alti'drone & services,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:00.00Z|provider_kw|structured|PME/micro
+P4,ALTUS DRONES GROUP,altus drones group,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:82.11Z|generic_name|structured|PME/micro
+P4,ALTUS DRONES SERVICES,altus drones services,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:62.01Z|provider_kw|structured|emp:01|PME/micro
+P4,ANTILLES GUYANE DRONE CONCEPT,antilles guyane drone concept,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:00.00Z|generic_name|structured|PME/micro
+P4,APPLICATIONS DRONES ET GEOPHYSIQUES,applications drones et geophysiques,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,AQUA AIR DRONE,aqua air drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,AQUADRONE,aquadrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,ARADRONE,aradrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:45.11Z|generic_name|structured|PME/micro
+P4,ARTECH'DRONE,artech'drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|emp:03|PME/micro
+P4,ARTEDRONE,artedrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:72.19Z|generic_name|structured|emp:11|PME/micro
+P4,ARTISAN MENUISIER DRONET STEPHANE,artisan menuisier dronet stephane,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.32A|generic_name|structured|emp:01|PME/micro
+P4,ARTOIT  DRONE,artoit  drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:46.49Z|generic_name|structured|PME/micro
+P4,ASESDRONE,asesdrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,ASSOCIATION DRONE MY VIDEO,association drone my video,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|PME/micro
+P4,ASSOCIATION DRONE SWEET DRONE,association drone sweet drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:59.20Z|generic_name|PME/micro
+P4,ASTRATUS FILM & DRONE,astratus film & drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:59.11C|generic_name|structured|PME/micro
+P4,ATA DRONE,ata drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,ATLANTIC DRONES,atlantic drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|structured|PME/micro
+P4,ATLANTIQUE EXPERTISES DRONES,atlantique expertises drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:70.22Z|provider_kw|structured|emp:02|PME/micro
+P4,AURA DRONE,aura drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:01|PME/micro
+P4,AUTO FINANCES MADRONET,auto finances madronet,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:70.10Z|generic_name|structured|emp:01|PME/micro
+P4,AVM DRONE 27,avm drone 27,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.61Z|generic_name|structured|PME/micro
+P4,AZIMUT-DRONE,azimut-drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,AZUR DRONES,azur drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|emp:21|ETI
+P4,BATHY DRONE SOLUTIONS,bathy drone solutions,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|emp:02|PME/micro
+P4,BERINGER DIAG & DRONE,beringer diag & drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|emp:01|PME/micro
+P4,BIO DRONES FRANCE,bio drones france,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,BP DRONE,bp drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:77.11A|generic_name|structured|PME/micro
+P4,BRADLADRONE,bradladrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,BRUDRONE,brudrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:74.10Z|generic_name|structured|PME/micro
+P4,BV-DRONE,bv-drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.61Z|generic_name|structured|PME/micro
+P4,CAPTAGRI-DRONE,captagri-drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,CARIBEENNE D'EXPERTISE ET DE DRONES,caribeenne d'expertise et de drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|emp:01|PME/micro
+P4,CARRIERE SAN PEDRONE,carriere san pedrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:08.11Z|generic_name|structured|emp:03|PME/micro
+P4,CARTODRONE,cartodrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:01|PME/micro
+P4,CATCH A DRONE,catch a drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|structured|PME/micro
+P4,CEDRONE,cedrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:86.90E|generic_name|PME/micro
+P4,CENTRE D'INNOVATION DRONES NORMANDIE,centre d'innovation drones normandie,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:72.19Z|provider_kw|PME/micro
+P4,CESA DRONES,cesa drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:72.19Z|generic_name|structured|PME/micro
+P4,CIDRONEL,cidronel,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:70.10Z|generic_name|structured|PME/micro
+P4,CIE SANDRONE ET ARTIFICES,cie sandrone et artifices,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:90.01Z|generic_name|PME/micro
+P4,CIVIC DRONE,civic drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:28.99B|generic_name|structured|PME/micro
+P4,CLEAN DRONE,clean drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,CLEAN DRONE 25,clean drone 25,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.39Z|generic_name|structured|emp:01|PME/micro
+P4,CLIMAT DRONE,climat drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|PME/micro
+P4,CM DRONES,cm drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|structured|PME/micro
+P4,COMMUNE DE SAINT MEARD DE DRONE,commune de saint meard de drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:84.11Z|generic_name|emp:03|PME/micro
+P4,COMMUNE DE SAINT PARDOUX DE DRONE,commune de saint pardoux de drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:84.11Z|generic_name|emp:03|PME/micro
+P4,CRYSTAL-DRONE,crystal-drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:90.02Z|generic_name|structured|PME/micro
+P4,CYBERDRONEGUARDING,cyberdroneguarding,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,D'AIR DRONE,d'air drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.34Z|generic_name|structured|PME/micro
+P4,DASSIEU MOTOCULTURE AIR DRONE SERVICE,dassieu motoculture air drone service,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:33.12Z|provider_kw|structured|PME/micro
+P4,DEFIS-DRONE,defis-drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,DELTA DRONE MANAGERS,delta drone managers,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:70.22Z|generic_name|structured|PME/micro
+P4,DEPART DRONE 78,depart drone 78,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:81.29A|generic_name|structured|PME/micro
+P4,DIAG DRONE,diag drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,DIODON DRONE TECHNOLOGY,diodon drone technology,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|emp:12|PME/micro
+P4,DKDRONES,dkdrones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|structured|PME/micro
+P4,DR ANDRONE,dr androne,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:86.23Z|generic_name|structured|emp:01|PME/micro
+P4,DRONE -X,drone -x,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:74.10Z|generic_name|structured|PME/micro
+P4,DRONE & EAU PICARDIE,drone & eau picardie,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,DRONE 06,drone 06,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:01|PME/micro
+P4,DRONE 2I,drone 2i,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:01|PME/micro
+P4,DRONE 360,drone 360,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|structured|PME/micro
+P4,DRONE ACCES,drone acces,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:82.99Z|generic_name|PME/micro
+P4,DRONE ACT,drone act,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:72.19Z|generic_name|structured|emp:11|PME/micro
+P4,DRONE AGRI,drone agri,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:46.69A|generic_name|structured|PME/micro
+P4,DRONE AGRI CORSE,drone agri corse,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.61Z|generic_name|structured|PME/micro
+P4,DRONE AGRICULTURE ALPILLES,drone agriculture alpilles,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.61Z|generic_name|structured|PME/micro
+P4,DRONE AIR FLY,drone air fly,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|emp:01|PME/micro
+P4,DRONE ALPILLES,drone alpilles,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:00.00Z|generic_name|structured|PME/micro
+P4,DRONE ANALYSE,drone analyse,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,DRONE AQUITAINE,drone aquitaine,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|emp:02|PME/micro
+P4,DRONE BAT - ISERE NUISIBLES - GUEPES38,drone bat - isere nuisibles - guepes38,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:81.29A|generic_name|structured|PME/micro
+P4,DRONE BY NATURE,drone by nature,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:63.12Z|generic_name|structured|PME/micro
+P4,DRONE COM KARAIB,drone com karaib,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:58.14Z|generic_name|structured|PME/micro
+P4,DRONE CONSULTING,drone consulting,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|emp:03|PME/micro
+P4,DRONE DE DOME,drone de dome,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:82.99Z|generic_name|structured|PME/micro
+P4,DRONE EN SCENE,drone en scene,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:90.02Z|generic_name|structured|PME/micro
+P4,DRONE ENGINEERING,drone engineering,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,DRONE EXP'AIR TECH,drone exp'air tech,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|PME/micro
+P4,DRONE EXPERT',drone expert',FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|PME/micro
+P4,DRONE EXPERTISE CENTRE,drone expertise centre,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|emp:02|PME/micro
+P4,DRONE FLY INSPECT,drone fly inspect,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,DRONE FORCE,drone force,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,DRONE FRANCAIS,drone francais,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,DRONE FRANCE,drone france,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:81.29A|generic_name|structured|PME/micro
+P4,DRONE GEOFENCING,drone geofencing,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:58.29C|generic_name|structured|emp:11|PME/micro
+P4,DRONE GROUPE AFRIQUE,drone groupe afrique,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,DRONE HIVE SYSTEMS,drone hive systems,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:46.49Z|provider_kw|structured|PME/micro
+P4,DRONE IMMERSION,drone immersion,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,DRONE INOVE GEOMETRE,drone inove geometre,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:71.12A|generic_name|structured|PME/micro
+P4,DRONE INSPECTION,drone inspection,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|dock_kw|structured|PME/micro
+P4,DRONE INVESTIGATION,drone investigation,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,DRONE JET,drone jet,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.61Z|generic_name|structured|emp:01|PME/micro
+P4,DRONE M-TEK,drone m-tek,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:70.22Z|generic_name|structured|PME/micro
+P4,DRONE OVER,drone over,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:90.01Z|generic_name|PME/micro
+P4,DRONE PHOTOFLY,drone photofly,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,DRONE PLANET ECO ROBOTS,drone planet eco robots,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,DRONE PLEIN SUD,drone plein sud,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:00.00Z|generic_name|structured|PME/micro
+P4,DRONE PRECISION MAYENNAIS,drone precision mayennais,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.61Z|generic_name|structured|PME/micro
+P4,DRONE PROTECT SYSTEM,drone protect system,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:80.20Z|provider_kw|structured|PME/micro
+P4,DRONE REPONSE,drone reponse,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:82.99Z|generic_name|structured|emp:01|PME/micro
+P4,DRONE REPONSE SECURITE,drone reponse securite,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:80.20Z|dock_kw|structured|PME/micro
+P4,DRONE REPONSE TACTIC,drone reponse tactic,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,DRONE SARL,drone sarl,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:72.1Z|generic_name|structured|PME/micro
+P4,DRONE SERVICE,drone service,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:81.29A|provider_kw|structured|PME/micro
+P4,DRONE SERVICE 64,drone service 64,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:81.29A|provider_kw|structured|PME/micro
+P4,DRONE SOLUTIONS INVEST,drone solutions invest,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|PME/micro
+P4,DRONE SURVEY,drone survey,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:63.11Z|generic_name|structured|PME/micro
+P4,DRONE SYSTEME,drone systeme,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:31.09B|provider_kw|structured|emp:01|PME/micro
+P4,DRONE TECH,drone tech,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|PME/micro
+P4,DRONE TECH TOITURE,drone tech toiture,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|PME/micro
+P4,DRONE TECHNOLOGY SERVICE,drone technology service,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:62.02A|provider_kw|structured|PME/micro
+P4,DRONE TEMPLE,drone temple,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:90.01Z|generic_name|PME/micro
+P4,DRONE TOUCH,drone touch,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:16.10B|generic_name|structured|emp:01|PME/micro
+P4,DRONE VERT,drone vert,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.61Z|generic_name|structured|PME/micro
+P4,DRONE VOLT,drone volt,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|structured|emp:12|PME/micro
+P4,DRONE X SOLUTIONS,drone x solutions,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|PME/micro
+P4,DRONE XPRESS,drone xpress,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:80.10Z|generic_name|structured|PME/micro
+P4,DRONE XTR,drone xtr,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|emp:02|PME/micro
+P4,DRONE-CAPTURE,drone-capture,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,DRONE-DATA-LAB,drone-data-lab,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,DRONEAID COLLECTIVE,droneaid collective,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:94.12Z|generic_name|PME/micro
+P4,DRONEANDVIEW,droneandview,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:62.01Z|generic_name|structured|PME/micro
+P4,DRONEAU,droneau,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:88.99B|generic_name|PME/micro
+P4,DRONEAU,droneau,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:86.90E|generic_name|PME/micro
+P4,DRONEAU,droneau,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:85.52Z|generic_name|PME/micro
+P4,DRONEAU,droneau,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.11Z|generic_name|PME/micro
+P4,DRONEAU,droneau,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.2A|generic_name|PME/micro
+P4,DRONEAU INVEST,droneau invest,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:70.10Z|generic_name|structured|PME/micro
+P4,DRONEAU TP,droneau tp,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.12A|generic_name|structured|emp:01|PME/micro
+P4,DRONEAU-GAUTHIER PEINTURE,droneau-gauthier peinture,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.34Z|generic_name|structured|PME/micro
+P4,DRONEDATA,dronedata,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,DRONEDELATTREEXPERTISE,dronedelattreexpertise,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|emp:01|PME/micro
+P4,DRONEDEV CONSULTING,dronedev consulting,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|PME/micro
+P4,DRONELIS,dronelis,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:70.22Z|generic_name|structured|emp:11|PME/micro
+P4,DRONELOR'N & PLATRERIE,dronelor'n & platrerie,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.31Z|generic_name|structured|emp:01|PME/micro
+P4,DRONEMATCH FRANCE SAS,dronematch france sas,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:63.12Z|generic_name|structured|PME/micro
+P4,DRONEOPSPRO,droneopspro,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:63.11Z|generic_name|structured|PME/micro
+P4,DRONES,drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:91.3E|generic_name|PME/micro
+P4,DRONES ATILLA,drones atilla,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:46.49Z|generic_name|structured|PME/micro
+P4,DRONES CENTER INNOVATIONS,drones center innovations,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|provider_kw|structured|PME/micro
+P4,DRONES DOCKING STATIONS,drones docking stations,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,DRONES EXPERTISES,drones expertises,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|PME/micro
+P4,DRONES EXPERTS SERVICES,drones experts services,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|provider_kw|structured|PME/micro
+P4,DRONES FOR YACHTS,drones for yachts,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:77.35Z|generic_name|structured|emp:01|PME/micro
+P4,DRONES ICARE,drones icare,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,DRONES IMAGING,drones imaging,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|emp:01|PME/micro
+P4,DRONES INGENIERIE SYSTEMES,drones ingenierie systemes,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|emp:01|PME/micro
+P4,DRONES INNOVATIONS,drones innovations,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:72.19Z|provider_kw|structured|PME/micro
+P4,DRONES MUSIC ASSOCIATION,drones music association,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:90.01Z|generic_name|PME/micro
+P4,DRONES PLURIEL,drones pluriel,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,DRONES TECHNOLOGIES SERVICES,drones technologies services,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|PME/micro
+P4,DRONESCAPE,dronescape,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:62.01Z|generic_name|structured|emp:01|PME/micro
+P4,DRONESTAR,dronestar,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|emp:01|PME/micro
+P4,DRONET,dronet,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.39Z|generic_name|structured|PME/micro
+P4,DRONET,dronet,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:47.81Z|generic_name|PME/micro
+P4,DRONET,dronet,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:55.3A|generic_name|PME/micro
+P4,DRONET,dronet,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:14.13Z|generic_name|PME/micro
+P4,DRONET PLATRERIE,dronet platrerie,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.31Z|generic_name|structured|PME/micro
+P4,DRONET YANNICK,dronet yannick,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.91A|generic_name|structured|PME/micro
+P4,DRONETAIR,dronetair,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:58.29A|generic_name|structured|PME/micro
+P4,DRONETUDES,dronetudes,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,DRONEX16,dronex16,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:01|PME/micro
+P4,DRONEXPERTS,dronexperts,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:62.02A|provider_kw|structured|PME/micro
+P4,DRONEXPLORE,dronexplore,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,DRONEXPLORER,dronexplorer,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,DRONEXSOLUTION,dronexsolution,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:01|PME/micro
+P4,DRUMS AND DRONES,drums and drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:90.02Z|generic_name|PME/micro
+P4,DSC (DRONE SECURITY CONSULTING),dsc (drone security consulting),FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|provider_kw|structured|PME/micro
+P4,EB DRONE,eb drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,ECODRONE3D,ecodrone3d,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.99A|generic_name|structured|PME/micro
+P4,ECORES DRONE,ecores drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,EFS DRONES,efs drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:26.12Z|generic_name|structured|PME/micro
+P4,ELTADRONE,eltadrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,ENERGY DRONE,energy drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:01|PME/micro
+P4,ENVIDRONE,envidrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:85.53Z|generic_name|structured|PME/micro
+P4,EURL JP DRONET DECORATION,eurl jp dronet decoration,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:31.09B|generic_name|structured|PME/micro
+P4,EVODRONE,evodrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:72.19Z|generic_name|structured|PME/micro
+P4,F.P.A.S DRONES,f.p.a.s drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:80.10Z|generic_name|structured|PME/micro
+P4,F2 DRONE,f2 drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,FACILI TRAVAUX & DRONE,facili travaux & drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,FEDERATION PROFESSIONNELLE DU DRONE CIVIL U1/2 FPDC,federation professionnelle du drone civil u1/2 fpdc,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:94.12Z|generic_name|PME/micro
+P4,FG DRONES ETUDES,fg drones etudes,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,FL DRONE SERVICE,fl drone service,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:71.12A|provider_kw|structured|PME/micro
+P4,FORENSIC DRONE RESEARCH,forensic drone research,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:72.19Z|generic_name|PME/micro
+P4,FORICHON DRONET,forichon dronet,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:71.12A|generic_name|structured|PME/micro
+P4,FORMAT-DRONE,format-drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:02|PME/micro
+P4,FRANCE DRONE SERVICES,france drone services,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:71.12A|provider_kw|structured|PME/micro
+P4,FRANCE DRONE SERVICES,france drone services,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|PME/micro
+P4,GAEC DRONET,gaec dronet,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.42Z|generic_name|PME/micro
+P4,GENIUS DRONE,genius drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,GEO DRONE XPERT,geo drone xpert,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,GEODRONE57,geodrone57,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:63.99Z|generic_name|PME/micro
+P4,GEOTECHDRONE,geotechdrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:71.12A|provider_kw|structured|PME/micro
+P4,GO RDRONE,go rdrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.32B|generic_name|structured|PME/micro
+P4,H2DRONE,h2drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|emp:02|PME/micro
+P4,HDRONES,hdrones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:77.35Z|generic_name|structured|PME/micro
+P4,HELICOANDRONE,helicoandrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:52.23Z|generic_name|structured|emp:03|PME/micro
+P4,HELIDRONE,helidrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,HEXADRONE,hexadrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|structured|emp:11|PME/micro
+P4,HOLDING DR. DRONE,holding dr. drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:82.11Z|generic_name|structured|emp:01|PME/micro
+P4,HOLDING HYDRONET,holding hydronet,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:70.10Z|generic_name|structured|PME/micro
+P4,HYDRONEO,hydroneo,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:35.11Z|generic_name|structured|PME/micro
+P4,HYDRONEO OO,hydroneo oo,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:35.11Z|generic_name|structured|PME/micro
+P4,HYDRONEO SOLAR 1,hydroneo solar 1,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:35.11Z|generic_name|structured|PME/micro
+P4,HYDRONEO SOLAR 2,hydroneo solar 2,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:35.11Z|generic_name|structured|PME/micro
+P4,HYDRONET,hydronet,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:74.7Z|generic_name|structured|PME/micro
+P4,HYDRONET 360,hydronet 360,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,HYDRONET ASSAINISSEMENT,hydronet assainissement,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.12A|generic_name|structured|PME/micro
+P4,HYDRONET SERVICE,hydronet service,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:37.00Z|provider_kw|structured|PME/micro
+P4,HYDRONET SERVICE,hydronet service,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:42.21Z|provider_kw|structured|PME/micro
+P4,HYDRONETT SARL,hydronett sarl,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:93.0B|generic_name|structured|PME/micro
+P4,IDEAL DRONE,ideal drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.61Z|generic_name|structured|PME/micro
+P4,IFAC REPA RDRONE-SHOP,ifac repa rdrone-shop,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:95.21Z|generic_name|structured|emp:01|PME/micro
+P4,INGENIERIE & DRONE SOLUTIONS,ingenierie & drone solutions,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|PME/micro
+P4,INNOVADRONE,innovadrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|structured|emp:01|PME/micro
+P4,INSPECT'DRONE,inspect'drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,INTELLIGENCE OF DRONE,intelligence of drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:80.20Z|generic_name|structured|PME/micro
+P4,INTERDRONES SERVICES,interdrones services,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|PME/micro
+P4,INTERNATIONAL DRONE SERVICES,international drone services,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|PME/micro
+P4,ITP DRONE,itp drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,IVA DRONES,iva drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:63.11Z|generic_name|structured|emp:02|PME/micro
+P4,JGM DRONE,jgm drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,KD DRONE 974,kd drone 974,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,L'ATOUT DU DRONE,l'atout du drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:71.12A|generic_name|structured|PME/micro
+P4,LE CLOS ANDRONE,le clos androne,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:55.20Z|generic_name|structured|PME/micro
+P4,LE PIMPEC-DRONET,le pimpec-dronet,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.34Z|generic_name|structured|PME/micro
+P4,LIPS DRONE,lips drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:77.39Z|generic_name|structured|PME/micro
+P4,LR DRONES ET CONSEILS,lr drones et conseils,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:70.22Z|generic_name|structured|PME/micro
+P4,LTN DRONE EXPERTISE,ltn drone expertise,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|provider_kw|structured|PME/micro
+P4,LUCIOLE DRONE,luciole drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:90.03B|generic_name|structured|PME/micro
+P4,LYNXDRONE,lynxdrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|emp:11|PME/micro
+P4,MA TOPO DRONE,ma topo drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:71.12A|generic_name|structured|PME/micro
+P4,MAGIC DRONE,magic drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:62.01Z|generic_name|structured|PME/micro
+P4,MAISON MADRONET,maison madronet,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:52.4J|generic_name|structured|PME/micro
+P4,MALANDRONE,malandrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:14.13Z|generic_name|PME/micro
+P4,MECADRONE,mecadrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,METHODRONE DEVELOPPEMENT,methodrone developpement,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:77.40Z|generic_name|structured|PME/micro
+P4,METHODRONE DISTRIBUTION,methodrone distribution,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:47.91A|generic_name|structured|PME/micro
+P4,METHODRONE HOLDING,methodrone holding,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:70.10Z|generic_name|structured|PME/micro
+P4,MKX DRONES,mkx drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,MLV DRONE,mlv drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,MYDRONESOLUTION,mydronesolution,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,NAP DRONES,nap drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:00.00Z|generic_name|structured|PME/micro
+P4,NATURA DRONE,natura drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:71.12A|generic_name|structured|PME/micro
+P4,NAUTIDRONE,nautidrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,NEO DRONE,neo drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,NEW TECH DRONES,new tech drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:00.00Z|provider_kw|structured|PME/micro
+P4,NEW-R-DRONE,new-r-drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:72.19Z|generic_name|structured|PME/micro
+P4,NORTH DRONES EQUIPEMENTS,north drones equipements,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:28.99B|generic_name|structured|PME/micro
+P4,OA DRONE,oa drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:71.12A|generic_name|structured|PME/micro
+P4,OBJECTIF DRONE PRODUCTION,objectif drone production,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|structured|emp:02|PME/micro
+P4,ONE DRONE,one drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:46.49Z|generic_name|structured|emp:01|PME/micro
+P4,ONITDRONE,onitdrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,OTO DRONE & COM,oto drone & com,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:70.21Z|generic_name|PME/micro
+P4,PARIS DRONE,paris drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,PARROT DRONES,parrot drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:26.70Z|generic_name|structured|emp:22|PME/micro
+P4,PERFECT NEGOCE - DRONE AEROTECH,perfect negoce - drone aerotech,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:46.63Z|provider_kw|structured|emp:01|PME/micro
+P4,PHOENIX DRONES,phoenix drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,PLANETE DRONE 4G,planete drone 4g,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:53.20Z|generic_name|structured|PME/micro
+P4,POLIDRONE,polidrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:63.11Z|generic_name|structured|emp:01|PME/micro
+P4,POMPES FUNEBRES BODRONE,pompes funebres bodrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:96.03Z|generic_name|structured|emp:01|PME/micro
+P4,POWELL BODRONE,powell bodrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:86.90D|generic_name|PME/micro
+P4,PRESTADRONES,prestadrones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,PROTECT'DRONE,protect'drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:70.22Z|generic_name|structured|PME/micro
+P4,QR'DRONE,qr'drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:52.24B|generic_name|PME/micro
+P4,QUADRONE CONSEIL,quadrone conseil,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:70.22Z|generic_name|structured|PME/micro
+P4,QUADRONE ELECTRICITE,quadrone electricite,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:43.21A|generic_name|structured|PME/micro
+P4,RAEDEL SON ET LUMIERES                                      DRONE ZEAL PRODUCTION,raedel son et lumieres                                      drone zeal production,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:90.02Z|generic_name|structured|PME/micro
+P4,RDRONE CONCEPT,rdrone concept,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:81.29A|generic_name|structured|PME/micro
+P4,"RECHERCHE, ASSISTANCE, INVESTIGATION PAR DRONES RAID","recherche, assistance, investigation par drones raid",FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:84.25Z|generic_name|PME/micro
+P4,RELAIS STATION DU SAN PEDRONE,relais station du san pedrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:00.00Z|generic_name|structured|PME/micro
+P4,RHUYS EXPERTISE DRONE,rhuys expertise drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|provider_kw|structured|PME/micro
+P4,"RIVERDRONE, AQUATIC DRONE TECHNOLOGY","riverdrone, aquatic drone technology",FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:30.11Z|provider_kw|structured|emp:01|PME/micro
+P4,RTK DRONE,rtk drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:45.32Z|generic_name|structured|PME/micro
+P4,SACERDRONE,sacerdrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:74.10Z|generic_name|structured|PME/micro
+P4,SAN PEDRONE,san pedrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:26.7Z|generic_name|structured|PME/micro
+P4,SAN PEDRONE,san pedrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:46.39B|generic_name|structured|PME/micro
+P4,SARL BODRONE ET FILS,sarl bodrone et fils,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:96.03Z|generic_name|structured|emp:02|PME/micro
+P4,SARL DRONE VISUAL INSPECTION,sarl drone visual inspection,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:33.16Z|dock_kw|structured|PME/micro
+P4,SARL IDRONEGOMINE,sarl idronegomine,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:25.01|generic_name|structured|PME/micro
+P4,SARL L'ANDRONE,sarl l'androne,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:52.4Z|generic_name|structured|PME/micro
+P4,SARL PADRONETE TRADING LDA,sarl padronete trading lda,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:70.22Z|generic_name|PME/micro
+P4,SARL VDRONE CONCEPT,sarl vdrone concept,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:46.19B|generic_name|structured|PME/micro
+P4,SAS DRONE SERVICES,sas drone services,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|emp:01|PME/micro
+P4,SAS DRONES EXPERTISES 2.9,sas drones expertises 2.9,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|PME/micro
+P4,SAS DRONEST,sas dronest,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:82.99Z|generic_name|structured|PME/micro
+P4,SAS JURIS DRONE,sas juris drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:62.03Z|generic_name|structured|PME/micro
+P4,SB DRONE,sb drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,SC DES ANDRONES,sc des andrones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:66.30Z|generic_name|PME/micro
+P4,SC DES ANDRONES 2,sc des andrones 2,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:66.30Z|generic_name|PME/micro
+P4,SC DES ANDRONES 3,sc des andrones 3,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:66.30Z|generic_name|PME/micro
+P4,SCAN TO DRONE,scan to drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,SCANDRONE,scandrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:01|PME/micro
+P4,SCI CLAIRE DRONEAU,sci claire droneau,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:70.2C|generic_name|PME/micro
+P4,SCI DES ANDRONES,sci des andrones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:55.10Z|generic_name|PME/micro
+P4,SEE BY DRONE,see by drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:70.21Z|generic_name|structured|PME/micro
+P4,SEMADRONES,semadrones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:11|PME/micro
+P4,SHOOTDRONE SAS,shootdrone sas,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:62.01Z|generic_name|structured|PME/micro
+P4,SIDRONE,sidrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:82.11Z|generic_name|structured|PME/micro
+P4,SIG-DRONE,sig-drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|emp:02|PME/micro
+P4,SKF-DRONE,skf-drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|structured|PME/micro
+P4,SKYDRONE CAPITAL,skydrone capital,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:70.10Z|generic_name|structured|PME/micro
+P4,SKYDRONE INNOVATIONS,skydrone innovations,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|emp:11|PME/micro
+P4,SKYDRONE INVEST,skydrone invest,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:70.10Z|generic_name|structured|PME/micro
+P4,SNOWDRONE,snowdrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:49.32Z|generic_name|structured|emp:12|PME/micro
+P4,SOCIETE FRANCAISE DU DRONE,societe francaise du drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,SOLODRONE,solodrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,SOLUTIONS-DRONES-86,solutions-drones-86,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:32.99Z|provider_kw|structured|PME/micro
+P4,SONODRONE,sonodrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:90.02Z|generic_name|structured|PME/micro
+P4,SPA3DRONE,spa3drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,SPACEDRONE,spacedrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|generic_name|structured|emp:01|PME/micro
+P4,SPACEDRONE-DATALINK,spacedrone-datalink,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:72.19Z|generic_name|structured|PME/micro
+P4,SPARNACUS DRONE,sparnacus drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.61Z|generic_name|structured|PME/micro
+P4,SPECDRONE,specdrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:47.11B|generic_name|structured|PME/micro
+P4,SPLENDID DRONES,splendid drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:90.01Z|generic_name|structured|PME/micro
+P4,SQUADRONE SYSTEM,squadrone system,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|emp:12|PME/micro
+P4,SQUADRONE VOLANTE,squadrone volante,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:82.30Z|generic_name|PME/micro
+P4,START DRONE,start drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:70.22Z|generic_name|structured|PME/micro
+P4,SYN-DRONE PRODUCTION,syn-drone production,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:90.01Z|generic_name|PME/micro
+P4,SYNAIRGIDRONE,synairgidrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,TA TECHDRONE,ta techdrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|provider_kw|structured|PME/micro
+P4,TAHITI TECHNODRONE,tahiti technodrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|provider_kw|structured|PME/micro
+P4,TD DRONE,td drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:81.29A|generic_name|structured|PME/micro
+P4,TERRES ET DRONE SERVICES,terres et drone services,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.61Z|provider_kw|structured|PME/micro
+P4,THERMODRONESERVICES,thermodroneservices,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|provider_kw|structured|PME/micro
+P4,TOITURE DRONE,toiture drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:35.11Z|generic_name|structured|PME/micro
+P4,TONNER DRONES,tonner drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:46.52Z|generic_name|structured|PME/micro
+P4,TOP DRONE 60,top drone 60,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:82.30Z|generic_name|structured|PME/micro
+P4,TOPO DRONE SBH,topo drone sbh,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:71.12A|generic_name|structured|PME/micro
+P4,TOPODRONE,topodrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,TOPODRONE SOLUTION,topodrone solution,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:71.12A|generic_name|structured|PME/micro
+P4,TOURNAGE DRONE PARIS,tournage drone paris,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:77.39Z|generic_name|structured|PME/micro
+P4,TOUT LE DRONE,tout le drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:32.99Z|generic_name|structured|PME/micro
+P4,TOWER DRONE,tower drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:52.23Z|generic_name|structured|PME/micro
+P4,UAV INNOVATION CONSULTING,uav innovation consulting,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|provider_kw|structured|PME/micro
+P4,UN ECLAIR DE DRONE,un eclair de drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:43.99D|generic_name|structured|PME/micro
+P4,UNION NATIONALE DES EXPLOITANTS ET DES PROFESSIONNELS DE L'AERONAUTIQUE TELEPILOTEE,union nationale des exploitants et des professionnels de l'aeronautique telepilotee,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:94.12Z|generic_name|PME/micro
+P4,URBANDRONE,urbandrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:62.01Z|generic_name|structured|PME/micro
+P4,USINAGE-CHAUDRONERIE-SOUDURE,usinage-chaudronerie-soudure,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:25.62B|generic_name|structured|PME/micro
+P4,VEGETAL DRONE,vegetal drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:01.61Z|generic_name|structured|PME/micro
+P4,VERDRONE,verdrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:58.29C|generic_name|structured|emp:02|PME/micro
+P4,VISADRONE,visadrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:77.39Z|generic_name|structured|emp:01|PME/micro
+P4,VISI'EAU & AIR DRONE,visi'eau & air drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:74.90B|generic_name|structured|PME/micro
+P4,VISION DRONES BOURGOGNE,vision drones bourgogne,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,VISUDRONE,visudrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:71.12A|generic_name|structured|PME/micro
+P4,VP DRONES,vp drones,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,VYNSKY DRONE,vynsky drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.20B|generic_name|structured|PME/micro
+P4,WEBDRONE,webdrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:62.01Z|generic_name|structured|emp:11|PME/micro
+P4,WOLF DRONE SOLUTIONS,wolf drone solutions,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_B:30.30Z|provider_kw|structured|PME/micro
+P4,XENODRONE,xenodrone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:71.12B|generic_name|structured|PME/micro
+P4,YANN DRONEAU,yann droneau,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_A:51.10Z|generic_name|PME/micro
+P4,ZONE DE DRONE,zone de drone,FR,,sirene_bulk_db,raw,,,,,website+linkedin,NAF_other:00.00Z|generic_name|structured|PME/micro
+P4,2D Property Management B.V.,2d property management b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,2MB Media,2mb media,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,67 Solutions B.V.,67 solutions b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,A. Agterberg,a. agterberg,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Aerata,aerata,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Aeriallive Productions,aeriallive productions,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Aero-metrics,aero-metrics,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,APEX Audio Visuals,apex audio visuals,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,BiBi House Styling,bibi house styling,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Bjorn Mierop Productions,bjorn mierop productions,NL,"Issued: 28-02-2025, Expiry: 28-02-2027",ilt_sts,raw,,,,,website+linkedin,"Issued: 28-02-2025, Expiry: 28-02-2027"
+P4,BlikvanBoven VOF,blikvanboven vof,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Brandsma Digital Measurement,brandsma digital measurement,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Bureau voor de Landmeetkunde de Winter,bureau voor de landmeetkunde de winter,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Cinemato Media BV.,cinemato media bv.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Dé naam in beeld B.V.,dé naam in beeld b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,De Oude Bibliotheek B.V.,de oude bibliotheek b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,De Wilde Swaen Holding B.V.,de wilde swaen holding b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Den Bakker Drone Survey B.V.,den bakker drone survey b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Droonstra,droonstra,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Dutch Air Survey,dutch air survey,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Fotografie van de Biezen,fotografie van de biezen,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Frank de Bruijn,frank de bruijn,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Helix Aerial Vision,helix aerial vision,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,HotShots Producties,hotshots producties,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,HS Tuinbouw Service B.V,hs tuinbouw service b.v,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,ILT Aerosensing,ilt aerosensing,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Intures Industry B.V.,intures industry b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Jan Vroomans Drone Diensten,jan vroomans drone diensten,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,JJ Media,jj media,NL,"Issued: 28-11-2025, Expiry: 28-11-2027",ilt_sts,raw,,,,,website+linkedin,"Issued: 28-11-2025, Expiry: 28-11-2027"
+P4,Landmeetkundig Adviesbureau van der Hart-Survey B.V.,landmeetkundig adviesbureau van der hart-survey b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,LUGN Control Center B.V.,lugn control center b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Lykelema.Online,lykelema.online,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Marcel Willems Photography,marcel willems photography,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Mart Stevens Project Fotografie,mart stevens project fotografie,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Matthijs de Vos Photo Film Drone,matthijs de vos photo film drone,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,MediaGen Dronewize,mediagen dronewize,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Mortr Media,mortr media,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Movie Studio Druten,movie studio druten,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,R-ffect Inspecties B.V.,r-ffect inspecties b.v.,NL,"Issued: 21-11-2025, Expiry: 21-11-2027",ilt_sts,raw,,,,,website+linkedin,"Issued: 21-11-2025, Expiry: 21-11-2027"
+P4,R. van der Wal B.V.,r. van der wal b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Rijndorp Installaties B.V.,rijndorp installaties b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Rob Rovers Drone Solutions,rob rovers drone solutions,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Robin Visser Photography,robin visser photography,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Specialised Solar Cleaning,specialised solar cleaning,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Sproeibedrijf van Hattem,sproeibedrijf van hattem,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Surveying & consultancy firm Meet BV.,surveying & consultancy firm meet bv.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,The Fieldwork Company B.V.,the fieldwork company b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Total Drone Support,total drone support,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Truckparkings Rotterdam Exploitatie B.V.,truckparkings rotterdam exploitatie b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Van den Herik Kust- en Oeverwerken B.V.,van den herik kust- en oeverwerken b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Van den Heuvel Aannemingsbedrijf B.V.,van den heuvel aannemingsbedrijf b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Van der Graaf EW Engineering B.V.,van der graaf ew engineering b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Viforis,viforis,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Vollezon B.V.,vollezon b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,W2R Drone Projects B.V.,w2r drone projects b.v.,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Wanner Drone Inspecties,wanner drone inspecties,NL,,ilt_oa,raw,,,,,website+linkedin,
+P4,Weenk Engineering BV,weenk engineering bv,NL,,ilt_oa,raw,,,,,website+linkedin,

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Activity Analytics — Phase 1 Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111827; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* ── Tab bar (mimics Partner Dashboard) ── */
+  .tab-bar { display: flex; gap: 0; border-bottom: 1px solid #E5E7EB; margin-bottom: 20px; }
+  .tab { padding: 10px 18px; font-size: 13px; font-weight: 500; color: #6B7280; cursor: pointer;
+         border-bottom: 2px solid transparent; white-space: nowrap; }
+  .tab.active { color: #15803D; border-bottom-color: #15803D; font-weight: 600; }
+  .tab:hover:not(.active) { color: #374151; }
+
+  /* ── KPI strip ── */
+  .kpi-strip { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .kpi-card { flex: 1; min-width: 140px; padding: 14px 16px; border-radius: 10px;
+              border: 1px solid #E5E7EB; background: #F9FAFB; cursor: pointer; transition: box-shadow 0.15s; }
+  .kpi-card:hover { box-shadow: 0 0 0 2px #15803D33; }
+  .kpi-card.active { box-shadow: 0 0 0 2px #15803D; }
+  .kpi-label { font-size: 11px; font-weight: 600; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: #111827; margin-top: 2px; }
+  .kpi-sub { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
+
+  /* ── Filters row ── */
+  .filters { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-select { font-size: 12px; padding: 5px 10px; border-radius: 6px; border: 1px solid #E5E7EB;
+                   color: #374151; background: #fff; cursor: pointer; }
+  .filter-search { font-size: 12px; padding: 5px 10px; border-radius: 6px; border: 1px solid #E5E7EB;
+                   color: #374151; width: 180px; }
+  .filter-label { font-size: 11px; font-weight: 600; color: #6B7280; }
+
+  /* ── Table ── */
+  .table-wrap { border: 1px solid #E5E7EB; border-radius: 10px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { font-size: 11px; font-weight: 600; color: #6B7280; text-transform: uppercase;
+             letter-spacing: 0.5px; padding: 10px 14px; text-align: left; background: #F9FAFB;
+             border-bottom: 1px solid #E5E7EB; cursor: pointer; white-space: nowrap; }
+  thead th:hover { color: #111827; }
+  tbody td { font-size: 13px; padding: 10px 14px; border-bottom: 1px solid #F3F4F6; vertical-align: middle; }
+  tbody tr:hover { background: #F9FAFB; }
+  tbody tr.expanded-parent { background: #F0FDF4; }
+
+  .rank { font-weight: 700; color: #9CA3AF; font-size: 12px; }
+  .company-name { font-weight: 600; color: #111827; }
+  .company-country { font-size: 11px; color: #6B7280; }
+
+  /* ── Badges ── */
+  .badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px;
+           border-radius: 4px; margin-right: 3px; }
+  .badge-li { background: #DBEAFE; color: #1D4ED8; }
+  .badge-gn { background: #D1FAE5; color: #059669; }
+  .badge-trend-rising { background: #D1FAE5; color: #059669; }
+  .badge-trend-stable { background: #F3F4F6; color: #6B7280; }
+  .badge-trend-declining { background: #FEE2E2; color: #DC2626; }
+  .badge-trend-new { background: #FEF3C7; color: #D97706; }
+
+  .score-bar { display: inline-block; height: 6px; border-radius: 3px; background: #22C55E; vertical-align: middle; }
+  .score-text { font-size: 12px; font-weight: 600; color: #374151; margin-left: 6px; }
+
+  .last-post { font-size: 12px; color: #6B7280; }
+  .contacts-count { font-size: 12px; color: #374151; }
+  .contacts-zero { color: #D1D5DB; }
+
+  /* ── Expanded Row ── */
+  .expanded-row td { padding: 0; background: #FAFDF7; }
+  .expanded-content { padding: 16px 20px 16px 50px; }
+  .expanded-section { margin-bottom: 14px; }
+  .expanded-section-title { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase;
+                            letter-spacing: 0.5px; margin-bottom: 6px; }
+
+  /* ── Post timeline dots ── */
+  .timeline-bar { display: flex; align-items: center; gap: 0; height: 28px; position: relative;
+                  background: #F3F4F6; border-radius: 6px; padding: 0 8px; margin-bottom: 10px; }
+  .timeline-dot { width: 10px; height: 10px; border-radius: 50%; position: absolute; cursor: pointer;
+                  border: 2px solid #fff; }
+  .timeline-dot.li { background: #3B82F6; }
+  .timeline-dot.gn { background: #22C55E; }
+  .timeline-label { position: absolute; font-size: 9px; color: #9CA3AF; bottom: -14px; }
+
+  /* ── Article list in expanded ── */
+  .article-item { display: flex; align-items: center; gap: 10px; padding: 6px 0;
+                  border-bottom: 1px solid #F3F4F6; font-size: 12px; }
+  .article-item:last-child { border-bottom: none; }
+  .article-score { font-weight: 700; font-size: 13px; min-width: 28px; text-align: center;
+                   padding: 2px 6px; border-radius: 4px; }
+  .article-score.hot { background: #D1FAE5; color: #059669; }
+  .article-score.warm { background: #DBEAFE; color: #1D4ED8; }
+  .article-score.weak { background: #FEF3C7; color: #D97706; }
+  .article-date { color: #9CA3AF; min-width: 60px; }
+  .article-title { color: #374151; flex: 1; }
+  .article-source { font-size: 10px; }
+
+  /* ── Contact chips ── */
+  .contact-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px;
+                  padding: 3px 8px; border-radius: 12px; background: #F3F4F6; color: #374151;
+                  margin-right: 6px; margin-bottom: 4px; }
+  .contact-role { color: #9CA3AF; }
+
+  /* ── Action buttons ── */
+  .action-btns { display: flex; gap: 8px; margin-top: 10px; }
+  .btn-action { font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 6px;
+                border: 1px solid #E5E7EB; background: #fff; color: #374151; cursor: pointer; }
+  .btn-action:hover { background: #F9FAFB; }
+  .btn-action.primary { background: #15803D; color: #fff; border-color: #15803D; }
+  .btn-action.primary:hover { background: #166534; }
+
+  /* ── Expand arrow ── */
+  .expand-arrow { cursor: pointer; font-size: 12px; color: #9CA3AF; transition: transform 0.15s; user-select: none; }
+  .expand-arrow.open { transform: rotate(90deg); color: #15803D; }
+
+  /* ── Footer stats ── */
+  .table-footer { padding: 10px 14px; font-size: 11px; color: #9CA3AF; background: #F9FAFB;
+                  border-top: 1px solid #E5E7EB; display: flex; gap: 16px; }
+  .table-footer strong { color: #374151; }
+
+  /* ── Pipeline badge ── */
+  .pipeline-badge { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px;
+                    background: #15803D; color: #fff; }
+
+  /* ── Enrichment gap alert ── */
+  .gap-alert { display: flex; align-items: center; gap: 8px; padding: 10px 14px; margin-top: 16px;
+               background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; font-size: 12px; color: #92400E; }
+  .gap-alert strong { color: #78350F; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Tab bar context (showing this is a new tab in Partner Dashboard) -->
+  <div class="tab-bar">
+    <div class="tab">FlytBase Partners</div>
+    <div class="tab">Social Intelligence (18)</div>
+    <div class="tab">Multi-Source Intelligence (147)</div>
+    <div class="tab">Pipeline (4)</div>
+    <div class="tab active">Company Activity</div>
+  </div>
+
+  <!-- KPI Strip -->
+  <div class="kpi-strip">
+    <div class="kpi-card active">
+      <div class="kpi-label">Tracked Companies</div>
+      <div class="kpi-value">24</div>
+      <div class="kpi-sub">with 1+ scored article</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Rising</div>
+      <div class="kpi-value" style="color: #059669;">3</div>
+      <div class="kpi-sub">more posts than prior period</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">New (14d)</div>
+      <div class="kpi-value" style="color: #D97706;">2</div>
+      <div class="kpi-sub">first seen in last 2 weeks</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Avg Score</div>
+      <div class="kpi-value">62</div>
+      <div class="kpi-sub">across all tracked articles</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Reachable</div>
+      <div class="kpi-value">15<span style="font-size:14px;color:#9CA3AF">/24</span></div>
+      <div class="kpi-sub">have website or LinkedIn</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <span class="filter-label">Period:</span>
+    <select class="filter-select">
+      <option>Last 30 days</option>
+      <option selected>Last 60 days</option>
+      <option>Last 90 days</option>
+      <option>All time</option>
+    </select>
+    <span class="filter-label" style="margin-left:8px;">Trend:</span>
+    <select class="filter-select">
+      <option selected>All</option>
+      <option>Rising</option>
+      <option>Stable</option>
+      <option>Declining</option>
+      <option>New</option>
+    </select>
+    <span class="filter-label" style="margin-left:8px;">Country:</span>
+    <select class="filter-select">
+      <option selected>All</option>
+      <option>France</option>
+      <option>Netherlands</option>
+      <option>US</option>
+      <option>UK</option>
+    </select>
+    <span class="filter-label" style="margin-left:8px;">Source:</span>
+    <select class="filter-select">
+      <option selected>All</option>
+      <option>LinkedIn</option>
+      <option>Google News</option>
+    </select>
+    <input type="text" class="filter-search" placeholder="Search company..." style="margin-left: auto;" />
+  </div>
+
+  <!-- Activity Leaderboard Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:30px">#</th>
+          <th>Company</th>
+          <th style="text-align:center">Posts</th>
+          <th>Avg Score</th>
+          <th>Trend</th>
+          <th>Sources</th>
+          <th>Last Post</th>
+          <th style="text-align:center">Contacts</th>
+          <th style="width:30px"></th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- Row 1: Aerosmart (expanded) -->
+        <tr class="expanded-parent" style="cursor:pointer;">
+          <td><span class="rank">1</span></td>
+          <td>
+            <div class="company-name">Aerosmart</div>
+            <div class="company-country">France</div>
+          </td>
+          <td style="text-align:center; font-weight:700;">8</td>
+          <td>
+            <span class="score-bar" style="width: 54px;"></span>
+            <span class="score-text">72</span>
+          </td>
+          <td><span class="badge badge-trend-rising">Rising</span></td>
+          <td>
+            <span class="badge badge-li">LI</span>
+            <span class="badge badge-gn">GN</span>
+          </td>
+          <td><span class="last-post">2d ago</span></td>
+          <td style="text-align:center"><span class="contacts-count">2</span></td>
+          <td><span class="expand-arrow open">&#9654;</span></td>
+        </tr>
+
+        <!-- Expanded content for Aerosmart -->
+        <tr class="expanded-row">
+          <td colspan="9">
+            <div class="expanded-content">
+
+              <!-- Timeline visualization -->
+              <div class="expanded-section">
+                <div class="expanded-section-title">Activity Timeline (60 days)</div>
+                <div class="timeline-bar" style="width: 100%; min-height: 28px;">
+                  <div class="timeline-dot li" style="left: 8%;" title="Jan 28 — LinkedIn"></div>
+                  <div class="timeline-dot gn" style="left: 18%;" title="Feb 3 — Google News"></div>
+                  <div class="timeline-dot li" style="left: 32%;" title="Feb 12 — LinkedIn"></div>
+                  <div class="timeline-dot li" style="left: 45%;" title="Feb 21 — LinkedIn"></div>
+                  <div class="timeline-dot gn" style="left: 55%;" title="Feb 28 — Google News"></div>
+                  <div class="timeline-dot li" style="left: 68%;" title="Mar 8 — LinkedIn"></div>
+                  <div class="timeline-dot li" style="left: 82%;" title="Mar 18 — LinkedIn"></div>
+                  <div class="timeline-dot li" style="left: 95%;" title="Mar 25 — LinkedIn"></div>
+                  <span class="timeline-label" style="left: 0;">Jan 27</span>
+                  <span class="timeline-label" style="left: 48%;">Feb 25</span>
+                  <span class="timeline-label" style="right: 0;">Mar 27</span>
+                </div>
+              </div>
+
+              <!-- Recent articles -->
+              <div class="expanded-section">
+                <div class="expanded-section-title">Recent Articles</div>
+                <div class="article-item">
+                  <span class="article-score hot">75</span>
+                  <span class="article-date">Mar 25</span>
+                  <span class="article-title">DJI Dock 2 deployed for autonomous solar farm inspections across France</span>
+                  <span class="badge badge-li article-source">LI</span>
+                </div>
+                <div class="article-item">
+                  <span class="article-score warm">68</span>
+                  <span class="article-date">Mar 18</span>
+                  <span class="article-title">Aerosmart expands drone-in-a-box fleet with DJI Dock for energy sector</span>
+                  <span class="badge badge-li article-source">LI</span>
+                </div>
+                <div class="article-item">
+                  <span class="article-score warm">72</span>
+                  <span class="article-date">Mar 8</span>
+                  <span class="article-title">Partnership with TotalEnergies for pipeline monitoring using DJI Dock 3</span>
+                  <span class="badge badge-gn article-source">GN</span>
+                </div>
+                <div class="article-item">
+                  <span class="article-score warm">65</span>
+                  <span class="article-date">Feb 28</span>
+                  <span class="article-title">Aerosmart showcases autonomous inspection at Drone Paris 2026</span>
+                  <span class="badge badge-gn article-source">GN</span>
+                </div>
+              </div>
+
+              <!-- Contacts -->
+              <div class="expanded-section">
+                <div class="expanded-section-title">Contacts Extracted</div>
+                <span class="contact-chip">Jean Dupont <span class="contact-role">· CEO</span></span>
+                <span class="contact-chip">Marie Laurent <span class="contact-role">· Ops Director</span></span>
+              </div>
+
+              <!-- Actions -->
+              <div class="action-btns">
+                <button class="btn-action primary">+ Add to Pipeline</button>
+                <a class="btn-action" href="#">LinkedIn &nearr;</a>
+                <a class="btn-action" href="#">Website &nearr;</a>
+                <button class="btn-action">Ask Radar</button>
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Row 2: AERONEX -->
+        <tr style="cursor:pointer;">
+          <td><span class="rank">2</span></td>
+          <td>
+            <div class="company-name">AERONEX</div>
+            <div class="company-country">France</div>
+          </td>
+          <td style="text-align:center; font-weight:700;">6</td>
+          <td>
+            <span class="score-bar" style="width: 51px;"></span>
+            <span class="score-text">68</span>
+          </td>
+          <td><span class="badge badge-trend-rising">Rising</span></td>
+          <td>
+            <span class="badge badge-li">LI</span>
+          </td>
+          <td><span class="last-post">5d ago</span></td>
+          <td style="text-align:center"><span class="contacts-count">1</span></td>
+          <td><span class="expand-arrow">&#9654;</span></td>
+        </tr>
+
+        <!-- Row 3: Escadrone -->
+        <tr style="cursor:pointer;">
+          <td><span class="rank">3</span></td>
+          <td>
+            <div class="company-name">Escadrone</div>
+            <div class="company-country">France</div>
+          </td>
+          <td style="text-align:center; font-weight:700;">5</td>
+          <td>
+            <span class="score-bar" style="width: 46px;"></span>
+            <span class="score-text">61</span>
+          </td>
+          <td><span class="badge badge-trend-stable">Stable</span></td>
+          <td>
+            <span class="badge badge-li">LI</span>
+            <span class="badge badge-gn">GN</span>
+          </td>
+          <td><span class="last-post">1d ago</span></td>
+          <td style="text-align:center"><span class="contacts-count">3</span></td>
+          <td><span class="expand-arrow">&#9654;</span></td>
+        </tr>
+
+        <!-- Row 4: DroneVolt -->
+        <tr style="cursor:pointer;">
+          <td><span class="rank">4</span></td>
+          <td>
+            <div class="company-name">DroneVolt</div>
+            <div class="company-country">France</div>
+          </td>
+          <td style="text-align:center; font-weight:700;">4</td>
+          <td>
+            <span class="score-bar" style="width: 41px;"></span>
+            <span class="score-text">55</span>
+          </td>
+          <td><span class="badge badge-trend-declining">Declining</span></td>
+          <td>
+            <span class="badge badge-gn">GN</span>
+          </td>
+          <td><span class="last-post">12d ago</span></td>
+          <td style="text-align:center"><span class="contacts-count">1</span></td>
+          <td><span class="expand-arrow">&#9654;</span></td>
+        </tr>
+
+        <!-- Row 5: Abot (New) -->
+        <tr style="cursor:pointer;">
+          <td><span class="rank">5</span></td>
+          <td>
+            <div class="company-name">Abot</div>
+            <div class="company-country">France</div>
+          </td>
+          <td style="text-align:center; font-weight:700;">3</td>
+          <td>
+            <span class="score-bar" style="width: 43px;"></span>
+            <span class="score-text">58</span>
+          </td>
+          <td><span class="badge badge-trend-new">New</span></td>
+          <td>
+            <span class="badge badge-li">LI</span>
+          </td>
+          <td><span class="last-post">3d ago</span></td>
+          <td style="text-align:center"><span class="contacts-count">1</span></td>
+          <td><span class="expand-arrow">&#9654;</span></td>
+        </tr>
+
+        <!-- Row 6: FlyingEye -->
+        <tr style="cursor:pointer;">
+          <td><span class="rank">6</span></td>
+          <td>
+            <div class="company-name">FlyingEye</div>
+            <div class="company-country">Netherlands</div>
+          </td>
+          <td style="text-align:center; font-weight:700;">3</td>
+          <td>
+            <span class="score-bar" style="width: 48px;"></span>
+            <span class="score-text">64</span>
+          </td>
+          <td><span class="badge badge-trend-rising">Rising</span></td>
+          <td>
+            <span class="badge badge-li">LI</span>
+          </td>
+          <td><span class="last-post">4d ago</span></td>
+          <td style="text-align:center"><span class="contacts-count">2</span></td>
+          <td><span class="expand-arrow">&#9654;</span></td>
+        </tr>
+
+        <!-- Row 7: Drone Harmony -->
+        <tr style="cursor:pointer;">
+          <td><span class="rank">7</span></td>
+          <td>
+            <div class="company-name">Drone Harmony</div>
+            <div class="company-country">Netherlands</div>
+          </td>
+          <td style="text-align:center; font-weight:700;">2</td>
+          <td>
+            <span class="score-bar" style="width: 38px;"></span>
+            <span class="score-text">52</span>
+          </td>
+          <td><span class="badge badge-trend-stable">Stable</span></td>
+          <td>
+            <span class="badge badge-li">LI</span>
+            <span class="badge badge-gn">GN</span>
+          </td>
+          <td><span class="last-post">8d ago</span></td>
+          <td style="text-align:center"><span class="contacts-count">0</span></td>
+          <td><span class="expand-arrow">&#9654;</span></td>
+        </tr>
+
+        <!-- Row 8: SkyWatch -->
+        <tr style="cursor:pointer;">
+          <td><span class="rank">8</span></td>
+          <td>
+            <div class="company-name">SkyWatch Drones</div>
+            <div class="company-country">UK</div>
+          </td>
+          <td style="text-align:center; font-weight:700;">2</td>
+          <td>
+            <span class="score-bar" style="width: 35px;"></span>
+            <span class="score-text">48</span>
+          </td>
+          <td><span class="badge badge-trend-new">New</span></td>
+          <td>
+            <span class="badge badge-gn">GN</span>
+          </td>
+          <td><span class="last-post">6d ago</span></td>
+          <td style="text-align:center"><span class="contacts-count contacts-zero">0</span></td>
+          <td><span class="expand-arrow">&#9654;</span></td>
+        </tr>
+
+        <!-- Row 9 -->
+        <tr style="cursor:pointer;">
+          <td><span class="rank">9</span></td>
+          <td>
+            <div class="company-name">Altametris</div>
+            <div class="company-country">France</div>
+          </td>
+          <td style="text-align:center; font-weight:700;">2</td>
+          <td>
+            <span class="score-bar" style="width: 52px;"></span>
+            <span class="score-text">70</span>
+          </td>
+          <td><span class="badge badge-trend-stable">Stable</span></td>
+          <td>
+            <span class="badge badge-gn">GN</span>
+          </td>
+          <td><span class="last-post">14d ago</span></td>
+          <td style="text-align:center"><span class="contacts-count">1</span></td>
+          <td><span class="expand-arrow">&#9654;</span></td>
+        </tr>
+
+        <!-- Row 10 -->
+        <tr style="cursor:pointer;">
+          <td><span class="rank">10</span></td>
+          <td>
+            <div class="company-name">Azur Drones</div>
+            <div class="company-country">France</div>
+          </td>
+          <td style="text-align:center; font-weight:700;">1</td>
+          <td>
+            <span class="score-bar" style="width: 56px;"></span>
+            <span class="score-text">75</span>
+          </td>
+          <td><span class="badge badge-trend-declining">Declining</span></td>
+          <td>
+            <span class="badge badge-li">LI</span>
+          </td>
+          <td><span class="last-post">22d ago</span></td>
+          <td style="text-align:center"><span class="contacts-count">1</span></td>
+          <td><span class="expand-arrow">&#9654;</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+
+    <!-- Footer -->
+    <div class="table-footer">
+      <span>Showing <strong>24</strong> companies</span>
+      <span><strong>3</strong> rising</span>
+      <span><strong>2</strong> new in last 14d</span>
+      <span><strong>52</strong> total articles</span>
+      <span style="margin-left:auto; color: #9CA3AF;">Last refreshed: 2 hours ago</span>
+    </div>
+  </div>
+
+  <!-- Enrichment gap alert -->
+  <div class="gap-alert">
+    <span style="font-size:16px;">&#9888;</span>
+    <span>
+      <strong>Enrichment gaps:</strong>
+      6 companies missing website &middot; 9 missing LinkedIn &middot; 15 with 0 contacts
+    </span>
+    <button class="btn-action" style="margin-left:auto; font-size:11px;">View Gaps</button>
+  </div>
+
+</div>
+
+</body>
+</html>

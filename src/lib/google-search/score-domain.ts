@@ -149,6 +149,16 @@ export function scoreDomain(slug: string, text: string): DomainScore {
   // Sort signals by points desc
   signals.sort((a, b) => b.points - a.points);
 
+  const hasTier1 = tier1Count > 0;
+
+  // GATE: If Tier 1 = 0 (no "DJI Dock" mention), T2/T3 are irrelevant.
+  // Zero out everything — this company will be filtered by the T1 gate.
+  if (!hasTier1) {
+    tier2Count = 0;
+    tier3Count = 0;
+    totalScore = 0;
+  }
+
   // Cap tier totals for normalization (prevent multi-keyword inflation)
   const t1Cap = Math.min(tier1Count, 3);
   const t2Cap = Math.min(tier2Count, 3);
@@ -157,7 +167,7 @@ export function scoreDomain(slug: string, text: string): DomainScore {
 
   // Normalized 0-100 score (without freshness — that's applied at import time)
   // Weights: T1×20 + T2×12 + T3×4 + volume bonus
-  // Range: T1-only = 60, T1+T2+T3 max = 100, T3-only max = 17
+  // Range: T1-only = 60, T1+T2+T3 max = 100, no-T1 = 0
   const normalizedScore = Math.min(100,
     t1Cap * 20 + t2Cap * 12 + t3Cap * 4 + volBonus
   );

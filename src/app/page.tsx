@@ -58,7 +58,7 @@ export default function Dashboard() {
   currentRunRef.current = currentRun;
 
   // ─── Collect Config ────────────────────────────────────
-  const [keywords, setKeywords] = useState<string[]>(['DJI Dock', 'DJI Dock 3', 'autonomous drone station', 'Drone-in-a-box', 'Drone Dock']);
+  const [keywords, setKeywords] = useState<string[]>(['DJI Dock']);
   const [maxArticles] = useState<number>(DEFAULTS.maxArticles);
   const [minScore, setMinScore] = useState<number>(DEFAULTS.minScore);
   const [filterDays, setFilterDays] = useState<number>(DEFAULTS.filterDays);

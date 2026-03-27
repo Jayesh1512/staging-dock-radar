@@ -67,15 +67,30 @@ function parseBatchResponse(raw: string, articles: Article[]): ArticleWithScore[
     if (Array.isArray(parsed)) {
       arr = parsed;
     } else if (typeof parsed === 'object' && parsed !== null) {
-      // OpenAI json_object mode wraps arrays in an object like {"results": [...]}
-      // Find the first array value and use it
-      const arrayVal = Object.values(parsed).find((v) => Array.isArray(v)) as Record<string, unknown>[] | undefined;
-      arr = arrayVal ?? [parsed];
+      // Check if this object IS itself a single scoring result (has relevance_score).
+      // This happens when OpenAI json_object mode returns a bare object instead of an array.
+      if ('relevance_score' in parsed) {
+        arr = [parsed];
+      } else {
+        // Object wrapper like {"results": [...]} — find the array containing scoring results
+        const arrays = Object.entries(parsed)
+          .filter((entry): entry is [string, Record<string, unknown>[]] => Array.isArray(entry[1]))
+          .sort((a, b) => b[1].length - a[1].length);
+
+        if (arrays.length > 0 && arrays[0][1].length > 0) {
+          const scoringArray = arrays.find(([, items]) =>
+            items.length > 0 && typeof items[0] === 'object' && items[0] !== null && 'relevance_score' in items[0]
+          );
+          arr = scoringArray ? scoringArray[1] : arrays[0][1];
+        } else {
+          arr = [parsed];
+        }
+      }
     } else {
       arr = [parsed];
     }
   } catch {
-    console.error('[/api/score] Batch JSON parse failed, applying fallback for all articles');
+    console.error(`[/api/score] Batch JSON parse failed. Raw response (first 500 chars): ${raw.slice(0, 500)}`);
     return articles.map((article) => ({
       article,
       scored: parseToScoredArticle(article.id, {
@@ -87,7 +102,7 @@ function parseBatchResponse(raw: string, articles: Article[]): ArticleWithScore[
 
   // Truncation detection: LLM returned fewer items than expected
   if (arr.length < articles.length) {
-    console.warn(`[/api/score] LLM truncation detected: expected ${articles.length} items, got ${arr.length}. Scoring in smaller batches may help.`);
+    console.warn(`[/api/score] LLM truncation: expected ${articles.length}, got ${arr.length}. Raw (first 300): ${raw.slice(0, 300)}`);
   }
 
   // Match by article id for robustness; fall back to positional index

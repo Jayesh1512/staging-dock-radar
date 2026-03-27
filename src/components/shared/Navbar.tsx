@@ -152,6 +152,16 @@ export function Navbar({
 
                 <Link
                   role="menuitem"
+                  href="/utilities/google-search-campaign"
+                  onClick={() => setCampaignsOpen(false)}
+                  style={{ ...menuItemStyle(pathname === '/utilities/google-search-campaign', '#C2410C'), textDecoration: 'none', display: 'block' }}
+                >
+                  <div>Batch 2 — Global Google Search</div>
+                  <div style={menuSubtitle}>Run DJI Dock search across 18 countries, 7 pages each</div>
+                </Link>
+
+                <Link
+                  role="menuitem"
                   href="/utilities/linkedin-company-posts"
                   onClick={() => setCampaignsOpen(false)}
                   style={{ ...menuItemStyle(pathname === '/utilities/linkedin-company-posts', '#C2410C'), textDecoration: 'none', display: 'block' }}

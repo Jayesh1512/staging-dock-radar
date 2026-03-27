@@ -34,14 +34,14 @@ const LINKEDIN_TIMING_PRESETS = [
   },
   { value: 'std_30000', label: '30 seconds', linkedin30SecScrape: false, browserTimeoutMs: 30_000 },
   { value: 'std_45000', label: '45 seconds', linkedin30SecScrape: false, browserTimeoutMs: 45_000 },
-  { value: 'std_60000', label: '60 seconds', linkedin30SecScrape: false, browserTimeoutMs: 60_000 },
+  { value: 'std_60000', label: '60 seconds (default)', linkedin30SecScrape: false, browserTimeoutMs: 60_000 },
   { value: 'std_120000', label: '2 minutes', linkedin30SecScrape: false, browserTimeoutMs: 120_000 },
-  { value: 'std_180000', label: '3 minutes (default)', linkedin30SecScrape: false, browserTimeoutMs: 180_000 },
+  { value: 'std_180000', label: '3 minutes', linkedin30SecScrape: false, browserTimeoutMs: 180_000 },
   { value: 'std_300000', label: '5 minutes', linkedin30SecScrape: false, browserTimeoutMs: 300_000 },
 ] as const;
 
 function linkedinPresetByValue(v: string) {
-  return LINKEDIN_TIMING_PRESETS.find((p) => p.value === v) ?? LINKEDIN_TIMING_PRESETS[5];
+  return LINKEDIN_TIMING_PRESETS.find((p) => p.value === v) ?? LINKEDIN_TIMING_PRESETS[3];
 }
 
 function collectingStatusLabel(sources: ArticleSource[], regionCount: number): string {
@@ -68,9 +68,9 @@ export function CollectPanel({
   const { isCollecting, stats, error, startCollect } = useCollect();
   const [sources, setSources] = useState<ArticleSource[]>([]);
   const [regions, setRegions] = useState<string[]>([...CORE_8_REGIONS]);
-  const [linkedinTimingPreset, setLinkedinTimingPreset] = useState<string>('std_180000');
-  /** LinkedIn Puppeteer: matches long-standing server default (headed) unless user picks headless. */
-  const [linkedinHeadless, setLinkedinHeadless] = useState(false);
+  const [linkedinTimingPreset, setLinkedinTimingPreset] = useState<string>('std_60000');
+  /** LinkedIn Puppeteer: default headless (no browser popup). User can switch to visible for login/debug. */
+  const [linkedinHeadless, setLinkedinHeadless] = useState(true);
 
   const latestScheduleDefaultTime = '09:00';
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
@@ -322,8 +322,8 @@ export function CollectPanel({
                     maxWidth: 'min(100%, 420px)',
                   }}
                 >
-                  <option value="visible">Visible window (default — easier login / debug)</option>
-                  <option value="headless">Headless (no UI — typical on servers)</option>
+                  <option value="visible">Visible window (easier login / debug)</option>
+                  <option value="headless">No browser popup (default)</option>
                 </select>
               </div>
             </div>

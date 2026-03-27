@@ -113,7 +113,11 @@ async function callOpenAI(systemPrompt: string, userPrompt: string): Promise<str
     response_format: { type: 'json_object' },
   });
 
-  return response.choices[0].message.content ?? '';
+  const content = response.choices[0].message.content ?? '';
+  if (content.length < 10) {
+    console.warn(`[llm] OpenAI response suspiciously short (${content.length} chars). finish_reason=${response.choices[0].finish_reason}, tokens=${response.usage?.completion_tokens}`);
+  }
+  return content;
 }
 
 async function callClaude(systemPrompt: string, userPrompt: string): Promise<string> {

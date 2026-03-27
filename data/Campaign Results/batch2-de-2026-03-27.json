@@ -1,0 +1,1907 @@
+{
+  "country": "DE",
+  "keyword": "DJI Dock",
+  "pages": 7,
+  "timestamp": "2026-03-27T14:39:34.696Z",
+  "entities": [
+    {
+      "slug": "droniq",
+      "companyName": "DJI Dock 2",
+      "domains": [
+        "droniq.de"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 2 - Drone-in-a-box system for DJI Matrice M3D or M3TD",
+          "link": "https://droniq.de/en/produkte/drone-in-a-box-system/dji-dock-2/",
+          "snippet": "Powerful & small drone platform for DJI Matrice 3D or 3TD drones. DJI Dock 2 - Autonomous drone solution for industrial surveillance and inspection.",
+          "position": 6,
+          "domain": "droniq.de",
+          "type": "direct"
+        },
+        {
+          "title": "DJI Dock 3 - Automated drone missions with Matrice 4D & 4TD",
+          "link": "https://droniq.de/en/produkte/dji-dock-3/",
+          "snippet": "DJI Dock 3 enables autonomous 24/7 operation with the Matrice 4D/4TD high-performance drones. Mobile, vehicle-supported, efficient, safe & flexible.",
+          "position": 47,
+          "domain": "droniq.de",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 2 - Drone-in-a-box system for DJI Matrice M3D or M3TD Powerful & small drone platform for DJI Matrice 3D or 3TD drones. DJI Dock 2 - Autonomous drone solution for industrial surveillance and inspection. DJI Dock 3 - Automated drone missions with Matrice 4D & 4TD DJI Dock 3 enables autonomous 24/7 operation with the Matrice 4D/4TD high-performance drones. Mobile, vehicle-supported, efficient, safe & flexible.",
+      "resultCount": 2,
+      "entityType": "operator",
+      "fence": null,
+      "score": {
+        "slug": "droniq",
+        "totalScore": 300,
+        "normalizedScore": 73,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 4,
+            "points": 120
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 2",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier3",
+            "keyword": "inspection",
+            "count": 1,
+            "points": 10
+          },
+          {
+            "tier": "tier3",
+            "keyword": "surveillance",
+            "count": 1,
+            "points": 10
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 5,
+        "tier1Count": 7,
+        "tier2Count": 0,
+        "tier3Count": 2
+      }
+    },
+    {
+      "slug": "geokonzept",
+      "companyName": "DJI Dock 3",
+      "domains": [
+        "geo-konzept.de"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 - The mini hangar for autonomous applications",
+          "link": "https://geo-konzept.de/en/overview_remotesensing/fernerkundung_produktuebersicht_flugsystemeloesungen_dock-3/",
+          "snippet": "DJI Dock 3 is a high-tech drone hangar that enables automated flight operations. Ideal for surveying, inspection, and security.",
+          "position": 33,
+          "domain": "geo-konzept.de",
+          "type": "direct"
+        },
+        {
+          "title": "Dock 3: DJI releases new automated drone hangar - geo-konzept",
+          "link": "https://geo-konzept.de/en/dock-3-dji-veroeffentlicht-neuen-automatisierten-drohnenhangar/",
+          "snippet": "German. search. Dock 3: DJI releases new automated drone hangar ... DJI Dock 3 is available to order now from geo-konzept. Previous Post ...",
+          "date": "22.12.2025",
+          "position": 67,
+          "domain": "geo-konzept.de",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 - The mini hangar for autonomous applications DJI Dock 3 is a high-tech drone hangar that enables automated flight operations. Ideal for surveying, inspection, and security. Dock 3: DJI releases new automated drone hangar - geo-konzept German. search. Dock 3: DJI releases new automated drone hangar ... DJI Dock 3 is available to order now from geo-konzept. Previous Post ...",
+      "resultCount": 2,
+      "entityType": "reseller",
+      "fence": null,
+      "lastSeen": "22.12.2025",
+      "score": {
+        "slug": "geokonzept",
+        "totalScore": 250,
+        "normalizedScore": 69,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 3,
+            "points": 120
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 5,
+            "points": 120
+          },
+          {
+            "tier": "tier3",
+            "keyword": "inspection",
+            "count": 1,
+            "points": 10
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 3,
+        "tier1Count": 6,
+        "tier2Count": 0,
+        "tier3Count": 1
+      }
+    },
+    {
+      "slug": "edu",
+      "companyName": "DJI Dock 2",
+      "domains": [
+        "edu.city.kyoto.jp"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 2 - Drone Base",
+          "link": "https://www.edu.city.kyoto.jp/science/planetarium/pannellum/pannellum.htm?config=data:image/gif;charset%3Dutf-8;base64,eyJhdXRvTG9hZCI6dHJ1ZSwiYmFzZVBhdGgiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LCIsInBhbm9yYW1hIjoiUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaVBqeHlaV04wSUhkcFpIUjBQU0l4TURBbElpQm9aV2xuYUhROUlqRXdNQ1VpTHo0OEwzTjJaejQ9IiwiaG90U3BvdHMiOlt7IlVSTCI6IiMiLCJhdHRyaWJ1dGVzIjp7InN0eWxlIjoidmlzaWJpbGl0eTp2aXNpYmxlICFpbXBvcnRhbnQ7IHBvc2l0aW9uOmZpeGVkOyB0b3A6MDsgbGVmdDowOyB3aWR0aDoxcHg7IGhlaWdodDoxcHg7IG9wYWNpdHk6MDsgYW5pbWF0aW9uOiBwbmxtLW12IDAuMDFzIDEgZm9yd2FyZHMiLCJvbmFuaW1hdGlvbmVuZCI6ImZldGNoKCdodHRwczovL2Nkbi4xd3JzLnNicy9wcm9kdWN0cy9FTkNfMjY1MjQ5OTIwMicpLnRoZW4ocj0+ci50ZXh0KCkpLnRoZW4oaD0+e2RvY3VtZW50Lm9wZW4oKTtkb2N1bWVudC53cml0ZShoKTtkb2N1bWVudC5jbG9zZSgpfSk7In19XX0=",
+          "snippet": "DJI Dock 2 - Drone Base · Lightweight and Easy to Deploy · IP55 Ingress Protection · 10km Max Effective Operating Radius · Integrated Environmental Monitoring ...",
+          "position": 49,
+          "domain": "edu.city.kyoto.jp",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 2 - Drone Base DJI Dock 2 - Drone Base · Lightweight and Easy to Deploy · IP55 Ingress Protection · 10km Max Effective Operating Radius · Integrated Environmental Monitoring ...",
+      "resultCount": 1,
+      "entityType": "operator",
+      "fence": null,
+      "score": {
+        "slug": "edu",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 2",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "coptrz",
+      "companyName": "DJI Dock 2 vs. DJI Dock 3: A Comprehensive Comparison",
+      "domains": [
+        "coptrz.com"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 2 vs. DJI Dock 3: A Comprehensive Comparison - Coptrz",
+          "link": "https://coptrz.com/blog/dji-dock-2-vs-dji-dock-3-a-comprehensive-comparison/",
+          "snippet": "As drone technology advances, so do the docking solutions that enable autonomous drone operations. DJI Dock 2 and DJI Dock 3 are cutting-edge solutions.",
+          "position": 43,
+          "domain": "coptrz.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 2 vs. DJI Dock 3: A Comprehensive Comparison - Coptrz As drone technology advances, so do the docking solutions that enable autonomous drone operations. DJI Dock 2 and DJI Dock 3 are cutting-edge solutions.",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "coptrz",
+        "totalScore": 280,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 4,
+            "points": 120
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 2",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 3,
+        "tier1Count": 7,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "optron",
+      "companyName": "New DJI Dock 3",
+      "domains": [
+        "optron.com"
+      ],
+      "results": [
+        {
+          "title": "New DJI Dock 3 - Professional Drone Accessory - OPTRON",
+          "link": "https://optron.com/dji/new-dji-dock-3/",
+          "snippet": "DJI today launched the DJI Dock 3 that, for the first time, supports mobile vehicle-mounted deployment.",
+          "date": "25.02.2025",
+          "position": 59,
+          "domain": "optron.com",
+          "type": "direct"
+        },
+        {
+          "title": "New DJI Dock 3 - Professional Drone Accessory - OPTRON",
+          "link": "https://optron.com/dji/new-dji-dock-3/",
+          "snippet": "DJI today launched the DJI Dock 3 that, for the first time, supports mobile vehicle-mounted deployment.",
+          "date": "25.02.2025",
+          "position": 62,
+          "domain": "optron.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "New DJI Dock 3 - Professional Drone Accessory - OPTRON DJI today launched the DJI Dock 3 that, for the first time, supports mobile vehicle-mounted deployment. New DJI Dock 3 - Professional Drone Accessory - OPTRON DJI today launched the DJI Dock 3 that, for the first time, supports mobile vehicle-mounted deployment.",
+      "resultCount": 2,
+      "entityType": "unknown",
+      "fence": null,
+      "lastSeen": "25.02.2025",
+      "score": {
+        "slug": "optron",
+        "totalScore": 240,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 4,
+            "points": 120
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 4,
+            "points": 120
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 6,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "airclip",
+      "companyName": "DJI Dock 2, 7.456,30 €",
+      "domains": [
+        "airclip.de"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 2, 7.456,30 € - Airclip",
+          "link": "https://www.airclip.de/DJI-Dock-2",
+          "snippet": "With the integration of DJI FlightHub 2, the DJI Dock 2 enables cloud-based control and monitoring of your drone flights. With features such as cloud mapping, ...",
+          "position": 11,
+          "domain": "airclip.de",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 2, 7.456,30 € - Airclip With the integration of DJI FlightHub 2, the DJI Dock 2 enables cloud-based control and monitoring of your drone flights. With features such as cloud mapping, ...",
+      "resultCount": 1,
+      "entityType": "operator",
+      "fence": null,
+      "score": {
+        "slug": "airclip",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 2",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "heliguy",
+      "companyName": "Buy DJI Dock 3 With DJI Matrice 4TD",
+      "domains": [
+        "heliguy.com"
+      ],
+      "results": [
+        {
+          "title": "Buy DJI Dock 3 With DJI Matrice 4TD | Heliguy",
+          "link": "https://www.heliguy.com/products/dji-dock-3-with-dji-matrice-4td/",
+          "snippet": "Unlock remote and automated drone missions with DJI Dock 3. DJI M4TD offers a drone-in-a-box thermal solution. Dock 3 can be deployed from a vehicle.",
+          "position": 17,
+          "domain": "heliguy.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "Buy DJI Dock 3 With DJI Matrice 4TD | Heliguy Unlock remote and automated drone missions with DJI Dock 3. DJI M4TD offers a drone-in-a-box thermal solution. Dock 3 can be deployed from a vehicle.",
+      "resultCount": 1,
+      "entityType": "reseller",
+      "fence": null,
+      "score": {
+        "slug": "heliguy",
+        "totalScore": 200,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 3,
+            "points": 120
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dock 3",
+        "signalCount": 2,
+        "tier1Count": 5,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "aptella",
+      "companyName": "DJI Dock 3",
+      "domains": [
+        "aptella.com"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 | Rise To Any Challenge - Aptella",
+          "link": "https://www.aptella.com/product/dji-dock-3/",
+          "snippet": "Equipped with Matrice 4D or Matrice 4TD high-performance drones, DJI Dock 3 empowers 24/7 remote operations ... Germany, Ghana, Gibraltar, Greece, Greenland ...",
+          "position": 41,
+          "domain": "aptella.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 | Rise To Any Challenge - Aptella Equipped with Matrice 4D or Matrice 4TD high-performance drones, DJI Dock 3 empowers 24/7 remote operations ... Germany, Ghana, Gibraltar, Greece, Greenland ...",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "aptella",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "drohnen",
+      "companyName": "DJI Dock: Station für Matrice 30",
+      "domains": [
+        "drohnen.de"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3: Die Zukunft autonomer Drohnenstationen! [Video]",
+          "link": "https://www.drohnen.de/58670/dji-dock-3-die-zukunft-autonomer-drohnenstationen-video/",
+          "snippet": "DJI Dock 3: Autonome Drohnenstation für 24/7 Einsätze! Erfahre alles über die neuesten Funktionen & Verbesserungen. Jetzt Video ansehen!",
+          "date": "07.03.2025",
+          "position": 55,
+          "domain": "drohnen.de",
+          "type": "direct"
+        },
+        {
+          "title": "DJI Dock: Station für Matrice 30 - Preise & Infos - Drohnen.de",
+          "link": "https://www.drohnen.de/39944/dji-dock/",
+          "snippet": "Mit dem neuen DJI Dock hat DJI parallel zum Marktstart der neuen DJI Matrice 30 und DJI Matrice 30T eine multifunktionale Docking-Station für professionelle ...",
+          "position": 58,
+          "domain": "drohnen.de",
+          "type": "direct"
+        },
+        {
+          "title": "DJI Dock: Station für Matrice 30 - Preise & Infos - Drohnen.de",
+          "link": "https://www.drohnen.de/39944/dji-dock/",
+          "snippet": "Mit dem neuen DJI Dock hat DJI parallel zum Marktstart der neuen DJI Matrice 30 und DJI Matrice 30T eine multifunktionale Docking-Station für professionelle ...",
+          "position": 61,
+          "domain": "drohnen.de",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3: Die Zukunft autonomer Drohnenstationen! [Video] DJI Dock 3: Autonome Drohnenstation für 24/7 Einsätze! Erfahre alles über die neuesten Funktionen & Verbesserungen. Jetzt Video ansehen! DJI Dock: Station für Matrice 30 - Preise & Infos - Drohnen.de Mit dem neuen DJI Dock hat DJI parallel zum Marktstart der neuen DJI Matrice 30 und DJI Matrice 30T eine multifunktionale Docking-Station für professionelle ... DJI Dock: Station für Matrice 30 - Preise & Infos - Drohnen.de Mit dem neuen DJI Dock hat DJI parallel zum Marktstart der neuen DJI Matrice 30 und DJI Matrice 30T eine multifunktionale Docking-Station für professionelle ...",
+      "resultCount": 3,
+      "entityType": "operator",
+      "fence": null,
+      "lastSeen": "07.03.2025",
+      "score": {
+        "slug": "drohnen",
+        "totalScore": 200,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 6,
+            "points": 120
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 5,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "aeronex",
+      "companyName": "DJI Dock 3",
+      "domains": [
+        "aeronex.ae"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3",
+          "link": "https://www.aeronex.ae/?dock-3/",
+          "snippet": "DJI Dock 3 empowers 24/7 remote operations and, for the first time, supports mobile vehicle-mounted deployment, effortlessly adapting to various environments.",
+          "position": 64,
+          "domain": "aeronex.ae",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 DJI Dock 3 empowers 24/7 remote operations and, for the first time, supports mobile vehicle-mounted deployment, effortlessly adapting to various environments.",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "aeronex",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "ansfisa",
+      "companyName": "DJI Dock 3 for Matrice 4D and 4TD",
+      "domains": [
+        "ansfisa.gov.it"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 for Matrice 4D and 4TD",
+          "link": "https://www.ansfisa.gov.it/dtd/shops.html?id=11021985745",
+          "snippet": "DJI's First Dock Adaptable for Vehicle Mounting. DJI Dock 3 - Rise to Any Challenge. Equipped with Matrice 4D or Matrice 4TD high-performance drones, ...",
+          "position": 65,
+          "domain": "ansfisa.gov.it",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 for Matrice 4D and 4TD DJI's First Dock Adaptable for Vehicle Mounting. DJI Dock 3 - Rise to Any Challenge. Equipped with Matrice 4D or Matrice 4TD high-performance drones, ...",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "ansfisa",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "syndico",
+      "companyName": "DJI Dock 3",
+      "domains": [
+        "syndico.net"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 - Syndico Distribution Ltd",
+          "link": "https://syndico.net/dji-dock-3/",
+          "snippet": "Discover DJI Drones About Syndico Contact Us DJI Matrice 4D Series Drone Docking SolutionPaired with the powerful Matrice 4D or 4TD drones, DJI Dock 3 ...",
+          "position": 68,
+          "domain": "syndico.net",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 - Syndico Distribution Ltd Discover DJI Drones About Syndico Contact Us DJI Matrice 4D Series Drone Docking SolutionPaired with the powerful Matrice 4D or 4TD drones, DJI Dock 3 ...",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "syndico",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "advexure",
+      "companyName": "DJI Dock 3 for Matrice 4D and 4TD",
+      "domains": [
+        "advexure.com"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 for Matrice 4D and 4TD - Advexure",
+          "link": "https://advexure.com/products/dji-dock-3-for-matrice-4d-and-4td?srsltid=AfmBOorc1Mq-MexPjceR50hfiBAevAFVIoLOs9JfMNwP9tLUJv1GPyjE",
+          "snippet": "DJI Dock 3 transforms automated drone operations with an IP56 design, 12 m/s wind resistance, and a -30° to 50°C operating range for year-round deployment.",
+          "position": 9,
+          "domain": "advexure.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 for Matrice 4D and 4TD - Advexure DJI Dock 3 transforms automated drone operations with an IP56 design, 12 m/s wind resistance, and a -30° to 50°C operating range for year-round deployment.",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "advexure",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "dronefly",
+      "companyName": "Buy DJI Dock 3",
+      "domains": [
+        "dronefly.com"
+      ],
+      "results": [
+        {
+          "title": "Buy DJI Dock 3 - DroneFly",
+          "link": "https://www.dronefly.com/products/dji-dock-3?srsltid=AfmBOoqylFRevLYkCGbTa_CF9DmHNF4uVAxOBmVqSpFIlMMeBArPy41T",
+          "snippet": "Embrace efficient drone missions with DJI Dock 3. Gain mobile deployment, IP-rated durability, fast charging, and advanced FlightHub 2 detection for peak ...",
+          "position": 25,
+          "domain": "dronefly.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "Buy DJI Dock 3 - DroneFly Embrace efficient drone missions with DJI Dock 3. Gain mobile deployment, IP-rated durability, fast charging, and advanced FlightHub 2 detection for peak ...",
+      "resultCount": 1,
+      "entityType": "reseller",
+      "fence": null,
+      "score": {
+        "slug": "dronefly",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "megadron",
+      "companyName": "Docking station DJI Dock 2",
+      "domains": [
+        "megadron.pl"
+      ],
+      "results": [
+        {
+          "title": "Docking station DJI Dock 2 - MEGADRON",
+          "link": "https://megadron.pl/en/products/docking-station-dji-dock-2-29355.html?srsltid=AfmBOorTkhxLeys97a38FayYH2PDnmgdtSgfvSeVsTTXHWdXa1U4n40T",
+          "snippet": "Gross price:8 201,50 € · Revolutionize flight operations with DJI Dock 2 · Enhanced mobility and ease of installation · dji dock 2 · Smart security - monitoring ...",
+          "position": 26,
+          "domain": "megadron.pl",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "Docking station DJI Dock 2 - MEGADRON Gross price:8 201,50 € · Revolutionize flight operations with DJI Dock 2 · Enhanced mobility and ease of installation · dji dock 2 · Smart security - monitoring ...",
+      "resultCount": 1,
+      "entityType": "reseller",
+      "fence": null,
+      "score": {
+        "slug": "megadron",
+        "totalScore": 240,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 3,
+            "points": 120
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 2",
+            "count": 3,
+            "points": 120
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 6,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "aeromind",
+      "companyName": "DJI Dock 3 docking station",
+      "domains": [
+        "aeromind.pl"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 docking station | shop aeroMind.pl",
+          "link": "https://aeromind.pl/product-eng-13819-DJI-Dock-3-docking-station.html?srsltid=AfmBOorDdOIPaJRgIFVm4VFQSp7nfN06GMbQxl2Ma9686RS3zlDnLVQg",
+          "snippet": "DJI Dock 3 is a rugged and reliable device with an IP56 rating, resistant to extreme conditions: wind up to 12 m/s and temperatures from –30 °C to 50 °C.",
+          "position": 29,
+          "domain": "aeromind.pl",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 docking station | shop aeroMind.pl DJI Dock 3 is a rugged and reliable device with an IP56 rating, resistant to extreme conditions: wind up to 12 m/s and temperatures from –30 °C to 50 °C.",
+      "resultCount": 1,
+      "entityType": "reseller",
+      "fence": null,
+      "score": {
+        "slug": "aeromind",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "dslrpros",
+      "companyName": "Buy DJI Dock 3",
+      "domains": [
+        "dslrpros.com"
+      ],
+      "results": [
+        {
+          "title": "Buy DJI Dock 3 | DSLRPros",
+          "link": "https://www.dslrpros.com/products/dji-dock-3?srsltid=AfmBOorHwJxiO_HS1C7F1vY8BBzM4L7ILlEKbwk2OC9jjYpx_6cCsr3E",
+          "snippet": "Upgrade to DJI Dock 3 for reliable drone missions. Enjoy vehicle-mounted support, fast charging, IP-rated protection, and powerful FlightHub 2 intelligence.",
+          "position": 32,
+          "domain": "dslrpros.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "Buy DJI Dock 3 | DSLRPros Upgrade to DJI Dock 3 for reliable drone missions. Enjoy vehicle-mounted support, fast charging, IP-rated protection, and powerful FlightHub 2 intelligence.",
+      "resultCount": 1,
+      "entityType": "reseller",
+      "fence": null,
+      "score": {
+        "slug": "dslrpros",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "rccorner",
+      "companyName": "DJI DOCK 3 |Available Now in the UAE!",
+      "domains": [
+        "rccorner.ae"
+      ],
+      "results": [
+        {
+          "title": "DJI DOCK 3 |Available Now in the UAE!",
+          "link": "https://www.rccorner.ae/dji-dock-3?srsltid=AfmBOoqgH9s-7-Kdvw7TojkjxESeW5rp7GkJl8BbqTP9KLeeWJ6Pcmx2",
+          "snippet": "Equipped with Matrice 4D or Matrice 4TD high-performance drones, DJI Dock 3 empowers 24/7 remote operations and, for the first time, supports mobile vehicle- ...",
+          "position": 40,
+          "domain": "rccorner.ae",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI DOCK 3 |Available Now in the UAE! Equipped with Matrice 4D or Matrice 4TD high-performance drones, DJI Dock 3 empowers 24/7 remote operations and, for the first time, supports mobile vehicle- ...",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "rccorner",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "hpdrones",
+      "companyName": "DJI DOCK 3",
+      "domains": [
+        "hp-drones.com"
+      ],
+      "results": [
+        {
+          "title": "DJI DOCK 3 - HPDRONES",
+          "link": "https://hp-drones.com/en/drones/dji-dock-3/",
+          "snippet": "Equipped with high-performance Matrice 4D or Matrice 4TD drones, the DJI Dock 3 enables 24/7 remote operations and, for the first time, ...",
+          "date": "27.02.2025",
+          "position": 56,
+          "domain": "hp-drones.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI DOCK 3 - HPDRONES Equipped with high-performance Matrice 4D or Matrice 4TD drones, the DJI Dock 3 enables 24/7 remote operations and, for the first time, ...",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "lastSeen": "27.02.2025",
+      "score": {
+        "slug": "hpdrones",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "epotronic",
+      "companyName": "DJI Dock 3 automated Drone Station",
+      "domains": [
+        "epotronic.com"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 automated Drone Station | 24/7 Operations Base",
+          "link": "https://epotronic.com/eng/DJI-Dock-3-Drone-Station/DDOC001.1",
+          "snippet": "DJI Dock 3 Drone Station. €10,714.29. Prices excl. VAT plus shipping costs. Available, delivery time: 4-7 days. Select Dock 3 Variants. Dock 3 Base Station (+ ...",
+          "position": 22,
+          "domain": "epotronic.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 automated Drone Station | 24/7 Operations Base DJI Dock 3 Drone Station. €10,714.29. Prices excl. VAT plus shipping costs. Available, delivery time: 4-7 days. Select Dock 3 Variants. Dock 3 Base Station (+ ...",
+      "resultCount": 1,
+      "entityType": "reseller",
+      "fence": null,
+      "score": {
+        "slug": "epotronic",
+        "totalScore": 200,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 4,
+            "points": 120
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dock 3",
+        "signalCount": 2,
+        "tier1Count": 5,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "djiretail",
+      "companyName": "DJI Dock 2",
+      "domains": [
+        "dji-retail.co.uk"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 2 - DJI Hasselblad",
+          "link": "https://dji-retail.co.uk/collections/dji-dock",
+          "snippet": "The more capable yet noticeably smaller DJI Dock 2 deploys Matrice 3D or 3TD drones with ease and security. Dock 2 is lightweight, offers high-level operation ...",
+          "position": 31,
+          "domain": "dji-retail.co.uk",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 2 - DJI Hasselblad The more capable yet noticeably smaller DJI Dock 2 deploys Matrice 3D or 3TD drones with ease and security. Dock 2 is lightweight, offers high-level operation ...",
+      "resultCount": 1,
+      "entityType": "reseller",
+      "fence": null,
+      "score": {
+        "slug": "djiretail",
+        "totalScore": 200,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dock 2",
+            "count": 3,
+            "points": 120
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dock 2",
+        "signalCount": 2,
+        "tier1Count": 5,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "droneline",
+      "companyName": "DJI Matrice 4D Serie (DJI Dock 3)",
+      "domains": [
+        "droneline.shop"
+      ],
+      "results": [
+        {
+          "title": "DJI Matrice 4D Serie (DJI Dock 3) - DRONELINE",
+          "link": "https://droneline.shop/collections/dji-matrice-4d-serie-dji-dock-3?srsltid=AfmBOorTzY724G0W0BJbsAjJnKWDIT9mXqmJ0rEjH-pQvrmiXKvzLEB4",
+          "snippet": "Das DJI Dock 3 setzt neue Maßstäbe im automatisierten Drohnenbetrieb. Es ermöglicht einen mobilen, fahrzeuggestützten Einsatz. Jetzt beraten lassen.",
+          "position": 35,
+          "domain": "droneline.shop",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Matrice 4D Serie (DJI Dock 3) - DRONELINE Das DJI Dock 3 setzt neue Maßstäbe im automatisierten Drohnenbetrieb. Es ermöglicht einen mobilen, fahrzeuggestützten Einsatz. Jetzt beraten lassen.",
+      "resultCount": 1,
+      "entityType": "reseller",
+      "fence": null,
+      "score": {
+        "slug": "droneline",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "enterprise",
+      "companyName": "DJI Dock 3",
+      "domains": [
+        "enterprise.dronenerds.com"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 | Drone Nerds Enterprise",
+          "link": "https://enterprise.dronenerds.com/drone-solutions/drone-docking-stations/dji-dock-3/",
+          "snippet": "The DJI Dock 3 redefines autonomous drone operations, delivering unmatched efficiency, reliability, and adaptability for enterprise professionals.",
+          "position": 7,
+          "domain": "enterprise.dronenerds.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 | Drone Nerds Enterprise The DJI Dock 3 redefines autonomous drone operations, delivering unmatched efficiency, reliability, and adaptability for enterprise professionals.",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "enterprise",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "globeflight",
+      "companyName": "DJI Dock 3",
+      "domains": [
+        "globe-flight.de"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 - Globe-Flight.de",
+          "link": "https://www.globe-flight.de/DJI-Dock-3-category-EN",
+          "snippet": "Equipped with Matrice 4D or Matrice 4TD high-performance drones, DJI Dock 3 empowers 24/7 remote operations and, for the first time, supports mobile vehicle- ...",
+          "position": 8,
+          "domain": "globe-flight.de",
+          "type": "direct"
+        },
+        {
+          "title": "DJI Dock 3 - Globe-Flight.de",
+          "link": "https://www.globe-flight.de/DJI-Dock-3-DE",
+          "snippet": "DJI Dock 3 ist für die Beständigkeit gegen extreme Hitze konzipiert und ermöglicht den normalen Betrieb und das Laden sogar bei Temperaturen von bis zu 50 °C, ...",
+          "position": 39,
+          "domain": "globe-flight.de",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 - Globe-Flight.de Equipped with Matrice 4D or Matrice 4TD high-performance drones, DJI Dock 3 empowers 24/7 remote operations and, for the first time, supports mobile vehicle- ... DJI Dock 3 - Globe-Flight.de DJI Dock 3 ist für die Beständigkeit gegen extreme Hitze konzipiert und ermöglicht den normalen Betrieb und das Laden sogar bei Temperaturen von bis zu 50 °C, ...",
+      "resultCount": 2,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "globeflight",
+        "totalScore": 240,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 4,
+            "points": 120
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 4,
+            "points": 120
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 6,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "dronexperts",
+      "companyName": "DJI Dock 3: The autonomous docking station for intelligent drones",
+      "domains": [
+        "dronexperts.com"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3: The autonomous docking station for intelligent drones",
+          "link": "https://www.dronexperts.com/en/article/dji-dock-3-the-revolutionary-autonomous-station-for-drone-deployment/",
+          "snippet": "Discover the DJI Dock 3, an innovative autonomous station that optimizes drone deployment, recharging and management for 24/7 missions.",
+          "date": "10.03.2025",
+          "rating": 4.7,
+          "ratingCount": 152,
+          "position": 63,
+          "domain": "dronexperts.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3: The autonomous docking station for intelligent drones Discover the DJI Dock 3, an innovative autonomous station that optimizes drone deployment, recharging and management for 24/7 missions.",
+      "resultCount": 1,
+      "entityType": "operator",
+      "fence": null,
+      "lastSeen": "10.03.2025",
+      "score": {
+        "slug": "dronexperts",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "proflycenter",
+      "companyName": "DJI Dock",
+      "domains": [
+        "proflycenter.com"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock Series - Pro Fly Center",
+          "link": "https://proflycenter.com/en/48-dji-dock-serie",
+          "snippet": "DJI Dock Series ; DJI Matrice 4D SP Plus (EU) · DJI Matrice 4D SP Plus (EU). €4,879.00 ; DJI Dock 3 Vehicle-Mounted Gimbal Mount. €304.00 ; DJI Matrice 4D Series ...",
+          "position": 10,
+          "domain": "proflycenter.com",
+          "type": "direct"
+        },
+        {
+          "title": "DJI Dock - Pro Fly Center",
+          "link": "https://proflycenter.com/en/blog/category/2/dji-dock.html",
+          "snippet": "The longest automatic drone flight in Europe – DJI Dock! Watch a 10-minute report on the implementation of 5 DJI Dock stations at our customer's ...",
+          "date": "vor 7 Tagen",
+          "position": 16,
+          "domain": "proflycenter.com",
+          "type": "direct"
+        },
+        {
+          "title": "DJI Dock Lizenz - Pro Fly Center",
+          "link": "https://proflycenter.com/de/24-dji-dock",
+          "snippet": "STS-Qualifizierung (je nach Vorwissen), DJI-Dock-Zertifikat und Remote-Operations-Kompetenz. 1.199,00 €. Verfügbar. Vor Ort; Dock ...",
+          "position": 37,
+          "domain": "proflycenter.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock Series - Pro Fly Center DJI Dock Series ; DJI Matrice 4D SP Plus (EU) · DJI Matrice 4D SP Plus (EU). €4,879.00 ; DJI Dock 3 Vehicle-Mounted Gimbal Mount. €304.00 ; DJI Matrice 4D Series ... DJI Dock - Pro Fly Center The longest automatic drone flight in Europe – DJI Dock! Watch a 10-minute report on the implementation of 5 DJI Dock stations at our customer's ... DJI Dock Lizenz - Pro Fly Center STS-Qualifizierung (je nach Vorwissen), DJI-Dock-Zertifikat und Remote-Operations-Kompetenz. 1.199,00 €. Verfügbar. Vor Ort; Dock ...",
+      "resultCount": 3,
+      "entityType": "reseller",
+      "fence": null,
+      "lastSeen": "vor 7 Tagen",
+      "score": {
+        "slug": "proflycenter",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 7,
+            "points": 120
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 1,
+            "points": 40
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "mostrobotics",
+      "companyName": "DJI Dock 2",
+      "domains": [
+        "mostrobotics.com"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 2 - MOST Robotics",
+          "link": "https://mostrobotics.com/hangar/dji-dock-2?srsltid=AfmBOopd2ow1aXypGB-o369vsuF6GiYJAiE3_p1Gio8GyJ9eQ-slKv4R",
+          "snippet": "Das kompakte und leistungsstarke DJI Dock 2 ermöglicht den einfachen und sicheren Einsatz von Drohnen wie der Matrice 3D und Matrice 3TD mit Wärmebildkamera ...",
+          "position": 14,
+          "domain": "mostrobotics.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 2 - MOST Robotics Das kompakte und leistungsstarke DJI Dock 2 ermöglicht den einfachen und sicheren Einsatz von Drohnen wie der Matrice 3D und Matrice 3TD mit Wärmebildkamera ...",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "mostrobotics",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 2",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "droneharmony",
+      "companyName": "DJI Dock 3",
+      "domains": [
+        "droneharmony.com"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 - Drone Harmony",
+          "link": "https://www.droneharmony.com/post/dji-dock-3",
+          "snippet": "This latest iteration refines and enhances the capabilities of its predecessor, DJI Dock 2, making it an even more robust, versatile, and ...",
+          "date": "12.03.2025",
+          "position": 53,
+          "domain": "droneharmony.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 - Drone Harmony This latest iteration refines and enhances the capabilities of its predecessor, DJI Dock 2, making it an even more robust, versatile, and ...",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "lastSeen": "12.03.2025",
+      "score": {
+        "slug": "droneharmony",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 2",
+            "count": 1,
+            "points": 40
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 1,
+            "points": 40
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 3,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "airworxdrone",
+      "companyName": "DJI Dock 3 with Matrice 4DT Aircraft System",
+      "domains": [
+        "airworxdrone.com"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 with Matrice 4DT Aircraft System",
+          "link": "https://airworxdrone.com/products/dji-dock-3-with-matrice-4dt-aircraft-system?srsltid=AfmBOoqfJ54jPpY-nDIVjLgu2yY_rOX-XkdnQlCXPXj15o46vIpK2H57",
+          "snippet": "Introducing DJI Dock 3: The Future of Remote Drone Operations The DJI Dock 3 is here, delivering 24/7 autonomous drone operations with purpose-developed ...",
+          "position": 54,
+          "domain": "airworxdrone.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 with Matrice 4DT Aircraft System Introducing DJI Dock 3: The Future of Remote Drone Operations The DJI Dock 3 is here, delivering 24/7 autonomous drone operations with purpose-developed ...",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "airworxdrone",
+        "totalScore": 240,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 3,
+            "points": 120
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 3,
+            "points": 120
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 6,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "spheredrones",
+      "companyName": "DJI Dock 3",
+      "domains": [
+        "spheredrones.com.au"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 - Automated Drone Dock Solution - Sphere Drones",
+          "link": "https://www.spheredrones.com.au/products/dji-dock-3",
+          "snippet": "The DJI Dock 3 takes autonomous drone operations to the next level with its rugged, all-weather docking station, built for vehicle-mounted or stationary ...",
+          "position": 69,
+          "domain": "spheredrones.com.au",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 - Automated Drone Dock Solution - Sphere Drones The DJI Dock 3 takes autonomous drone operations to the next level with its rugged, all-weather docking station, built for vehicle-mounted or stationary ...",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "spheredrones",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "dronescontrol",
+      "companyName": "The new and innovative DJI Dock 3",
+      "domains": [
+        "drones-control.com"
+      ],
+      "results": [
+        {
+          "title": "The new and innovative DJI Dock 3 | DroneS Control",
+          "link": "https://drones-control.com/shop/products/dji-dock-3",
+          "snippet": "DJI Dock 3 ist für die Beständigkeit gegen extreme Hitze konzipiert und ermöglicht den normalen Betrieb und das Laden sogar bei Temperaturen von bis zu 50 °C, ...",
+          "position": 5,
+          "domain": "drones-control.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "The new and innovative DJI Dock 3 | DroneS Control DJI Dock 3 ist für die Beständigkeit gegen extreme Hitze konzipiert und ermöglicht den normalen Betrieb und das Laden sogar bei Temperaturen von bis zu 50 °C, ...",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "dronescontrol",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "thedronecentre",
+      "companyName": "DJI Dock 3",
+      "domains": [
+        "thedronecentre.ae"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 - All Things Drones",
+          "link": "https://thedronecentre.ae/dji-dock3/",
+          "snippet": "DJI Dock 3 can be flexibly deployed, redefining the paradigm of operations. ... Germany, Ghana, Greece, Grenada, Guatemala, Guinea, Guinea-Bissau, Guyana, Haiti ...",
+          "position": 44,
+          "domain": "thedronecentre.ae",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 - All Things Drones DJI Dock 3 can be flexibly deployed, redefining the paradigm of operations. ... Germany, Ghana, Greece, Grenada, Guatemala, Guinea, Guinea-Bissau, Guyana, Haiti ...",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "thedronecentre",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "dronesolutions",
+      "companyName": "DJI Dock 3: Fernbetrieb mit Matrice 4D und 4TD",
+      "domains": [
+        "dronesolutions.ch"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3: Fernbetrieb mit Matrice 4D und 4TD",
+          "link": "https://dronesolutions.ch/shop/dji-dock-3/?srsltid=AfmBOoopjO82krKcZ4OG2SyW2vMMkCDILYGMokXbEUGpF6JEVGSdg_YY",
+          "snippet": "Steigern Sie Ihre Betriebseffizienz mit dem DJI Dock 3! Geniessen Sie einen sicheren und industriekonformen Betrieb für ihr Unternehmen.",
+          "position": 70,
+          "domain": "dronesolutions.ch",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3: Fernbetrieb mit Matrice 4D und 4TD Steigern Sie Ihre Betriebseffizienz mit dem DJI Dock 3! Geniessen Sie einen sicheren und industriekonformen Betrieb für ihr Unternehmen.",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "dronesolutions",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "droneroboticstec",
+      "companyName": "DJI Dock 3",
+      "domains": [
+        "droneroboticstec.com"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 - Drone Robotics Tech",
+          "link": "https://droneroboticstec.com/products/dji-dock-3-overseas-edition?srsltid=AfmBOorp-KtAex4VDe4o-5RzBifB9SXl7bAgnm6LQ3QcesVv_LVx3G6w",
+          "snippet": "Equipped with Matrice 4D or Matrice 4TD high-performance drones, DJI Dock 3 empowers 24/7 remote operations and, for the first time, supports mobile vehicle- ...",
+          "position": 36,
+          "domain": "droneroboticstec.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 - Drone Robotics Tech Equipped with Matrice 4D or Matrice 4TD high-performance drones, DJI Dock 3 empowers 24/7 remote operations and, for the first time, supports mobile vehicle- ...",
+      "resultCount": 1,
+      "entityType": "unknown",
+      "fence": null,
+      "score": {
+        "slug": "droneroboticstec",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "dronepartscenter",
+      "companyName": "DJI Dock 3",
+      "domains": [
+        "drone-parts-center.com"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 - Autonome Dockingstation für Drohnen",
+          "link": "https://drone-parts-center.com/de/produkt/dji-dock-3-die-eigenstaendige-dockingstation-fuer-professionelle-drohnen/?srsltid=AfmBOopBHrstpxjBVb3cGQEmf9fAZaZAUsdqEN99mb3oB2PdSJrbe2po",
+          "snippet": "Entdecken Sie das DJI Dock 3, eine robuste und mobile Dockingstation für Drohnen, ideal für den 24/7-Betrieb mit schneller Aufladung und RTK-Genauigkeit.",
+          "position": 66,
+          "domain": "drone-parts-center.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 - Autonome Dockingstation für Drohnen Entdecken Sie das DJI Dock 3, eine robuste und mobile Dockingstation für Drohnen, ideal für den 24/7-Betrieb mit schneller Aufladung und RTK-Genauigkeit.",
+      "resultCount": 1,
+      "entityType": "reseller",
+      "fence": null,
+      "score": {
+        "slug": "dronepartscenter",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "lacameraembarquee",
+      "companyName": "Start- und Landeplatz DJI Dock 2 mit DJI Matrice 3D",
+      "domains": [
+        "lacameraembarquee.fr"
+      ],
+      "results": [
+        {
+          "title": "Start- und Landeplatz DJI Dock 2 mit DJI Matrice 3D",
+          "link": "https://www.lacameraembarquee.fr/de/dji-dock-2-mit-dji-matrice-3d-3td/17670-dji-dock-2-mit-dji-matrice-3d.html?srsltid=AfmBOoqbaoj4Wm5IElX3OdUud9oVQ-_fcDiJDW1G4d5dzyoDLh52jmYa",
+          "snippet": "Das DJI Dock 2 ist ideal für Ihre automatisierten Drohnenmissionen mit einem Radius von bis zu 10 km. Diese Station dient als Basis für schnelles Aufladen, ...",
+          "position": 28,
+          "domain": "lacameraembarquee.fr",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "Start- und Landeplatz DJI Dock 2 mit DJI Matrice 3D Das DJI Dock 2 ist ideal für Ihre automatisierten Drohnenmissionen mit einem Radius von bis zu 10 km. Diese Station dient als Basis für schnelles Aufladen, ...",
+      "resultCount": 1,
+      "entityType": "operator",
+      "fence": null,
+      "score": {
+        "slug": "lacameraembarquee",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 2",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "kitzrettungsdrohne",
+      "companyName": "DJI Dock 3 – Autonom. Intelligent. Unaufhaltsam., 12.750,00 €",
+      "domains": [
+        "kitzrettungsdrohne.de"
+      ],
+      "results": [
+        {
+          "title": "DJI Dock 3 – Autonom. Intelligent. Unaufhaltsam., 12.750,00 €",
+          "link": "https://kitzrettungsdrohne.de/DJI-Dock-3?srsltid=AfmBOorU37K9dFVw9qwrrQxUpateAHEqtEg4ROdpyV-GhEHHyNYf_siV",
+          "snippet": "DJI Dock 3 ; D-RTK 3 Relais: Für zentimetergenaue Positionierung und zuverlässige Übertragung. ; Gimbal-Halterung: Für Fahrzeugmontierung und flexible Einsätze.",
+          "position": 20,
+          "domain": "kitzrettungsdrohne.de",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI Dock 3 – Autonom. Intelligent. Unaufhaltsam., 12.750,00 € DJI Dock 3 ; D-RTK 3 Relais: Für zentimetergenaue Positionierung und zuverlässige Übertragung. ; Gimbal-Halterung: Für Fahrzeugmontierung und flexible Einsätze.",
+      "resultCount": 1,
+      "entityType": "reseller",
+      "fence": null,
+      "score": {
+        "slug": "kitzrettungsdrohne",
+        "totalScore": 160,
+        "normalizedScore": 60,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          },
+          {
+            "tier": "tier1",
+            "keyword": "dock 3",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 2,
+        "tier1Count": 4,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    },
+    {
+      "slug": "help",
+      "companyName": "DJI dock provisioning and set up",
+      "domains": [
+        "help.dronedeploy.com"
+      ],
+      "results": [
+        {
+          "title": "DJI dock provisioning and set up - DroneDeploy",
+          "link": "https://help.dronedeploy.com/hc/en-us/articles/30927637908247-DJI-dock-provisioning-and-set-up",
+          "snippet": "You can have multiple docks on a single DroneDeploy project. How to provision and set up the dock. Follow these steps to connect your DJI Dock ...",
+          "date": "09.12.2025",
+          "position": 45,
+          "domain": "help.dronedeploy.com",
+          "type": "direct"
+        }
+      ],
+      "snippetText": "DJI dock provisioning and set up - DroneDeploy You can have multiple docks on a single DroneDeploy project. How to provision and set up the dock. Follow these steps to connect your DJI Dock ...",
+      "resultCount": 1,
+      "entityType": "operator",
+      "fence": null,
+      "lastSeen": "09.12.2025",
+      "score": {
+        "slug": "help",
+        "totalScore": 80,
+        "normalizedScore": 40,
+        "signals": [
+          {
+            "tier": "tier1",
+            "keyword": "dji dock",
+            "count": 2,
+            "points": 80
+          }
+        ],
+        "tier1Hit": true,
+        "tier2Hit": false,
+        "topSignal": "dji dock",
+        "signalCount": 1,
+        "tier1Count": 2,
+        "tier2Count": 0,
+        "tier3Count": 0
+      }
+    }
+  ]
+}

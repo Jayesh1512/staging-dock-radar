@@ -47,6 +47,11 @@ const COUNTRY_CONFIG: Record<string, { gl: string; hl: string; name: string }> =
   ES: { gl: 'es', hl: 'es', name: 'Spain' },
   NL: { gl: 'nl', hl: 'nl', name: 'Netherlands' },
   SG: { gl: 'sg', hl: 'en', name: 'Singapore' },
+  CA: { gl: 'ca', hl: 'en', name: 'Canada' },
+  ZA: { gl: 'za', hl: 'en', name: 'South Africa' },
+  TH: { gl: 'th', hl: 'en', name: 'Thailand' },
+  PL: { gl: 'pl', hl: 'pl', name: 'Poland' },
+  TR: { gl: 'tr', hl: 'tr', name: 'Turkey' },
 };
 
 export async function searchGoogle(
