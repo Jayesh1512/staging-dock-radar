@@ -271,6 +271,16 @@ export function Navbar({
                   <div style={menuSubtitle}>Raw Google News + LinkedIn HTML snapshots by country</div>
                 </Link>
 
+                <Link
+                  role="menuitem"
+                  href="/utilities/dji-dock-company-enricher"
+                  onClick={() => setToolsOpen(false)}
+                  style={{ ...menuItemStyle(pathname === '/utilities/dji-dock-company-enricher', '#C2410C'), textDecoration: 'none', display: 'block' }}
+                >
+                  <div>DJI Dock Company Enricher</div>
+                  <div style={menuSubtitle}>Company + country | Serper | regex scrape</div>
+                </Link>
+
                 <div style={{ width: '100%' }} title="Test company enrichment lookups">
                   <EnrichmentTestAgent mode="menuItem" />
                 </div>
