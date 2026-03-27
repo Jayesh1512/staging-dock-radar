@@ -1,0 +1,31 @@
+Rank,Tier,Company Name,Entity Type,Operations / Key Signal,Website,LinkedIn,Source Count,Sources,City,Employees,Domain,Score,Confidence
+1,"T2 Multi-DSP","Escadrone",operator,"DJI Enterprise Dealer + dji dock",https://escadrone.com,https://www.linkedin.com/company/escadrone,4,"dji_reseller_list, google_search, govt_registry, comet","Isère",15,escadrone.com,80,high
+2,"T3 DJI Dealer","Prodrones",reseller,"DJI Enterprise Dealer + NAF_B:30.30Z|generic_name|structured|emp:03|PME/micro",https://www.prodrones.fr,https://www.linkedin.com/company/pro-drones,4,"dji_reseller_list, govt_registry, google_search, comet","Wimille",8,prodrones.fr,80,high
+3,"T1 Dock","Flying eye",operator,"DJI Dock 3 Authorized: Yes + DJI Enterprise Dealer",https://www.flyingeye.fr,https://www.linkedin.com/company/flyingeye,3,"comet, dji_reseller_list, google_search","06410 Biot",,flyingeye.fr,85,high
+4,"T1 Dock","Abot",operator,"DJI Dock 3 Authorized: Yes + DJI Enterprise Dealer",https://www.abot.fr,https://www.linkedin.com/company/abot-fr,2,"comet, dji_reseller_list","76230 Isneauville",,abot.fr,85,high
+5,"T2 Multi-DSP","Instadrone",operator,"NAF_A:71.12B|generic_name|structured|emp:12|PME/micro + dji dock",,,2,"govt_registry, google_search","",35,,85,high
+6,"T3 DJI Dealer","Capture solutions",reseller,"DJI Enterprise Dealer + DJI Dock 3 Authorized: No",https://www.capture-solutions.fr/,https://www.linkedin.com/company/capture-solution123,2,"dji_reseller_list, comet","Saint-Germain-en-Laye",,capture-solutions.fr,80,high
+7,"T3 DJI Dealer","DUMONT SECURITE",reseller,"DJI Enterprise Dealer + DJI Dock 3 Authorized: No",https://www.dumont-securite.fr/,https://www.linkedin.com/company/dumont-securite,2,"dji_reseller_list, comet","Ambérieu-en-Bugey",,dumont-securite.fr,80,high
+8,"T3 DJI Dealer","Geomesure",reseller,"DJI Enterprise Dealer + DJI Dock 3 Authorized: No",https://www.geomesure.fr,https://www.linkedin.com/company/geomesure,2,"dji_reseller_list, comet","Hérault",,geomesure.fr,80,high
+9,"T3 DJI Dealer","NETPIX La Camera embarquée",reseller,"DJI Enterprise Dealer + DJI Dock 3 Authorized: No",https://www.lacameraembarquee.fr,https://www.linkedin.com/company/la-camera-embarquee,2,"dji_reseller_list, comet","Aix-en-Provence",,lacameraembarquee.fr,80,high
+10,"T3 DJI Dealer","PROTEC SECURITY SYSTEMS",reseller,"DJI Enterprise Dealer + DJI Dock 3 Authorized: No",https://www.protecsecuritysystems.fr/en/home/,https://www.linkedin.com/company/security-systems-by-protec,2,"dji_reseller_list, comet","Lieusaint",,protecsecuritysystems.fr,80,high
+11,"T3 DJI Dealer","Rivolier",reseller,"DJI Enterprise Dealer + DJI Dock 3 Authorized: No",https://www.rivolier-sd.com/,https://www.linkedin.com/company/rivolier-sas,2,"dji_reseller_list, comet","Abrest",,rivolier-sd.com,80,high
+12,"T3 DJI Dealer","VOLTANEO",reseller,"DJI Enterprise Dealer + DJI Dock 3 Authorized: No",https://www.voltaneo.com,https://www.linkedin.com/company/voltaneo,2,"dji_reseller_list, comet","Clermont-Ferrand",,voltaneo.com,80,high
+13,"T4 Google DSP","Dronavia",operator,"dock 3",https://dronavia.com/,,1,"google_search","",,dronavia.com,77,high
+14,"T3 DJI Dealer","STTL (Service Technique Topographie Laser)",reseller,"DJI Enterprise Dealer",https://www.sttl-topographie.com/,https://www.linkedin.com/company/sttl,1,"dji_reseller_list","Rhône",,sttl-topographie.com,80,high
+15,"Bulk","Telepilote",reseller,"dji dock",https://telepilote.store/,,1,"google_search","",,telepilote.store,77,high
+16,"Bulk","Dji Paris",reseller,"dji dock",https://boutique.dji-paris.com/,,1,"google_search","",,dji-paris.com,73,high
+17,"Bulk","Djlfrance",reseller,"dji dock",https://djlfrance.com/,,1,"google_search","",,djlfrance.com,60,medium
+18,"Bulk","Studiosport",reseller,"dji dock",https://studiosport.fr/,,1,"google_search","",,studiosport.fr,60,medium
+19,"Bulk","Djifr",reseller,"dji dock",,,1,"google_search","",,,69,medium
+20,"Bulk","Aptella",unknown,"dji dock",https://aptella.com/,,1,"google_search","",,aptella.com,77,high
+21,"Bulk","Advexure",unknown,"dji dock",https://advexure.com/,,1,"google_search","",,advexure.com,73,high
+22,"T5 Registry","DRONE INSPECTION",unknown,"NAF_A:71.20B|dock_kw|structured|PME/micro",,,1,"govt_registry","",,,95,high
+23,"T5 Registry","CARIBEENNE D'EXPERTISE ET DE DRONES",unknown,"NAF_A:71.12B|provider_kw|structured|emp:01|PME/micro",,,1,"govt_registry","",2,,90,high
+24,"T5 Registry","SQUADRONE SYSTEM",unknown,"NAF_A:71.12B|provider_kw|structured|emp:12|PME/micro",,,1,"govt_registry","",35,,90,high
+25,"T5 Registry","DRONE CONSULTING",unknown,"NAF_A:71.20B|provider_kw|structured|emp:03|PME/micro",,,1,"govt_registry","",8,,90,high
+26,"T5 Registry","BATHY DRONE SOLUTIONS",unknown,"NAF_A:71.20B|provider_kw|structured|emp:02|PME/micro",,,1,"govt_registry","",4,,90,high
+27,"T5 Registry","SAS DRONE SERVICES",unknown,"NAF_A:71.12B|provider_kw|structured|emp:01|PME/micro",,,1,"govt_registry","",2,,90,high
+28,"T5 Registry","DRONE EXPERTISE CENTRE",unknown,"NAF_A:71.20B|provider_kw|structured|emp:02|PME/micro",,,1,"govt_registry","",4,,90,high
+29,"T5 Registry","DRONES INGENIERIE SYSTEMES",unknown,"NAF_A:71.20B|provider_kw|structured|emp:01|PME/micro",,,1,"govt_registry","",2,,90,high
+30,"T5 Registry","DIODON DRONE TECHNOLOGY",unknown,"NAF_A:71.12B|provider_kw|structured|emp:12|PME/micro",,,1,"govt_registry","",35,,90,high

@@ -271,6 +271,26 @@ export function Navbar({
                   <div style={menuSubtitle}>Raw Google News + LinkedIn HTML snapshots by country</div>
                 </Link>
 
+                <Link
+                  role="menuitem"
+                  href="/utilities/dock-verify"
+                  onClick={() => setToolsOpen(false)}
+                  style={{ ...menuItemStyle(pathname === '/utilities/dock-verify', '#059669'), textDecoration: 'none', display: 'block' }}
+                >
+                  <div>Dock Verify (Cross-Reference)</div>
+                  <div style={menuSubtitle}>Verify DJI Dock mentions on company websites &amp; LinkedIn</div>
+                </Link>
+
+                <Link
+                  role="menuitem"
+                  href="/utilities/qa-agent"
+                  onClick={() => setToolsOpen(false)}
+                  style={{ ...menuItemStyle(pathname === '/utilities/qa-agent', '#7C3AED'), textDecoration: 'none', display: 'block' }}
+                >
+                  <div>DJI Dock Keyword QA Agent</div>
+                  <div style={menuSubtitle}>Automated DJI Dock verification — Serper + LinkedIn + confidence scoring</div>
+                </Link>
+
                 <div style={{ width: '100%' }} title="Test company enrichment lookups">
                   <EnrichmentTestAgent mode="menuItem" />
                 </div>

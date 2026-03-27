@@ -1,0 +1,107 @@
+{
+  "run": {
+    "id": "run_li_202603270451095",
+    "keywords": [
+      "DJI Dock"
+    ],
+    "sources": [
+      "linkedin"
+    ],
+    "regions": [],
+    "filter_days": 1,
+    "min_score": 40,
+    "max_articles": 50,
+    "status": "completed",
+    "articles_fetched": 27,
+    "articles_stored": 6,
+    "dedup_removed": 21,
+    "created_at": "2026-03-27T04:52:18.846Z",
+    "completed_at": "2026-03-27T04:52:18.846Z"
+  },
+  "stats": {
+    "totalFetched": 27,
+    "afterDateFilter": 6,
+    "afterDedup": 6,
+    "stored": 6
+  },
+  "articles": [
+    {
+      "id": "li_run_li_202603270451095_1774587138517_1",
+      "run_id": "run_li_202603270451095",
+      "source": "linkedin",
+      "title": "DJI Dock 3 with Matrice 4TD (M4TD) | Autonomous Flight Mission & Planning Demo",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7442944254617747456/",
+      "publisher_url": "https://www.linkedin.com/company/rc-corner-trading-llc/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7442944254617747456",
+      "snippet": "DJI Dock 3 with Matrice 4TD (M4TD) | Autonomous Flight Mission & Planning Demo",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-26T14:52:18.517Z",
+      "created_at": "2026-03-27T04:52:18.517Z"
+    },
+    {
+      "id": "li_run_li_202603270451095_1774587138517_4",
+      "run_id": "run_li_202603270451095",
+      "source": "linkedin",
+      "title": "Managing a mega construction site requires constant visibility and coordination. At one of South Korea’s major semiconductor projects, SK hy",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443116500602740736/",
+      "publisher_url": "https://www.linkedin.com/in/yan-zhang-b737ba133",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443116500602740736",
+      "snippet": "Managing a mega construction site requires constant visibility and coordination. At one of South Korea’s major semiconductor projects, SK hynix uses DJI Dock 3 with DJI FlightHub 2 to transform site management workflows.",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T02:52:18.517Z",
+      "created_at": "2026-03-27T04:52:18.517Z"
+    },
+    {
+      "id": "li_run_li_202603270451095_1774587138517_5",
+      "run_id": "run_li_202603270451095",
+      "source": "linkedin",
+      "title": "Automation isn’t the future of Nigerian infrastructure; it’s the present. Manual drone deployment is becoming a bottleneck for large-scale o",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7442955145082044416/",
+      "publisher_url": "https://www.linkedin.com/company/geoinfostore/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7442955145082044416",
+      "snippet": "Automation isn’t the future of Nigerian infrastructure; it’s the present. Manual drone deployment is becoming a bottleneck for large-scale operations. From monitoring oil pipelines in the Delta to tracking construction progress in Eko Atlantic, efficiency is everything. Enter the DJI Dock 3. 📦✈️ At Geostore, we are proud to bring this powerhouse to the Nigerian market. This is autonomous, round-the-clock aerial data collection without the need for an on-site pilot for every flight. It’s weather-resistant, reliable, and ready to transform your GIS workflow. Is your firm ready to lead the autonomous revolution? Visit our Lagos, Port Harcourt or Abuja offices for a full demonstration or send a DM for a corporate quote. hashtag #GeoStore hashtag #DJIDock3 hashtag #DroneAutomation hashtag #GISNigeria hashtag #ConstructionTech hashtag #NigeriaEngineering hashtag #LagosBusiness hashtag #Technology hashtag #DJI hashtag #Technology hashtag #Innovation hashtag #Investment hashtag #GIS hashtag #",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-26T15:52:18.517Z",
+      "created_at": "2026-03-27T04:52:18.517Z"
+    },
+    {
+      "id": "li_run_li_202603270451095_1774587138517_7",
+      "run_id": "run_li_202603270451095",
+      "source": "linkedin",
+      "title": "Managing a mega construction site requires constant visibility and coordination. At one of South Korea’s major semiconductor projects, SK hy",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7442918523078795264/",
+      "publisher_url": "https://www.linkedin.com/company/dji/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7442918523078795264",
+      "snippet": "Managing a mega construction site requires constant visibility and coordination. At one of South Korea’s major semiconductor projects, SK hynix uses DJI Dock 3 with DJI FlightHub 2 to transform site management workflows. This setup enables teams to: 🏗️ Inspect large construction areas remotely 🏗️ Operate in snow and sub-zero conditions 🏗️ Run scheduled drone missions across the site 🏗️ Share real-time data with project teams 🏗️ Generate terrain models for planning and tracking Instead of relying only on manual inspections, teams gain faster insights and better coordination across complex environments. Watch the full video 👉 https://brnw.ch/21x14yy hashtag #djienterprise hashtag #djidock3 hashtag #construction hashtag #inspection hashtag #infrastructure hashtag #constructiontech",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-26T13:52:18.517Z",
+      "created_at": "2026-03-27T04:52:18.517Z"
+    },
+    {
+      "id": "li_run_li_202603270451095_1774587138517_9",
+      "run_id": "run_li_202603270451095",
+      "source": "linkedin",
+      "title": "Imagine a security guard who never sleeps and sees EVERYTHING from hundreds of feet up: that is exactly what the DJI Dock 2 brings to YOUR o",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443092346809896960/",
+      "publisher_url": "https://www.linkedin.com/company/oil-well-security/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443092346809896960",
+      "snippet": "Imagine a security guard who never sleeps and sees EVERYTHING from hundreds of feet up: that is exactly what the DJI Dock 2 brings to YOUR oilfield. Traditional security is NOT enough for critical energy infrastructure. It is slow, prone to error, and gaps are expensive. At Oil Well Security, we combine veteran expertise with autonomous tech to keep your assets safe 24/7. The DJI Dock 2 is the ultimate on-site eye. It is rugged, weather-sealed, and fully autonomous: it handles the patrols while YOU focus on your business. This is about peace of mind: knowing your site is covered every second. We know the challenges of remote security because we’ve lived them. This tech is NOT a luxury anymore: it is a necessity for the modern energy sector. Stop leaving your security to chance. Let's talk about securing YOUR future and keeping your community safe. Visit https://lnkd.in/gDZpAzJ4 for a consultation. hashtag #OilWellSecurity hashtag #DJIDock2 hashtag #Surveillance hashtag #EnergySecurity ",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T00:52:18.517Z",
+      "created_at": "2026-03-27T04:52:18.517Z"
+    },
+    {
+      "id": "li_run_li_202603270451095_1774587138517_10",
+      "run_id": "run_li_202603270451095",
+      "source": "linkedin",
+      "title": "We were recently asked to pitch for a drone-led security system on a large-scale UK development. Not something we’d typically be brought in ",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7442869216560635904/",
+      "publisher_url": "https://www.linkedin.com/company/beygroup/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7442869216560635904",
+      "snippet": "We were recently asked to pitch for a drone-led security system on a large-scale UK development. Not something we’d typically be brought in for. But that’s exactly what made it interesting. The brief centred around autonomous monitoring, rapid response, and reducing reliance on traditional on-site security, using systems like the DJI Dock 3 with the Matrice 4TD. It’s a clear signal of where things are heading. Less static infrastructure. More intelligent, responsive systems layered into the built environment. Even though we didn’t take the project forward, the process was valuable. It pushed us to think beyond our usual remit and explore how emerging technologies integrate with physical space. Because increasingly, the role isn’t just designing places - it’s understanding how they’re operated, monitored and experienced over time. Always open to conversations at the intersection of space, technology and operations.",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-26T09:52:18.517Z",
+      "created_at": "2026-03-27T04:52:18.517Z"
+    }
+  ]
+}

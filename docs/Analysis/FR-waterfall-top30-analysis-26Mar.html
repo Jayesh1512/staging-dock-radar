@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>France — DSP/SI Waterfall Analysis &amp; Top 30</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F8FAFC; color: #111827; font-size: 13px; max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  h1 span { color: #2563EB; }
+  .subtitle { font-size: 12px; color: #6B7280; margin-bottom: 24px; }
+  h2 { font-size: 15px; font-weight: 700; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #E5E7EB; }
+  h3 { font-size: 13px; font-weight: 700; margin: 16px 0 8px; color: #374151; }
+
+  /* Cards */
+  .card { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+  .card-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6B7280; margin-bottom: 8px; }
+
+  /* Stats row */
+  .stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 12px 16px; min-width: 120px; text-align: center; }
+  .stat .num { font-size: 22px; font-weight: 800; }
+  .stat .num.blue { color: #2563EB; }
+  .stat .num.green { color: #16A34A; }
+  .stat .num.amber { color: #D97706; }
+  .stat .lbl { font-size: 10px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+
+  /* Funnel */
+  .funnel { display: flex; flex-direction: column; gap: 0; margin: 16px 0 20px; }
+  .funnel-step { display: flex; align-items: center; border-bottom: 1px solid #F3F4F6; }
+  .funnel-step:last-child { border-bottom: none; }
+  .funnel-bar { height: 36px; border-radius: 4px; display: flex; align-items: center; padding: 0 12px; font-size: 11px; font-weight: 600; color: #fff; min-width: 50px; transition: width 0.3s; }
+  .funnel-label { font-size: 11px; color: #374151; padding: 8px 12px; min-width: 200px; }
+  .funnel-count { font-size: 13px; font-weight: 700; color: #111827; min-width: 50px; text-align: right; padding-right: 12px; }
+  .funnel-note { font-size: 10px; color: #9CA3AF; padding: 0 8px; flex: 1; }
+
+  /* Source table */
+  .src-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
+  .src-table th { text-align: left; padding: 6px 10px; background: #F9FAFB; border-bottom: 1px solid #E5E7EB; font-weight: 600; color: #6B7280; font-size: 11px; }
+  .src-table td { padding: 6px 10px; border-bottom: 1px solid #F3F4F6; color: #374151; }
+  .src-table .num-cell { text-align: right; font-weight: 600; }
+
+  /* Top 30 table */
+  .top-table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 8px 0; }
+  .top-table th { text-align: left; padding: 7px 8px; background: #F9FAFB; border-bottom: 2px solid #E5E7EB; font-weight: 700; color: #6B7280; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; position: sticky; top: 0; }
+  .top-table td { padding: 6px 8px; border-bottom: 1px solid #F3F4F6; vertical-align: top; }
+  .top-table tr:hover { background: #F9FAFB; }
+
+  .rank { display: inline-block; width: 20px; height: 20px; border-radius: 50%; text-align: center; line-height: 20px; font-size: 10px; font-weight: 700; color: #fff; }
+  .rank-t1 { background: #DC2626; }
+  .rank-t2 { background: #D97706; }
+  .rank-t3 { background: #2563EB; }
+  .rank-t4 { background: #7C3AED; }
+  .rank-t5 { background: #64748B; }
+
+  .tier-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .tier-t1 { background: #FEE2E2; color: #DC2626; }
+  .tier-t2 { background: #FEF3C7; color: #D97706; }
+  .tier-t3 { background: #DBEAFE; color: #2563EB; }
+  .tier-t4 { background: #EDE9FE; color: #7C3AED; }
+  .tier-t5 { background: #F1F5F9; color: #475569; }
+
+  .src-chip { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 500; margin: 1px 2px; white-space: nowrap; }
+  .src-comet { background: #EDE9FE; color: #6D28D9; }
+  .src-dji { background: #FEE2E2; color: #DC2626; }
+  .src-registry { background: #D1FAE5; color: #065F46; }
+  .src-google { background: #DBEAFE; color: #1D4ED8; }
+  .src-drones { background: #E5E7EB; color: #374151; }
+  .src-dcro { background: #FEF3C7; color: #92400E; }
+
+  .note-text { font-size: 10px; color: #6B7280; line-height: 1.3; max-width: 250px; }
+  .enrich-ok { font-size: 9px; color: #16A34A; }
+  .enrich-need { display: inline-block; padding: 1px 5px; border-radius: 6px; font-size: 9px; font-weight: 500; background: #FEF3C7; color: #92400E; white-space: nowrap; margin: 1px 0; }
+  a { color: #2563EB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .company-name { font-weight: 600; color: #111827; }
+
+  /* Data cleanup section */
+  .cleanup-list { list-style: none; padding: 0; }
+  .cleanup-list li { padding: 6px 0; border-bottom: 1px solid #F3F4F6; font-size: 12px; display: flex; align-items: flex-start; gap: 8px; }
+  .cleanup-list li:last-child { border-bottom: none; }
+  .cleanup-icon { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; margin-top: 1px; }
+  .cleanup-icon.fix { background: #16A34A; }
+  .cleanup-icon.skip { background: #D97706; }
+  .cleanup-icon.keep { background: #2563EB; }
+
+  .footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #E5E7EB; font-size: 10px; color: #9CA3AF; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1><span>Dock Radar</span> — France DSP/SI Analysis</h1>
+<p class="subtitle">Waterfall funnel &amp; Top 30 shortlist &middot; 26 March 2026 &middot; Prepared for founder review</p>
+
+<!-- KPI row -->
+<div class="stats">
+  <div class="stat"><div class="num">404</div><div class="lbl">Raw Records</div></div>
+  <div class="stat"><div class="num blue">387</div><div class="lbl">Unique Companies</div></div>
+  <div class="stat"><div class="num">4</div><div class="lbl">Data Sources</div></div>
+  <div class="stat"><div class="num green">12</div><div class="lbl">Top Targets (T1+T2)</div></div>
+  <div class="stat"><div class="num amber">30</div><div class="lbl">Shortlisted</div></div>
+</div>
+
+<!-- Sources -->
+<h2>1. Data Sources</h2>
+<div class="card">
+  <table class="src-table">
+    <thead><tr><th>Source</th><th>Type</th><th class="num-cell">Records</th><th class="num-cell">Unique Cos</th><th>Access</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>SIRENE Registry</td><td>Govt Registry</td><td class="num-cell">365</td><td class="num-cell">~355</td><td>Open</td><td>French business registry &mdash; NAF code + keyword filtered</td></tr>
+      <tr><td>DJI Reseller List</td><td>DJI Enterprise</td><td class="num-cell">12</td><td class="num-cell">12</td><td>Open</td><td>Official DJI Enterprise Dealers in France</td></tr>
+      <tr><td>Comet Intelligence</td><td>AI-Assisted</td><td class="num-cell">11</td><td class="num-cell">11</td><td>Open</td><td>DJI Dock dealer network (after BVLOS cleanup)</td></tr>
+      <tr><td>Google Search Crawler</td><td>Google/Serper</td><td class="num-cell">16</td><td class="num-cell">16</td><td>API</td><td>"DJI Dock" France, 7 pages, scored 0-100</td></tr>
+    </tbody>
+    <tfoot><tr style="font-weight: 700; border-top: 2px solid #E5E7EB;"><td>Total</td><td></td><td class="num-cell">404</td><td class="num-cell">387*</td><td></td><td><span style="font-weight: 400; color: #9CA3AF;">*after dedup + domain merge</span></td></tr></tfoot>
+  </table>
+</div>
+
+<!-- Funnel -->
+<h2>2. Waterfall Funnel: 404 &rarr; 30</h2>
+<div class="card">
+  <div class="funnel">
+    <div class="funnel-step">
+      <div class="funnel-count">404</div>
+      <div class="funnel-label">Raw records</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 100%; background: #94A3B8;">404 rows</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count">-17</div>
+      <div class="funnel-label">Dedup &amp; data cleanup</div>
+      <div class="funnel-note">11 domain merges Comet&harr;DJI, 4 domain merges Google&harr;DJI, 2 name merges Google&harr;Registry</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count">387</div>
+      <div class="funnel-label">Unique companies</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 96%; background: #64748B;">387</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count">2</div>
+      <div class="funnel-label" style="font-weight: 700; color: #DC2626;">T1 — DJI Dock Signal</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 3%; background: #DC2626;">2</div></div>
+      <div class="funnel-note">Flying Eye, Abot &mdash; Dock 3 Authorized via Comet</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count">3</div>
+      <div class="funnel-label" style="font-weight: 700; color: #D97706;">T2 — Multi-Source DSP/SI</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 4%; background: #D97706;">3</div></div>
+      <div class="funnel-note">Escadrone 4-src operator, Instadrone 2-src operator, Prodrones 4-src reseller</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count">7</div>
+      <div class="funnel-label" style="font-weight: 700; color: #2563EB;">T3 — DJI Enterprise Dealers</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 8%; background: #2563EB;">7</div></div>
+      <div class="funnel-note">Capture, Dumont, Geomesure, Netpix, Protec, Rivolier, Voltaneo &mdash; all 2-source DJI+Comet</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count">2</div>
+      <div class="funnel-label" style="font-weight: 700; color: #7C3AED;">T4 — Google Search DSP/SI</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 3%; background: #7C3AED;">2</div></div>
+      <div class="funnel-note">Dronavia score 77, other Google operators</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count">~16</div>
+      <div class="funnel-label" style="font-weight: 700; color: #64748B;">T5 — High-Score Registry</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 12%; background: #64748B;">~16</div></div>
+      <div class="funnel-note">Score 85-95, single source SIRENE</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count" style="color: #16A34A; font-weight: 800;">= 30</div>
+      <div class="funnel-label" style="font-weight: 800; color: #16A34A;">Shortlisted for BD Review</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 25%; background: #16A34A;">Top 30</div></div>
+    </div>
+    <div class="funnel-step" style="opacity: 0.5;">
+      <div class="funnel-count">357</div>
+      <div class="funnel-label">Remaining (in DB, not prioritized)</div>
+      <div class="funnel-note">Single-source SIRENE score &lt; 85</div>
+    </div>
+  </div>
+  <div style="margin-top: 8px; padding: 8px 14px; background: #F0FDF4; border-radius: 6px; border-left: 3px solid #16A34A; font-size: 11px; color: #166534; line-height: 1.5;">
+    <strong>No elimination by missing data:</strong> Companies ranked by signal strength. Missing website/LinkedIn does <em>not</em> reduce rank. Blank fields filled via enrichment.
+  </div>
+</div>
+
+<!-- Data cleanup -->
+<h2>3. Data Cleanup Applied</h2>
+<div class="card">
+  <ul class="cleanup-list">
+    <li><div class="cleanup-icon fix">1</div><div><strong>Comet BVLOS cleanup</strong> &mdash; Removed 7 non-DJI BVLOS operators (RigiTech, Biogroup, Delivrone, Delair, EU Drone Port, Thales, Aker). Kept 11 DJI Dock dealer records.</div></li>
+    <li><div class="cleanup-icon fix">2</div><div><strong>Google Search noise removal</strong> &mdash; Removed 13 records: 5 media/news (Techradar, Belgashare, Aeromorning, Phototrend, Milipol), 1 comparator (Ledenicheur), 7 foreign TLD (.ch, .co.za, .ae, .ca, .co.uk, .pl, .de). Kept 16 FR-relevant records.</div></li>
+    <li><div class="cleanup-icon fix">3</div><div><strong>Google Search company name fix</strong> &mdash; companyName extracted from crawler slug (not Google page titles). Subdomain slugs (shop, boutique, enterprise) resolved to root domain names (Prodrones, Dji Paris, Dronenerds).</div></li>
+    <li><div class="cleanup-icon fix">4</div><div><strong>Entity type v5 classification</strong> &mdash; Two-tier operator signals: Primary (int&eacute;grateur, prestation, d&eacute;ploiement) + Secondary (autonome, s&eacute;curit&eacute;, mission). Operator-wins rule in grouped view.</div></li>
+    <li><div class="cleanup-icon fix">5</div><div><strong>Cross-source matching</strong> &mdash; 3-pass: domain &rarr; name &rarr; fuzzy. "flying eye" &harr; "flyingeye" merged via fuzzy. Escadrone matched across 4 sources by name. Flying Eye matched across 3 sources by domain.</div></li>
+    <li><div class="cleanup-icon keep">6</div><div><strong>SIRENE enrichment gap</strong> &mdash; 365 of 404 records have no website or LinkedIn. Enrichment queued for top-30 shortlisted companies post-review.</div></li>
+  </ul>
+  <div style="margin-top: 12px; padding: 10px 14px; background: #EFF6FF; border-radius: 6px; border-left: 3px solid #2563EB; font-size: 11px; color: #1E40AF; line-height: 1.5;">
+    <strong>Enrichment approach:</strong> No company excluded from ranking due to missing data. Blank fields are enrichment opportunities, not elimination criteria.
+  </div>
+</div>
+
+<!-- Tier Logic -->
+<h2>4. Shortlisting Logic</h2>
+<div class="card">
+  <table class="src-table">
+    <thead><tr><th>Tier</th><th>Signal</th><th>Count</th><th>In Top 30?</th><th>Scoring</th></tr></thead>
+    <tbody>
+      <tr style="background: #FEF2F2;"><td><span class="tier-badge tier-t1">T1</span></td><td>Comet "DJI Dock 3 Authorized: Yes"</td><td>2</td><td>All 2</td><td>Dock authorized + multi-source</td></tr>
+      <tr style="background: #FFFBEB;"><td><span class="tier-badge tier-t2">T2</span></td><td>2+ sources with operator entity_type</td><td>3</td><td>All 3</td><td>source_count&times;weight + operator-wins</td></tr>
+      <tr style="background: #EFF6FF;"><td><span class="tier-badge tier-t3">T3</span></td><td>DJI Enterprise Dealer + Comet confirmed</td><td>7</td><td>All 7</td><td>2 sources + high confidence</td></tr>
+      <tr style="background: #F5F3FF;"><td><span class="tier-badge tier-t4">T4</span></td><td>Google Search operator, score &ge; 60</td><td>2</td><td>All 2</td><td>Single-source operator signal</td></tr>
+      <tr><td><span class="tier-badge tier-t5">T5</span></td><td>SIRENE score &ge; 85, unknown type</td><td>16</td><td>Top 16</td><td>Score ranked, no entity type</td></tr>
+      <tr style="opacity: 0.5;"><td>Bulk</td><td>Single-source SIRENE score &lt; 85</td><td>357</td><td>0</td><td>Basic registry match only</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Top 30 Table -->
+<h2>5. Top 30 — France</h2>
+<div class="card" style="padding: 12px; overflow-x: auto;">
+  <table class="top-table">
+    <thead>
+      <tr>
+        <th style="width: 30px;">#</th>
+        <th>Tier</th>
+        <th>Company</th>
+        <th>Sources</th>
+        <th style="width: 50px;">Src#</th>
+        <th>Operations</th>
+        <th>Key Intelligence</th>
+        <th>Enrich</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- T1: Dock Signal -->
+      <tr>
+        <td><span class="rank rank-t1">1</span></td>
+        <td><span class="tier-badge tier-t1">T1 Dock</span></td>
+        <td><span class="company-name">Flying Eye</span></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-dji">DJI</span><span class="src-chip src-google">Google</span></td>
+        <td style="text-align: center; font-weight: 700;">3</td>
+        <td>BVLOS, DJI Dock 3 Authorized</td>
+        <td class="note-text">Biot (06); Dock 3 authorized dealer. Google confirms DSP/SI classification.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t1">2</span></td>
+        <td><span class="tier-badge tier-t1">T1 Dock</span></td>
+        <td><span class="company-name">Abot</span></td>
+        <td><span class="src-chip src-comet">Comet</span><span class="src-chip src-dji">DJI</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DJI Dock 3 Authorized</td>
+        <td class="note-text">Isneauville (76); Dock 3 authorized dealer.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+
+      <!-- T2: Multi-Source DSP/SI -->
+      <tr>
+        <td><span class="rank rank-t2">3</span></td>
+        <td><span class="tier-badge tier-t2">T2 Multi-DSP</span></td>
+        <td><span class="company-name">Escadrone</span></td>
+        <td><span class="src-chip src-dji">DJI</span><span class="src-chip src-google">Google</span><span class="src-chip src-registry">Registry</span><span class="src-chip src-comet">Comet</span></td>
+        <td style="text-align: center; font-weight: 700;">4</td>
+        <td>DSP/SI (4 sources)</td>
+        <td class="note-text">Montbonnot (38); highest source count in FR. Google confirms operator. 15 employees.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t2">4</span></td>
+        <td><span class="tier-badge tier-t2">T2 Multi-DSP</span></td>
+        <td><span class="company-name">Instadrone</span></td>
+        <td><span class="src-chip src-registry">Registry</span><span class="src-chip src-google">Google</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DSP/SI</td>
+        <td class="note-text">Confirmed operator via Google (LinkedIn+Facebook evidence). ~35 employees. No website in DB &mdash; needs enrichment (instadrone.fr).</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t2">5</span></td>
+        <td><span class="tier-badge tier-t2">T2 Multi-DSP</span></td>
+        <td><span class="company-name">Prodrones</span></td>
+        <td><span class="src-chip src-dji">DJI</span><span class="src-chip src-registry">Registry</span><span class="src-chip src-google">Google</span><span class="src-chip src-comet">Comet</span></td>
+        <td style="text-align: center; font-weight: 700;">4</td>
+        <td>Reseller (4 sources)</td>
+        <td class="note-text">Wimille (62); major DJI Enterprise Dealer. 8 employees. Also found in Google Search.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+
+      <!-- T3: DJI Enterprise Dealers -->
+      <tr>
+        <td><span class="rank rank-t3">6</span></td>
+        <td><span class="tier-badge tier-t3">T3 DJI</span></td>
+        <td><span class="company-name">Capture Solutions</span></td>
+        <td><span class="src-chip src-dji">DJI</span><span class="src-chip src-comet">Comet</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DJI Enterprise Dealer</td>
+        <td class="note-text">Saint-Germain-en-Laye (78).</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">7</span></td>
+        <td><span class="tier-badge tier-t3">T3 DJI</span></td>
+        <td><span class="company-name">Dumont Securite</span></td>
+        <td><span class="src-chip src-dji">DJI</span><span class="src-chip src-comet">Comet</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DJI Enterprise Dealer</td>
+        <td class="note-text">Amb&eacute;rieu-en-Bugey (01). Security-focused.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">8</span></td>
+        <td><span class="tier-badge tier-t3">T3 DJI</span></td>
+        <td><span class="company-name">Geomesure</span></td>
+        <td><span class="src-chip src-dji">DJI</span><span class="src-chip src-comet">Comet</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DJI Enterprise Dealer</td>
+        <td class="note-text">H&eacute;rault (34). Surveying/mapping.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">9</span></td>
+        <td><span class="tier-badge tier-t3">T3 DJI</span></td>
+        <td><span class="company-name">Netpix / La Camera Embarqu&eacute;e</span></td>
+        <td><span class="src-chip src-dji">DJI</span><span class="src-chip src-comet">Comet</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DJI Enterprise Dealer</td>
+        <td class="note-text">Aix-en-Provence (13).</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">10</span></td>
+        <td><span class="tier-badge tier-t3">T3 DJI</span></td>
+        <td><span class="company-name">Protec Security Systems</span></td>
+        <td><span class="src-chip src-dji">DJI</span><span class="src-chip src-comet">Comet</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DJI Enterprise Dealer</td>
+        <td class="note-text">Lieusaint (77). Security systems.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">11</span></td>
+        <td><span class="tier-badge tier-t3">T3 DJI</span></td>
+        <td><span class="company-name">Rivolier</span></td>
+        <td><span class="src-chip src-dji">DJI</span><span class="src-chip src-comet">Comet</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DJI Enterprise Dealer</td>
+        <td class="note-text">Saint-Just-Saint-Rambert (42). Defense/security distributor.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">12</span></td>
+        <td><span class="tier-badge tier-t3">T3 DJI</span></td>
+        <td><span class="company-name">Voltaneo</span></td>
+        <td><span class="src-chip src-dji">DJI</span><span class="src-chip src-comet">Comet</span></td>
+        <td style="text-align: center; font-weight: 700;">2</td>
+        <td>DJI Enterprise Dealer</td>
+        <td class="note-text">Clermont-Ferrand (63).</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+
+      <!-- T4: Google Search DSP/SI -->
+      <tr>
+        <td><span class="rank rank-t4">13</span></td>
+        <td><span class="tier-badge tier-t4">T4 Google DSP</span></td>
+        <td><span class="company-name">Dronavia</span></td>
+        <td><span class="src-chip src-google">Google</span></td>
+        <td style="text-align: center;">1</td>
+        <td>DSP/SI (Google v5)</td>
+        <td class="note-text">dronavia.com, score 77. Operator classified by Google Search.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t3">14</span></td>
+        <td><span class="tier-badge tier-t3">T3 DJI</span></td>
+        <td><span class="company-name">STTL</span></td>
+        <td><span class="src-chip src-dji">DJI</span></td>
+        <td style="text-align: center;">1</td>
+        <td>DJI Enterprise Dealer</td>
+        <td class="note-text">Rh&ocirc;ne. Topography/laser specialist.</td>
+        <td><span class="enrich-ok">Complete</span></td>
+      </tr>
+
+      <!-- T5: High-Score Registry -->
+      <tr>
+        <td><span class="rank rank-t5">15</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">DRONE INSPECTION</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 95</td>
+        <td class="note-text">NAF 71.20B (Testing/Inspection). Dock keyword match.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">16</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">DIODON DRONE TECHNOLOGY</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 90</td>
+        <td class="note-text">NAF 71.12B (Engineering). ~35 employees.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">17</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">DRONE EXPERTISE CENTRE</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 90</td>
+        <td class="note-text">NAF 71.20B. drone-expertise-centre.com found via enrichment.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">18</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">SQUADRONE SYSTEM</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 90</td>
+        <td class="note-text">NAF 71.12B. ~35 employees. Delair subsidiary.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">19</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">SKYDRONE INNOVATIONS</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 90</td>
+        <td class="note-text">NAF 71.12B. skydrone-robotics.com. ~15 employees. Drone manufacturer.</td>
+        <td><span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">20</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">DRONE CONSULTING</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 90</td>
+        <td class="note-text">NAF 71.20B. ~8 employees.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">21</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">BATHY DRONE SOLUTIONS</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 90</td>
+        <td class="note-text">NAF 71.20B. ~4 employees. Bathymetry specialist.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">22</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">SAS DRONE SERVICES</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 90</td>
+        <td class="note-text">NAF 71.12B. Roullet-Saint-Est&egrave;phe (16). ~2 employees.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">23</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">ARTECH'DRONE</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 90</td>
+        <td class="note-text">NAF 71.12B. ~8 employees.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">24</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">CARIBEENNE D'EXPERTISE ET DE DRONES</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 90</td>
+        <td class="note-text">NAF 71.12B. ~2 employees. Caribbean/overseas territory.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">25</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">DRONES INGENIERIE SYSTEMES</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 90</td>
+        <td class="note-text">NAF 71.20B. ~2 employees.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">26</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">DRONEDELATTREEXPERTISE</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 90</td>
+        <td class="note-text">NAF 71.12B. ~2 employees.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">27</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">DRONE TECH</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 85</td>
+        <td class="note-text">NAF 71.12B.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">28</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">INTERDRONES SERVICES</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 85</td>
+        <td class="note-text">NAF 71.12B.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">29</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">INSTADRONE</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 85</td>
+        <td class="note-text">NAF 71.12B. ~35 employees. Note: Also appears at #4 via Google Search cross-match.</td>
+        <td><span style="font-size: 9px; color: #6B7280;">See #4</span></td>
+      </tr>
+      <tr>
+        <td><span class="rank rank-t5">30</span></td>
+        <td><span class="tier-badge tier-t5">T5 Registry</span></td>
+        <td><span class="company-name">DRONE VOLT EXPERT</span></td>
+        <td><span class="src-chip src-registry">Registry</span></td>
+        <td style="text-align: center;">1</td>
+        <td>Score: 85</td>
+        <td class="note-text">NAF 71.12B. DroneVolt subsidiary.</td>
+        <td><span class="enrich-need">Web</span> <span class="enrich-need">LinkedIn</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top: 10px; padding: 8px 14px; background: #FFFBEB; border-radius: 6px; border-left: 3px solid #D97706; font-size: 11px; color: #92400E; line-height: 1.5;">
+    <strong>Enrichment summary:</strong> 12 of 30 are fully enriched (website + LinkedIn). 2 need LinkedIn only. 16 need both website + LinkedIn. Enrichment is a <em>post-shortlisting step</em>.
+  </div>
+</div>
+
+<!-- Rollback -->
+<h2>6. Rollback &amp; Safety</h2>
+<div class="card">
+  <p style="font-size: 12px; line-height: 1.6;">
+    All FR records are loaded into <code>source_candidates</code> with <code>country_code = 'FR'</code>. If needed, the entire FR load can be cleanly removed with:
+  </p>
+  <pre style="background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 6px; padding: 8px 12px; margin: 8px 0; font-size: 11px; color: #374151;">DELETE FROM source_candidates WHERE country_code = 'FR';</pre>
+  <p style="font-size: 12px; line-height: 1.6; color: #6B7280;">
+    Source data is preserved as-is. No modifications to the original data.
+  </p>
+</div>
+
+<div class="footer">
+  Dock Radar &middot; France DSP/SI Waterfall Analysis &middot; Generated 26 Mar 2026 &middot; Data: 4 sources, 404 raw records &rarr; Top 30
+</div>
+
+</body>
+</html>

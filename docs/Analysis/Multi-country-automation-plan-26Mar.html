@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dock Radar — Multi-Country Automation Plan</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F8FAFC; color: #111827; font-size: 13px; max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  h1 span { color: #2563EB; }
+  .subtitle { font-size: 12px; color: #6B7280; margin-bottom: 24px; }
+  h2 { font-size: 15px; font-weight: 700; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #E5E7EB; }
+  h3 { font-size: 13px; font-weight: 700; margin: 16px 0 8px; color: #374151; }
+
+  /* Cards */
+  .card { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+  .card-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6B7280; margin-bottom: 8px; }
+
+  /* Stats row */
+  .stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 12px 16px; min-width: 120px; text-align: center; }
+  .stat .num { font-size: 22px; font-weight: 800; }
+  .stat .num.blue { color: #2563EB; }
+  .stat .num.green { color: #16A34A; }
+  .stat .num.amber { color: #D97706; }
+  .stat .num.red { color: #DC2626; }
+  .stat .num.purple { color: #7C3AED; }
+  .stat .lbl { font-size: 10px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+
+  /* Funnel */
+  .funnel { display: flex; flex-direction: column; gap: 0; margin: 16px 0 20px; }
+  .funnel-step { display: flex; align-items: center; border-bottom: 1px solid #F3F4F6; }
+  .funnel-step:last-child { border-bottom: none; }
+  .funnel-bar { height: 36px; border-radius: 4px; display: flex; align-items: center; padding: 0 12px; font-size: 11px; font-weight: 600; color: #fff; min-width: 50px; transition: width 0.3s; }
+  .funnel-label { font-size: 11px; color: #374151; padding: 8px 12px; min-width: 200px; }
+  .funnel-count { font-size: 13px; font-weight: 700; color: #111827; min-width: 50px; text-align: right; padding-right: 12px; }
+  .funnel-note { font-size: 10px; color: #9CA3AF; padding: 0 8px; flex: 1; }
+
+  /* Source table */
+  .src-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
+  .src-table th { text-align: left; padding: 6px 10px; background: #F9FAFB; border-bottom: 1px solid #E5E7EB; font-weight: 600; color: #6B7280; font-size: 11px; }
+  .src-table td { padding: 6px 10px; border-bottom: 1px solid #F3F4F6; color: #374151; }
+  .src-table .num-cell { text-align: right; font-weight: 600; }
+
+  /* Top 30 table */
+  .top-table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 8px 0; }
+  .top-table th { text-align: left; padding: 7px 8px; background: #F9FAFB; border-bottom: 2px solid #E5E7EB; font-weight: 700; color: #6B7280; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; position: sticky; top: 0; }
+  .top-table td { padding: 6px 8px; border-bottom: 1px solid #F3F4F6; vertical-align: top; }
+  .top-table tr:hover { background: #F9FAFB; }
+
+  .rank { display: inline-block; width: 20px; height: 20px; border-radius: 50%; text-align: center; line-height: 20px; font-size: 10px; font-weight: 700; color: #fff; }
+  .rank-t1 { background: #DC2626; }
+  .rank-t2 { background: #D97706; }
+  .rank-t3 { background: #2563EB; }
+  .rank-t4 { background: #7C3AED; }
+
+  .tier-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .tier-t1 { background: #FEE2E2; color: #DC2626; }
+  .tier-t2 { background: #FEF3C7; color: #D97706; }
+  .tier-t3 { background: #DBEAFE; color: #2563EB; }
+  .tier-t4 { background: #EDE9FE; color: #7C3AED; }
+
+  .src-chip { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 500; margin: 1px 2px; white-space: nowrap; }
+  .src-registry { background: #D1FAE5; color: #065F46; }
+  .src-dji { background: #FEE2E2; color: #DC2626; }
+  .src-comet { background: #EDE9FE; color: #7C3AED; }
+  .src-google { background: #DBEAFE; color: #1D4ED8; }
+  .src-ilt { background: #D1FAE5; color: #065F46; }
+  .src-dcro { background: #FEF3C7; color: #92400E; }
+
+  .note-text { font-size: 10px; color: #6B7280; line-height: 1.3; max-width: 250px; }
+  a { color: #2563EB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .company-name { font-weight: 600; color: #111827; }
+
+  /* Data cleanup section */
+  .cleanup-list { list-style: none; padding: 0; }
+  .cleanup-list li { padding: 6px 0; border-bottom: 1px solid #F3F4F6; font-size: 12px; display: flex; align-items: flex-start; gap: 8px; }
+  .cleanup-list li:last-child { border-bottom: none; }
+  .cleanup-icon { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; margin-top: 1px; }
+  .cleanup-icon.fix { background: #16A34A; }
+  .cleanup-icon.skip { background: #D97706; }
+  .cleanup-icon.keep { background: #2563EB; }
+  .cleanup-icon.run { background: #2563EB; }
+  .cleanup-icon.review { background: #7C3AED; }
+  .cleanup-icon.done { background: #16A34A; }
+
+  .footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #E5E7EB; font-size: 10px; color: #9CA3AF; text-align: center; }
+
+  /* Layer pipeline */
+  .layer { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 14px 18px; margin-bottom: 10px; position: relative; border-left: 4px solid #E5E7EB; }
+  .layer.l1 { border-left-color: #6366F1; }
+  .layer.l2 { border-left-color: #F59E0B; }
+  .layer.l3 { border-left-color: #2563EB; }
+  .layer.l4 { border-left-color: #DC2626; }
+  .layer.l5 { border-left-color: #16A34A; }
+  .layer-num { display: inline-block; width: 22px; height: 22px; border-radius: 50%; text-align: center; line-height: 22px; font-size: 11px; font-weight: 800; color: #fff; margin-right: 8px; }
+  .layer-num.l1 { background: #6366F1; }
+  .layer-num.l2 { background: #F59E0B; }
+  .layer-num.l3 { background: #2563EB; }
+  .layer-num.l4 { background: #DC2626; }
+  .layer-num.l5 { background: #16A34A; }
+  .layer-title { font-size: 13px; font-weight: 700; display: inline; }
+  .layer-detail { font-size: 11px; color: #6B7280; margin-top: 8px; line-height: 1.6; }
+  .layer-detail ul { margin: 4px 0 4px 16px; }
+  .layer-detail li { margin-bottom: 2px; }
+  .layer-detail code { background: #F3F4F6; padding: 1px 4px; border-radius: 3px; font-size: 10px; }
+  .human-tag { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 600; background: #FEF3C7; color: #92400E; margin-left: 6px; }
+  .auto-tag { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 600; background: #D1FAE5; color: #065F46; margin-left: 6px; }
+
+  /* Status badges */
+  .status-live { display: inline-block; padding: 1px 7px; border-radius: 8px; font-size: 9px; font-weight: 600; background: #D1FAE5; color: #065F46; }
+  .status-planned { display: inline-block; padding: 1px 7px; border-radius: 8px; font-size: 9px; font-weight: 600; background: #DBEAFE; color: #1D4ED8; }
+  .status-tbd { display: inline-block; padding: 1px 7px; border-radius: 8px; font-size: 9px; font-weight: 600; background: #F3F4F6; color: #6B7280; }
+
+  /* Pipeline connector */
+  .pipeline-connector { text-align: center; font-size: 18px; color: #D1D5DB; margin: -4px 0; line-height: 1; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 28px; margin: 12px 0; }
+  .timeline::before { content: ''; position: absolute; left: 9px; top: 4px; bottom: 4px; width: 2px; background: #E5E7EB; }
+  .timeline-item { position: relative; margin-bottom: 16px; }
+  .timeline-item::before { content: ''; position: absolute; left: -23px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: #2563EB; border: 2px solid #fff; box-shadow: 0 0 0 2px #2563EB; }
+  .timeline-item.active::before { background: #16A34A; box-shadow: 0 0 0 2px #16A34A; }
+  .timeline-week { font-size: 11px; font-weight: 700; color: #2563EB; margin-bottom: 2px; }
+  .timeline-item.active .timeline-week { color: #16A34A; }
+  .timeline-desc { font-size: 12px; color: #374151; line-height: 1.5; }
+
+  /* Keyword table */
+  .kw-table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 8px 0; }
+  .kw-table th { text-align: left; padding: 5px 8px; background: #F9FAFB; border-bottom: 1px solid #E5E7EB; font-weight: 600; color: #6B7280; font-size: 10px; }
+  .kw-table td { padding: 5px 8px; border-bottom: 1px solid #F3F4F6; color: #374151; vertical-align: top; }
+  .kw-table code { background: #F3F4F6; padding: 1px 4px; border-radius: 3px; font-size: 10px; }
+
+  /* Callout */
+  .callout { margin-top: 8px; padding: 8px 14px; border-radius: 6px; font-size: 11px; line-height: 1.5; }
+  .callout-green { background: #F0FDF4; border-left: 3px solid #16A34A; color: #166534; }
+  .callout-blue { background: #EFF6FF; border-left: 3px solid #2563EB; color: #1E40AF; }
+  .callout-amber { background: #FFFBEB; border-left: 3px solid #D97706; color: #92400E; }
+</style>
+</head>
+<body>
+
+<h1><span>Dock Radar</span> &mdash; Multi-Country Automation Plan</h1>
+<p class="subtitle">Productionalization roadmap &middot; 26 March 2026 &middot; Prepared for founder review</p>
+
+<!-- ================================================================== -->
+<!-- 1. CURRENT STATE -->
+<!-- ================================================================== -->
+<h2>1. Current State</h2>
+<div class="stats">
+  <div class="stat"><div class="num blue">2</div><div class="lbl">Countries Live</div></div>
+  <div class="stat"><div class="num">4</div><div class="lbl">Source Types</div></div>
+  <div class="stat"><div class="num">~880</div><div class="lbl">Total Records</div></div>
+  <div class="stat"><div class="num blue">~780</div><div class="lbl">Unique Companies</div></div>
+  <div class="stat"><div class="num green">12</div><div class="lbl">Multi-Source Matches (FR)</div></div>
+  <div class="stat"><div class="num amber">5</div><div class="lbl">DSP/SI Identified (FR)</div></div>
+</div>
+
+<div class="card">
+  <div class="card-title">What We Have Today</div>
+  <table class="src-table">
+    <thead><tr><th>Country</th><th>Records</th><th>Unique Cos</th><th>Sources</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>France</strong></td>
+        <td class="num-cell">~404</td>
+        <td class="num-cell">~380</td>
+        <td><span class="src-chip src-registry">SIRENE</span> <span class="src-chip src-dji">DJI</span> <span class="src-chip src-comet">Comet</span> <span class="src-chip src-google">Google</span></td>
+        <td><span class="status-live">LIVE</span></td>
+      </tr>
+      <tr>
+        <td><strong>Netherlands</strong></td>
+        <td class="num-cell">~484</td>
+        <td class="num-cell">~398</td>
+        <td><span class="src-chip src-registry">ILT/DCRO</span> <span class="src-chip src-dji">DJI</span> <span class="src-chip src-comet">Comet</span></td>
+        <td><span class="status-live">LIVE</span></td>
+      </tr>
+    </tbody>
+    <tfoot><tr style="font-weight: 700; border-top: 2px solid #E5E7EB;"><td>Total</td><td class="num-cell">~888</td><td class="num-cell">~778</td><td></td><td></td></tr></tfoot>
+  </table>
+</div>
+
+<!-- ================================================================== -->
+<!-- 2. TARGET COUNTRIES -->
+<!-- ================================================================== -->
+<h2>2. Target Countries</h2>
+<div class="card">
+  <div class="card-title">15-Country Roadmap</div>
+  <table class="src-table">
+    <thead>
+      <tr><th>#</th><th>Country</th><th>Code</th><th>Registry Available?</th><th>DJI Dealers</th><th>Comet Data</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr style="background: #F0FDF4;">
+        <td>1</td><td><strong>France</strong></td><td>FR</td><td><span class="src-chip src-registry">SIRENE</span></td><td>Yes</td><td>Yes</td><td><span class="status-live">LIVE</span></td>
+      </tr>
+      <tr style="background: #F0FDF4;">
+        <td>2</td><td><strong>Netherlands</strong></td><td>NL</td><td><span class="src-chip src-registry">ILT / DCRO</span></td><td>Yes</td><td>Yes</td><td><span class="status-live">LIVE</span></td>
+      </tr>
+      <tr>
+        <td>3</td><td>Germany</td><td>DE</td><td>LBA <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td>4</td><td>United Kingdom</td><td>UK</td><td>CAA <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td>5</td><td>Australia</td><td>AU</td><td>CASA <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td>6</td><td>United States</td><td>US</td><td>FAA Part 107 <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td>7</td><td>India</td><td>IN</td><td>DGCA <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td>8</td><td>UAE</td><td>AE</td><td>GCAA <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td>9</td><td>Saudi Arabia</td><td>SA</td><td>GACA <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td>10</td><td>Japan</td><td>JP</td><td>MLIT <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td>11</td><td>South Korea</td><td>KR</td><td>MOLIT <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td>12</td><td>Brazil</td><td>BR</td><td>ANAC <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td>13</td><td>Italy</td><td>IT</td><td>ENAC <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td>14</td><td>Spain</td><td>ES</td><td>AESA <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td>15</td><td>Singapore</td><td>SG</td><td>CAAS <span class="status-tbd">TBD</span></td><td>Yes</td><td>Available</td><td><span class="status-planned">Planned</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue" style="margin-top: 12px;">
+    <strong>Key insight:</strong> DJI Dealer data and Comet intelligence are available for all 15 countries. Government registries vary &mdash; some are open, some gated, some don&rsquo;t exist. The pipeline must work with OR without a registry source.
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- 3. AUTOMATION ARCHITECTURE — 5-LAYER PIPELINE -->
+<!-- ================================================================== -->
+<h2>3. Automation Architecture &mdash; The 5-Layer Pipeline</h2>
+
+<div class="card" style="padding: 20px;">
+  <div class="card-title">End-to-End Flow: Config &rarr; Sources &rarr; Search &rarr; Cleanup &rarr; Analysis</div>
+
+  <!-- Pipeline visual -->
+  <div class="funnel" style="margin-top: 12px;">
+    <div class="funnel-step">
+      <div class="funnel-count" style="min-width: 30px;">L1</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 100%; background: #6366F1;">Per-Country Config (one-time setup)</div></div>
+      <div class="funnel-note"><span class="human-tag">Human: 15 min/country</span></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count" style="min-width: 30px;">L2</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 85%; background: #F59E0B;">Data Sources (per country, mostly one-time)</div></div>
+      <div class="funnel-note"><span class="human-tag">Human: 45 min/country</span></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count" style="min-width: 30px;">L3</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 70%; background: #2563EB;">Google Search Campaign (automated batch)</div></div>
+      <div class="funnel-note"><span class="auto-tag">Automated</span> <span class="human-tag">Review: 5 min</span></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count" style="min-width: 30px;">L4</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 55%; background: #DC2626;">Noise Cleanup (automated rules)</div></div>
+      <div class="funnel-note"><span class="auto-tag">Fully Automated</span></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-count" style="min-width: 30px;">L5</div>
+      <div style="flex:1;"><div class="funnel-bar" style="width: 40%; background: #16A34A;">Grouped View + Analysis (automated)</div></div>
+      <div class="funnel-note"><span class="auto-tag">Automated</span> <span class="human-tag">BD review: 30 min</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Layer 1 -->
+<div class="layer l1">
+  <span class="layer-num l1">1</span>
+  <span class="layer-title">Per-Country Config</span>
+  <span class="human-tag">One-time per country</span>
+  <div class="layer-detail">
+    <p>A country config file defines: <strong>local TLDs</strong>, <strong>T3 keywords in local language</strong>, and <strong>registry source</strong> (if any).</p>
+
+    <h3 style="margin-top: 12px;">Signal Keyword Repository</h3>
+    <table class="kw-table">
+      <thead><tr><th>Tier</th><th>Scope</th><th>Keywords</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="tier-badge tier-t1">T1</span></td>
+          <td>Universal (all countries)</td>
+          <td><code>dji dock</code> <code>dock 2</code> <code>dock 3</code> <code>dock installer</code></td>
+        </tr>
+        <tr>
+          <td><span class="tier-badge tier-t2">T2</span></td>
+          <td>Universal (all countries)</td>
+          <td><code>bvlos</code> <code>sora</code> <code>drone-in-a-box</code> <code>luc</code></td>
+        </tr>
+        <tr>
+          <td><span class="tier-badge tier-t3">T3</span></td>
+          <td>Per language group</td>
+          <td>Industry verticals &mdash; see translation table below</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top: 12px;">T3 Keyword Translations</h3>
+    <table class="kw-table">
+      <thead><tr><th>Language</th><th>Countries</th><th>T3 Keywords</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>English</strong></td>
+          <td>UK, AU, US, IN, AE, SA, SG</td>
+          <td><code>inspection</code> <code>surveillance</code> <code>infrastructure</code> <code>mining</code> <code>construction</code> <code>pipeline</code> <code>solar</code> <code>wind farm</code></td>
+        </tr>
+        <tr>
+          <td><strong>French</strong></td>
+          <td>FR</td>
+          <td><code>inspection</code> <code>surveillance</code> <code>infrastructure</code> <code>&eacute;nergie</code> <code>s&eacute;curit&eacute;</code> <code>construction</code> <code>pipeline</code></td>
+        </tr>
+        <tr>
+          <td><strong>German</strong></td>
+          <td>DE</td>
+          <td><code>Inspektion</code> <code>&Uuml;berwachung</code> <code>Infrastruktur</code> <code>Energie</code> <code>Sicherheit</code> <code>Bergbau</code> <code>Bauwesen</code></td>
+        </tr>
+        <tr>
+          <td><strong>Dutch</strong></td>
+          <td>NL</td>
+          <td><code>inspectie</code> <code>bewaking</code> <code>infrastructuur</code> <code>energie</code> <code>veiligheid</code> <code>mijnbouw</code> <code>bouw</code></td>
+        </tr>
+        <tr>
+          <td><strong>Japanese / Korean</strong></td>
+          <td>JP, KR</td>
+          <td>English terms work &mdash; DJI uses English globally for product names</td>
+        </tr>
+        <tr>
+          <td><strong>Portuguese</strong></td>
+          <td>BR</td>
+          <td><code>inspe&ccedil;&atilde;o</code> <code>vigil&acirc;ncia</code> <code>infraestrutura</code> <code>energia</code> <code>minera&ccedil;&atilde;o</code> <code>constru&ccedil;&atilde;o</code></td>
+        </tr>
+        <tr>
+          <td><strong>Italian</strong></td>
+          <td>IT</td>
+          <td><code>ispezione</code> <code>sorveglianza</code> <code>infrastruttura</code> <code>energia</code> <code>sicurezza</code> <code>costruzione</code></td>
+        </tr>
+        <tr>
+          <td><strong>Spanish</strong></td>
+          <td>ES</td>
+          <td><code>inspecci&oacute;n</code> <code>vigilancia</code> <code>infraestructura</code> <code>energ&iacute;a</code> <code>miner&iacute;a</code> <code>construcci&oacute;n</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-green" style="margin-top: 10px;">
+      <strong>Human touch:</strong> ONE TIME per language group, not per country. English covers 7 countries. Total translation effort: ~4 language groups.
+    </div>
+    <p style="margin-top: 6px; color: #9CA3AF; font-size: 10px;">Stored in: <code>src/lib/registry-constants.ts</code> or similar config file</p>
+  </div>
+</div>
+
+<div class="pipeline-connector">&darr;</div>
+
+<!-- Layer 2 -->
+<div class="layer l2">
+  <span class="layer-num l2">2</span>
+  <span class="layer-title">Data Sources</span>
+  <span class="human-tag">Per country, mostly one-time</span>
+  <div class="layer-detail">
+    <table class="src-table" style="margin-top: 8px;">
+      <thead><tr><th>Source</th><th>Method</th><th>Frequency</th><th>Automation Level</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="src-chip src-dji">DJI Reseller List</span></td>
+          <td>Scrape <code>dji.com/where-to-buy</code></td>
+          <td>One-time + annual refresh</td>
+          <td><span class="auto-tag">Semi-automated</span></td>
+          <td>Per country. Run scraper, verify results, import.</td>
+        </tr>
+        <tr>
+          <td><span class="src-chip src-comet">Comet Intelligence</span></td>
+          <td>AI-assisted research</td>
+          <td>One-time per country</td>
+          <td><span class="human-tag">Human curated</span></td>
+          <td>DJI Dock dealers only (exclude BVLOS-only operators). Loaded into <code>source_candidates</code>.</td>
+        </tr>
+        <tr>
+          <td><span class="src-chip src-registry">Govt Registry</span></td>
+          <td>CSV import</td>
+          <td>One-time (where available)</td>
+          <td><span class="human-tag">Manual import</span></td>
+          <td>FR=SIRENE, NL=ILT. Not all countries have open registries.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout callout-amber" style="margin-top: 8px;">
+      <strong>Human touch:</strong> Comet curation (~30 min/country) + Registry import (if available, 1&ndash;2 hrs). DJI scrape is ~15 min/country.
+    </div>
+  </div>
+</div>
+
+<div class="pipeline-connector">&darr;</div>
+
+<!-- Layer 3 -->
+<div class="layer l3">
+  <span class="layer-num l3">3</span>
+  <span class="layer-title">Google Search Campaign</span>
+  <span class="auto-tag">Automated batch</span>
+  <div class="layer-detail">
+    <p style="font-weight: 600; color: #1D4ED8; margin-bottom: 6px;">NEW: Batch Campaign replaces manual per-country runs</p>
+    <ul>
+      <li><strong>Takes a list of countries</strong> from config</li>
+      <li><strong>Runs Google Search Crawler</strong> for each country with keyword &ldquo;DJI Dock&rdquo;, 7 pages</li>
+      <li><strong>Stores ALL results</strong> in a <code>google_search_runs</code> staging table (not directly in <code>source_candidates</code>)</li>
+      <li><strong>Campaign dashboard</strong> shows: country, entities found, scored, ready to import</li>
+      <li><strong>User reviews</strong> per-country results, clicks &ldquo;Import to Pipeline&rdquo; per country</li>
+    </ul>
+
+    <div style="margin-top: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <div style="padding: 6px 12px; background: #DBEAFE; border-radius: 6px; font-size: 11px; font-weight: 600; color: #1D4ED8;">Run Campaign</div>
+      <span style="color: #D1D5DB; font-size: 16px;">&rarr;</span>
+      <div style="padding: 6px 12px; background: #F3F4F6; border-radius: 6px; font-size: 11px; font-weight: 600; color: #374151;">Staging Table</div>
+      <span style="color: #D1D5DB; font-size: 16px;">&rarr;</span>
+      <div style="padding: 6px 12px; background: #FEF3C7; border-radius: 6px; font-size: 11px; font-weight: 600; color: #92400E;">Review Preview</div>
+      <span style="color: #D1D5DB; font-size: 16px;">&rarr;</span>
+      <div style="padding: 6px 12px; background: #D1FAE5; border-radius: 6px; font-size: 11px; font-weight: 600; color: #065F46;">Import to Pipeline</div>
+    </div>
+
+    <div class="callout callout-green" style="margin-top: 10px;">
+      <strong>Key design decision:</strong> Staging table captures everything. Import step applies filters (noise, foreign TLD, media, junk slugs). This keeps the pipeline clean while preserving raw data.
+    </div>
+    <div class="callout callout-blue" style="margin-top: 6px;">
+      <strong>Human touch:</strong> Review campaign results, approve import per country (~5 min per country).
+    </div>
+  </div>
+</div>
+
+<div class="pipeline-connector">&darr;</div>
+
+<!-- Layer 4 -->
+<div class="layer l4">
+  <span class="layer-num l4">4</span>
+  <span class="layer-title">Noise Cleanup</span>
+  <span class="auto-tag">Fully Automated</span>
+  <div class="layer-detail">
+    <table class="src-table" style="margin-top: 8px;">
+      <thead><tr><th>Filter</th><th>Scope</th><th>Logic</th><th>Config Needed?</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Foreign TLD filter</strong></td>
+          <td>Per country</td>
+          <td>Country config defines local TLDs. Everything else flagged.</td>
+          <td>Per-country TLD list</td>
+        </tr>
+        <tr>
+          <td><strong>Media/News filter</strong></td>
+          <td>Universal</td>
+          <td>Domain patterns: <code>news</code>, <code>blog</code>, <code>press</code>, <code>trend</code>, <code>magazine</code></td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td><strong>Comparator filter</strong></td>
+          <td>Universal</td>
+          <td>Known price-comparison domains (shopping sites, review aggregators)</td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td><strong>Junk slug filter</strong></td>
+          <td>Universal</td>
+          <td>URL slug &gt;18 chars, or contains DJI product names (product pages, not companies)</td>
+          <td>None</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout callout-green" style="margin-top: 8px;">
+      <strong>No human touch needed.</strong> All filters run automatically at import time. 3 out of 4 filters are universal &mdash; write once, works everywhere.
+    </div>
+  </div>
+</div>
+
+<div class="pipeline-connector">&darr;</div>
+
+<!-- Layer 5 -->
+<div class="layer l5">
+  <span class="layer-num l5">5</span>
+  <span class="layer-title">Grouped View + Analysis</span>
+  <span class="auto-tag">Automated</span>
+  <div class="layer-detail">
+    <table class="src-table" style="margin-top: 8px;">
+      <thead><tr><th>Step</th><th>Logic</th><th>Country Config?</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>3-pass matching</strong></td>
+          <td>Domain match &rarr; Normalized name match &rarr; Fuzzy match</td>
+          <td>None (universal)</td>
+        </tr>
+        <tr>
+          <td><strong>Operator-wins rule</strong></td>
+          <td>If company appears as both operator + reseller, operator record takes priority</td>
+          <td>None (universal)</td>
+        </tr>
+        <tr>
+          <td><strong>Dock 3 Authorized upgrade</strong></td>
+          <td>DJI Enterprise dealers with Dock 3 listing get tier boost</td>
+          <td>None (universal)</td>
+        </tr>
+        <tr>
+          <td><strong>Analysis report</strong></td>
+          <td>Per-country HTML report auto-generated from DB</td>
+          <td>None (universal)</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout callout-blue" style="margin-top: 8px;">
+      <strong>Human touch:</strong> BD reviews top 30 per country, starts outreach (~30 min per country).
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- 4. HUMAN-IN-THE-LOOP TOUCHPOINTS -->
+<!-- ================================================================== -->
+<h2>4. Human-in-the-Loop Touchpoints</h2>
+<div class="card">
+  <div class="card-title">Every Manual Step, Mapped</div>
+  <table class="src-table">
+    <thead>
+      <tr><th>Step</th><th>Frequency</th><th>Time</th><th>Who</th><th>What</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Country config</strong></td>
+        <td>One-time per country</td>
+        <td>15 min</td>
+        <td><span class="tier-badge tier-t3">Dev</span></td>
+        <td>Add TLDs, T3 keywords to config</td>
+      </tr>
+      <tr>
+        <td><strong>DJI scrape</strong></td>
+        <td>One-time per country</td>
+        <td>15 min</td>
+        <td><span class="tier-badge tier-t3">Dev</span></td>
+        <td>Run scraper, verify dealer list</td>
+      </tr>
+      <tr>
+        <td><strong>Comet curation</strong></td>
+        <td>One-time per country</td>
+        <td>30 min</td>
+        <td><span class="tier-badge tier-t1">BD</span></td>
+        <td>Review Comet data, mark DJI Dock-only dealers</td>
+      </tr>
+      <tr>
+        <td><strong>Registry import</strong></td>
+        <td>One-time (where available)</td>
+        <td>1&ndash;2 hrs</td>
+        <td><span class="tier-badge tier-t3">Dev</span></td>
+        <td>Find registry source, build import pipeline</td>
+      </tr>
+      <tr>
+        <td><strong>Google Search campaign</strong></td>
+        <td>Quarterly refresh</td>
+        <td>5 min/country</td>
+        <td><span class="tier-badge tier-t1">BD</span></td>
+        <td>Click &ldquo;Run Campaign&rdquo;, review results</td>
+      </tr>
+      <tr>
+        <td><strong>Import approval</strong></td>
+        <td>Per campaign run</td>
+        <td>5 min/country</td>
+        <td><span class="tier-badge tier-t1">BD</span></td>
+        <td>Review preview, click confirm to import</td>
+      </tr>
+      <tr>
+        <td><strong>Top-30 review</strong></td>
+        <td>Per country</td>
+        <td>30 min</td>
+        <td><span class="tier-badge tier-t1">BD</span></td>
+        <td>Review shortlist, start outreach</td>
+      </tr>
+      <tr>
+        <td><strong>Enrichment</strong></td>
+        <td>Post-shortlist</td>
+        <td>1 hr/country</td>
+        <td><span class="tier-badge tier-t2">Dev/BD</span></td>
+        <td>Fill website/LinkedIn gaps for shortlisted companies</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 12px; display: flex; gap: 16px; flex-wrap: wrap;">
+    <div class="stat" style="flex: 1; min-width: 180px;">
+      <div class="num amber" style="font-size: 18px;">~2.5 hrs</div>
+      <div class="lbl">First country setup</div>
+    </div>
+    <div class="stat" style="flex: 1; min-width: 180px;">
+      <div class="num green" style="font-size: 18px;">~40 min</div>
+      <div class="lbl">Each subsequent country</div>
+    </div>
+    <div class="stat" style="flex: 1; min-width: 180px;">
+      <div class="num blue" style="font-size: 18px;">~10 min</div>
+      <div class="lbl">Quarterly refresh / country</div>
+    </div>
+  </div>
+
+  <div class="callout callout-green" style="margin-top: 12px;">
+    <strong>Scaling math:</strong> After initial setup, adding a new country takes ~40 min of human time (Comet curation + DJI scrape verify). Quarterly maintenance for all 15 countries = ~2.5 hrs total.
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- 5. NL TEST PLAN -->
+<!-- ================================================================== -->
+<h2>5. NL Test Plan (Immediate Next Step)</h2>
+<div class="card">
+  <div class="card-title">End-to-end validation with Netherlands</div>
+  <ul class="cleanup-list">
+    <li>
+      <div class="cleanup-icon run">1</div>
+      <div><strong>Run Google Search &ldquo;DJI Dock&rdquo; NL, 7 pages</strong> <span style="color: #9CA3AF; font-size: 10px;">&mdash; ~2 min</span><br><span class="note-text">Automated crawl via Serper API. Results land in staging table.</span></div>
+    </li>
+    <li>
+      <div class="cleanup-icon review">2</div>
+      <div><strong>Review results in UI, save report</strong> <span style="color: #9CA3AF; font-size: 10px;">&mdash; ~2 min</span><br><span class="note-text">Check entity count, scan for obvious noise. Export summary.</span></div>
+    </li>
+    <li>
+      <div class="cleanup-icon done">3</div>
+      <div><strong>Click &ldquo;Add to Multi-Source Pipeline&rdquo; &rarr; preview &rarr; confirm</strong> <span style="color: #9CA3AF; font-size: 10px;">&mdash; ~2 min</span><br><span class="note-text">Noise filters applied automatically at import. Preview shows what will be added.</span></div>
+    </li>
+    <li>
+      <div class="cleanup-icon fix">4</div>
+      <div><strong>Clean up NL Comet data</strong> <span style="color: #9CA3AF; font-size: 10px;">&mdash; ~15 min</span><br><span class="note-text">Remove non-DJI BVLOS operators from Comet data. Keep only DJI Dock dealers.</span></div>
+    </li>
+    <li>
+      <div class="cleanup-icon skip">5</div>
+      <div><strong>Delete Google Search noise</strong> <span style="color: #9CA3AF; font-size: 10px;">&mdash; ~5 min</span><br><span class="note-text">Foreign TLDs, media sites, comparators. Most should be auto-filtered; manual review for edge cases.</span></div>
+    </li>
+    <li>
+      <div class="cleanup-icon done">6</div>
+      <div><strong>Verify grouped view shows correct NL multi-source matches</strong> <span style="color: #9CA3AF; font-size: 10px;">&mdash; ~2 min</span><br><span class="note-text">3-pass matching should merge Google results with existing ILT/DCRO/Comet/DJI records.</span></div>
+    </li>
+    <li>
+      <div class="cleanup-icon done">7</div>
+      <div><strong>Generate NL analysis report</strong> <span style="color: #9CA3AF; font-size: 10px;">&mdash; ~2 min</span><br><span class="note-text">Auto-generate waterfall funnel + top-30 shortlist HTML (same format as existing NL report).</span></div>
+    </li>
+  </ul>
+
+  <div style="margin-top: 12px; display: flex; gap: 16px; align-items: center;">
+    <div class="stat" style="flex: 0;">
+      <div class="num green" style="font-size: 18px;">~30 min</div>
+      <div class="lbl">Total time</div>
+    </div>
+    <div class="callout callout-blue" style="flex: 1; margin-top: 0;">
+      <strong>Success criteria:</strong> NL pipeline has Google Search data merged with existing 5 sources. Grouped view shows correct multi-source matches. Analysis report generates correctly. This validates the full automation flow before scaling to 13 more countries.
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- 6. 10-COUNTRY ROLLOUT PLAN -->
+<!-- ================================================================== -->
+<h2>6. 10-Country Rollout Plan</h2>
+<div class="card">
+  <div class="card-title">4-Week Phased Timeline</div>
+
+  <div class="timeline">
+    <div class="timeline-item active">
+      <div class="timeline-week">Week 1 &mdash; NL Validation</div>
+      <div class="timeline-desc">
+        Test automation flow end-to-end with Netherlands. Run the 7-step NL test plan above. Fix any pipeline issues. Validate grouped view + analysis report generation.
+        <br><span style="color: #16A34A; font-weight: 600; font-size: 10px;">CURRENT STEP</span>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-week">Week 2 &mdash; Build Batch Campaign + DE, UK, AU</div>
+      <div class="timeline-desc">
+        Build the Layer 3 batch campaign feature (<code>google_search_runs</code> staging table, campaign dashboard, import flow). Add country configs for <strong>Germany, UK, Australia</strong>. Run first batch campaign for 3 new countries.
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-week">Week 3 &mdash; US, IN + 3 more countries</div>
+      <div class="timeline-desc">
+        Run batch campaign for <strong>US, IN, AE, SA, SG</strong>. Import + cleanup. Comet curation for each country (~30 min each). Generate analysis reports. BD starts top-30 review for Week 2 countries.
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-week">Week 4 &mdash; Remaining countries + full reports</div>
+      <div class="timeline-desc">
+        Run remaining countries: <strong>JP, KR, BR, IT, ES</strong>. Full analysis reports for all 15 countries. BD outreach begins across all markets.
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-week">Ongoing &mdash; Quarterly Refresh</div>
+      <div class="timeline-desc">
+        Re-run Google Search campaign for all 15 countries. ~10 min/country review = ~2.5 hrs total. New entities surface. Pipeline stays current.
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+    <div class="stat" style="flex: 1; min-width: 140px;">
+      <div class="num" style="font-size: 16px;">15</div>
+      <div class="lbl">Countries by Week 4</div>
+    </div>
+    <div class="stat" style="flex: 1; min-width: 140px;">
+      <div class="num blue" style="font-size: 16px;">~5,000+</div>
+      <div class="lbl">Estimated Total Records</div>
+    </div>
+    <div class="stat" style="flex: 1; min-width: 140px;">
+      <div class="num green" style="font-size: 16px;">450</div>
+      <div class="lbl">Top-30 Targets (15 x 30)</div>
+    </div>
+    <div class="stat" style="flex: 1; min-width: 140px;">
+      <div class="num amber" style="font-size: 16px;">~20 hrs</div>
+      <div class="lbl">Total Human Effort</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- 7. WHAT'S NOT AUTOMATED (BACKLOG) -->
+<!-- ================================================================== -->
+<h2>7. What&rsquo;s NOT Automated (Backlog)</h2>
+<div class="card">
+  <div class="card-title">Future automation candidates &mdash; not in scope for Week 1&ndash;4</div>
+  <table class="src-table">
+    <thead>
+      <tr><th>Feature</th><th>Description</th><th>Priority</th><th>Effort</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Enrichment automation</strong></td>
+        <td>Website / LinkedIn lookup for companies missing contact data. Currently manual research per company.</td>
+        <td><span class="tier-badge tier-t2">Medium</span></td>
+        <td>~1 week</td>
+      </tr>
+      <tr>
+        <td><strong>BD outreach tracking</strong></td>
+        <td>Approve &rarr; Pipeline &rarr; Slack notification workflow. Track who was contacted, response status.</td>
+        <td><span class="tier-badge tier-t3">Low</span></td>
+        <td>~3 days</td>
+      </tr>
+      <tr>
+        <td><strong>Social listening</strong></td>
+        <td>LinkedIn post monitoring for DJI Dock mentions. Surface new companies talking about Dock hardware.</td>
+        <td><span class="tier-badge tier-t3">Low</span></td>
+        <td>~1 week</td>
+      </tr>
+      <tr>
+        <td><strong>Website keyword scraper</strong></td>
+        <td>Serper <code>site:</code> search per company domain for DJI Dock keywords. Validate if a company actually sells/uses Dock.</td>
+        <td><span class="tier-badge tier-t2">Medium</span></td>
+        <td>~3 days</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ================================================================== -->
+<!-- FOOTER -->
+<!-- ================================================================== -->
+<div class="footer">
+  Dock Radar &middot; Multi-Country Automation Plan &middot; 26 March 2026
+</div>
+
+</body>
+</html>

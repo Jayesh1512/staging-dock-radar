@@ -34,6 +34,8 @@ async function fetchLinkedInPosts(
   hydrateMax: number = 0,
   /** `quick30s`: shorter pauses, capped scroll — targets ~30s per keyword (fewer posts). */
   pace: LinkedInScrapePace = "standard",
+  /** Date filter passed to LinkedIn's datePosted URL param. 0 = no filter (relevance-ranked). */
+  filterDays: number = 0,
   /** When DOM extraction yields no articles, minify HTML and use LLM (requires LLM API keys). */
   llmFallbackEnabled: boolean = true,
   /** Cap posts returned by the LLM fallback (same order of magnitude as maxArticles for the run). */
@@ -51,9 +53,19 @@ async function fetchLinkedInPosts(
     await loadServiceCookies(page, "linkedin");
     await pause(500, 900);
 
+    // Map filterDays to LinkedIn's datePosted parameter
+    const datePostedParam = (() => {
+      if (filterDays <= 0) return '';                      // no filter — relevance-ranked
+      if (filterDays <= 1) return '&datePosted=%22past-24h%22';
+      if (filterDays <= 7) return '&datePosted=%22past-week%22';
+      if (filterDays <= 30) return '&datePosted=%22past-month%22';
+      return '';                                           // >30 days — no LinkedIn filter
+    })();
+
     const searchUrl = `https://www.linkedin.com/search/results/content/?keywords=${encodeURIComponent(
       `"${keyword}"`
-    )}&origin=GLOBAL_SEARCH_HEADER`;
+    )}&origin=GLOBAL_SEARCH_HEADER${datePostedParam}`;
+    console.log(`[collect-linkedin] Search URL: ${searchUrl} (filterDays=${filterDays})`);
 
     // Relax navigation timing to reduce flaky timeouts from LinkedIn
     page.setDefaultNavigationTimeout(60000);
@@ -394,6 +406,7 @@ export async function POST(req: NextRequest) {
         browserTimeoutMs,
         hydrateMax,
         pace,
+        filterDays,
         linkedinLlmFallback,
         maxArticles,
         browserLaunchOptions,
@@ -434,7 +447,7 @@ export async function POST(req: NextRequest) {
       status: 'completed',
       articles_fetched: allArticles.length,
       articles_stored: uniqueArticles.length,
-      dedup_removed: allArticles.length - uniqueArticles.length,
+      dedup_removed: dateFiltered.length - uniqueArticles.length,
       created_at: new Date().toISOString(),
       completed_at: new Date().toISOString(),
     };
@@ -498,11 +511,11 @@ export async function POST(req: NextRequest) {
         runId,
         stats: {
           totalFetched: allArticles.length,
-          afterDateFilter: allArticles.length,
+          afterDateFilter: dateFiltered.length,
           afterDedup: uniqueArticles.length,
           afterScoreFilter: uniqueArticles.length,
           stored: uniqueArticles.length,
-          dedupRemoved: allArticles.length - uniqueArticles.length,
+          dedupRemoved: dateFiltered.length - uniqueArticles.length,
           scoreFilterRemoved: 0,
         },
       },
