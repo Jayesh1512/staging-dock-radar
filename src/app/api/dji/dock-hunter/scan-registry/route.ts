@@ -224,10 +224,17 @@ type ScanResultRow = {
   serper_top_link: string | null;
   qa_internet: DockQaInternetResult | null;
   stored_to_multi_sources: boolean;
+  dock_verified: boolean | null;
   multi_sources_error?: string | null;
   error?: string;
   analysis: Awaited<ReturnType<typeof enrichDjiDockCompanyFromSerperRegex>> | null;
 };
+
+function makeCompanyCountryKey(companyName: string, countryCode: string): string {
+  const cleaned = cleanCompanyName(companyName);
+  const normalizedName = cleaned.cleaned.toLowerCase().trim();
+  return `${normalizedName}::${countryCode.toUpperCase()}`;
+}
 
 function normCsvRow(raw: Record<string, unknown>): {
   company_name: string;
@@ -298,6 +305,7 @@ export async function POST(req: Request) {
     let qaFilterApplied = qaStatus !== 'all';
     let workRows: WorkRow[] = [];
     let truncatedByLimit = false;
+    let skippedExisting = 0;
     let csvRowsRaw = 0;
     let csvRowsValid = 0;
     const batchDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -387,6 +395,33 @@ export async function POST(req: Request) {
       ? `dock-hunter-csv-${batchDate}`
       : `dock-hunter-${countryCode ?? 'ALL'}-${batchDate}`;
 
+    // Skip rows already present in multi_sources_companies_import (normalized_name + country_code).
+    const uniqueCountries = Array.from(new Set(workRows.map((r) => r.country_code.toUpperCase())));
+    const uniqueNames = Array.from(
+      new Set(
+        workRows
+          .map((r) => cleanCompanyName(r.company_name).cleaned.toLowerCase().trim())
+          .filter(Boolean),
+      ),
+    );
+    if (uniqueCountries.length > 0 && uniqueNames.length > 0) {
+      const { data: existingRows, error: existingErr } = await db
+        .from('multi_sources_companies_import')
+        .select('normalized_name, country_code')
+        .in('country_code', uniqueCountries)
+        .in('normalized_name', uniqueNames);
+      if (existingErr) {
+        const msg = (existingErr as { message?: string }).message ?? 'Failed existing-row check';
+        return NextResponse.json({ error: msg }, { status: 500 });
+      }
+      const existingSet = new Set(
+        (existingRows ?? []).map((r) => `${String(r.normalized_name)}::${String(r.country_code).toUpperCase()}`),
+      );
+      const beforeCount = workRows.length;
+      workRows = workRows.filter((r) => !existingSet.has(makeCompanyCountryKey(r.company_name, r.country_code)));
+      skippedExisting = Math.max(0, beforeCount - workRows.length);
+    }
+
     const results: ScanResultRow[] = [];
 
     for (let i = 0; i < workRows.length; i++) {
@@ -443,6 +478,7 @@ export async function POST(req: Request) {
 
         let qaInternet: DockQaInternetResult | null = null;
         let storedToMulti = false;
+        let dockVerified: boolean | null = null;
         let multiErr: string | null = null;
 
         if (runQaInternet) {
@@ -463,7 +499,8 @@ export async function POST(req: Request) {
               qa: qaInternet,
             });
             storedToMulti = upsert.ok;
-            multiErr = upsert.error ?? null;
+            dockVerified = upsert.dockVerified ?? null;
+            multiErr = upsert.skipped ? null : (upsert.error ?? null);
           }
         }
 
@@ -482,6 +519,7 @@ export async function POST(req: Request) {
           serper_top_link: analysis?.topResult?.link ?? null,
           qa_internet: qaInternet,
           stored_to_multi_sources: storedToMulti,
+          dock_verified: dockVerified,
           multi_sources_error: multiErr,
           analysis,
         });
@@ -501,6 +539,7 @@ export async function POST(req: Request) {
           serper_top_link: null,
           qa_internet: null,
           stored_to_multi_sources: false,
+          dock_verified: null,
           multi_sources_error: null,
           error: err instanceof Error ? err.message : 'Unknown error',
           analysis: null,
@@ -519,6 +558,7 @@ export async function POST(req: Request) {
       total_scanned: results.length,
       scan_limit: scanLimit,
       truncated_by_limit: truncatedByLimit,
+      skipped_existing: skippedExisting,
       csv_rows_raw: csvInput.length > 0 ? csvRowsRaw : undefined,
       csv_rows_valid: csvInput.length > 0 ? csvRowsValid : undefined,
       delay_ms: delayMs,

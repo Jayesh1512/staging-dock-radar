@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navbar } from '@/components/shared/Navbar';
 
 /** Minimal CSV → row objects (comma-separated, quoted fields). */
@@ -87,6 +87,7 @@ type ScanRow = {
     error: string | null;
   } | null;
   stored_to_multi_sources: boolean;
+  dock_verified: boolean | null;
   multi_sources_error?: string | null;
   error?: string;
   analysis: {
@@ -106,6 +107,7 @@ type ScanRow = {
 type ApiResult = {
   source?: 'registry' | 'csv';
   total_scanned: number;
+  skipped_existing?: number;
   scan_limit?: number;
   truncated_by_limit?: boolean;
   csv_rows_raw?: number;
@@ -142,6 +144,7 @@ export default function DjiDockHunterPage() {
   const csvFileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(false);
+  const [estimatedProgress, setEstimatedProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<ApiResult | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -171,8 +174,17 @@ export default function DjiDockHunterPage() {
     setCsvFileName(null);
     setCsvFileSizeBytes(null);
     setError(null);
+    setEstimatedProgress(0);
     if (csvFileInputRef.current) csvFileInputRef.current.value = '';
   }
+
+  useEffect(() => {
+    if (!loading) return;
+    const id = setInterval(() => {
+      setEstimatedProgress((p) => Math.min(95, p + 2));
+    }, 350);
+    return () => clearInterval(id);
+  }, [loading]);
 
   function onCsvFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -210,6 +222,7 @@ export default function DjiDockHunterPage() {
 
   async function runHunter() {
     setLoading(true);
+    setEstimatedProgress(5);
     setError(null);
     setData(null);
     setExpandedId(null);
@@ -230,6 +243,7 @@ export default function DjiDockHunterPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error ?? `HTTP ${res.status}`);
       setData(json as ApiResult);
+      setEstimatedProgress(100);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -449,6 +463,20 @@ export default function DjiDockHunterPage() {
         </div>
 
         {error && <div style={sError}>{error}</div>}
+        {loading && (
+          <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 10, padding: 12, marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#374151', marginBottom: 6 }}>
+              <span>Processing records…</span>
+              <span>{Math.round(estimatedProgress)}%</span>
+            </div>
+            <div style={{ height: 8, background: '#E5E7EB', borderRadius: 999, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${estimatedProgress}%`, background: '#2563EB', transition: 'width 300ms ease' }} />
+            </div>
+            <div style={{ fontSize: 11, color: '#6B7280', marginTop: 6 }}>
+              Target rows: {Math.min(scanLimit, csvRows?.length ?? scanLimit)} · scanned rows will appear once completed.
+            </div>
+          </div>
+        )}
 
         {data && (
           <>
@@ -464,12 +492,16 @@ export default function DjiDockHunterPage() {
             )}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
               <Kpi label="Scanned" value={data.total_scanned} />
+              <Kpi label="Skipped (already in DB)" value={data.skipped_existing ?? 0} />
               <Kpi label="Website URL (after enrich)" value={postRunStats.websiteAfter} />
               <Kpi label="LinkedIn URL (after enrich)" value={postRunStats.linkedinAfter} />
               <Kpi label="Regex DJI Dock (crawl)" value={data.hit_count} />
               <Kpi label="→ discovered_companies" value={data.stored_count} />
               <Kpi label="Internet QA: DJI Dock found" value={data.qa_internet_dock_found ?? 0} />
               <Kpi label="→ multi_sources_companies_import" value={data.multi_sources_stored ?? 0} />
+            </div>
+            <div style={{ fontSize: 12, color: '#374151', marginBottom: 10 }}>
+              Status: {loading ? 'Running scan…' : 'Idle'} · Processed records: {data.total_scanned}
             </div>
             {data.options && (
               <div style={{ fontSize: 11, color: '#6B7280', marginBottom: 10 }}>
@@ -489,6 +521,7 @@ export default function DjiDockHunterPage() {
                     <th style={sTh}>Company</th>
                     <th style={sTh}>Country</th>
                     <th style={sTh}>Added to DB</th>
+                    <th style={sTh}>dock_verified</th>
                     <th style={sTh}>Regex crawl</th>
                     <th style={sTh}>discovered</th>
                     <th style={sTh}>QA web</th>
@@ -500,7 +533,7 @@ export default function DjiDockHunterPage() {
                 <tbody>
                   {displayRows.length === 0 ? (
                     <tr>
-                      <td colSpan={10} style={{ ...sTd, color: '#6B7280', fontStyle: 'italic' }}>
+                      <td colSpan={11} style={{ ...sTd, color: '#6B7280', fontStyle: 'italic' }}>
                         {hitsOnly && (data.results?.length ?? 0) > 0 ? (
                           <>
                             Table is filtered: {data.results.length} row{data.results.length === 1 ? '' : 's'} ran but none had a regex DJI Dock hit on crawl.{' '}
@@ -523,6 +556,11 @@ export default function DjiDockHunterPage() {
                         <td style={sTd}>{row.company_name}</td>
                         <td style={sTd}>{row.country_code}</td>
                         <td style={sTd}>{addedToDb ? 'Yes' : 'No'}</td>
+                        <td style={sTd}>
+                          <span style={dockVerifiedBadgeStyle(row.dock_verified)}>
+                            {row.dock_verified === true ? 'True' : row.dock_verified === false ? 'False' : '—'}
+                          </span>
+                        </td>
                         <td style={sTd}>{row.dji_dock_hit ? 'Yes' : 'No'}</td>
                         <td style={sTd}>{row.stored_to_discovered_company ? 'Yes' : 'No'}</td>
                         <td style={sTd}>{row.qa_internet?.dock_found ? 'Yes' : (row.qa_internet ? 'No' : '—')}</td>
@@ -550,7 +588,7 @@ export default function DjiDockHunterPage() {
                       </tr>
                       {expandedId === row.registry_id && (
                         <tr>
-                          <td colSpan={10} style={{ background: '#FAFAFA', padding: '12px 16px', borderBottom: '1px solid #E5E7EB' }}>
+                          <td colSpan={11} style={{ background: '#FAFAFA', padding: '12px 16px', borderBottom: '1px solid #E5E7EB' }}>
                             {row.error ? (
                               <div style={{ color: '#991B1B', fontSize: 12 }}>Error: {row.error}</div>
                             ) : (
@@ -644,6 +682,12 @@ function Kpi({ label, value }: { label: string; value: number }) {
       <div style={{ fontSize: 24, fontWeight: 800, color: '#111827', marginTop: 2 }}>{value}</div>
     </div>
   );
+}
+
+function dockVerifiedBadgeStyle(v: boolean | null): React.CSSProperties {
+  if (v === true) return { ...sBadgeBase, background: '#DCFCE7', color: '#166534', borderColor: '#86EFAC' };
+  if (v === false) return { ...sBadgeBase, background: '#FEE2E2', color: '#991B1B', borderColor: '#FCA5A5' };
+  return { ...sBadgeBase, background: '#F3F4F6', color: '#6B7280', borderColor: '#D1D5DB' };
 }
 
 const sInput: React.CSSProperties = {
@@ -782,4 +826,14 @@ const sBtnGhost: React.CSSProperties = {
   border: '1px solid #D1D5DB',
   borderRadius: 8,
   cursor: 'pointer',
+};
+
+const sBadgeBase: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: '2px 7px',
+  borderRadius: 999,
+  border: '1px solid',
+  fontSize: 11,
+  fontWeight: 700,
 };
