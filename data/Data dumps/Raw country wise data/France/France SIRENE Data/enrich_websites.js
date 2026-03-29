@@ -202,14 +202,17 @@ async function processBatch(companies, batchNum, totalBatches) {
 }
 
 async function main() {
-  if (!fs.existsSync('step6_batch1.jsonl')) {
-    console.error('❌ Error: step6_batch1.jsonl not found. Run fetch_sirene_step6.sh first.');
+  const inputFile = process.argv[2] || 'step6_batch1.jsonl';
+  const outputFile = process.argv[3] || 'step6_batch1_enriched.jsonl';
+
+  if (!fs.existsSync(inputFile)) {
+    console.error(`❌ Error: ${inputFile} not found.`);
     process.exit(1);
   }
   
   // Parse input
   const lines = fs
-    .readFileSync('step6_batch1.jsonl', 'utf-8')
+    .readFileSync(inputFile, 'utf-8')
     .trim()
     .split('\n')
     .filter(line => line.length > 0);
@@ -273,7 +276,7 @@ async function main() {
     });
   
   fs.writeFileSync(
-    'step6_batch1_enriched.jsonl',
+    outputFile,
     output.map(c => JSON.stringify(c)).join('\n')
   );
   
@@ -284,11 +287,10 @@ async function main() {
   console.log(`🔍 Enriched from Google:      ${enrichedFromGoogle}`);
   console.log(`💡 Enriched from domain guess: ${enrichedFromGuess}`);
   console.log(`❌ Could not enrich:          ${unenrichable}`);
-  console.log(`\n📁 Output file: step6_batch1_enriched.jsonl (${output.length} companies with websites)`);
+  console.log(`\n📁 Output file: ${outputFile} (${output.length} companies with websites)`);
   console.log(`💾 Cache saved: ${CONFIG.CACHE_FILE}`);
-  console.log(`\n✨ Next step: Copy enriched file to Step 6.5 input`);
-  console.log(`   cp step6_batch1_enriched.jsonl step6_5_with_website.jsonl`);
-  console.log(`   node crawl_dji_dock_exact.js\n`);
+  console.log(`\n✨ Next step: Run the crawler`);
+  console.log(`   node crawl_dji_dock_exact.js ${outputFile}\n`);
 }
 
 main().catch(err => {

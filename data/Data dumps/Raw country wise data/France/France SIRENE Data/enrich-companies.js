@@ -29,11 +29,12 @@ if (!SIRENE_API_KEY) {
 // Fetch company data from SIRENE API
 async function lookupSirene(siren) {
   return new Promise((resolve) => {
-    const url = `https://api.insee.fr/entreprises/sirene/V3/siren/${siren}`;
+    const url = `https://api.insee.fr/api-sirene/3.11/siren/${siren}`;
     
     const options = {
       headers: {
         'Authorization': `Bearer ${SIRENE_API_KEY}`,
+        'X-INSEE-Api-Key-Integration': SIRENE_API_KEY,
         'Accept': 'application/json'
       },
       timeout: 5000
@@ -45,12 +46,13 @@ async function lookupSirene(siren) {
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
-          if (parsed.unitesLegales && parsed.unitesLegales[0]) {
-            const company = parsed.unitesLegales[0];
+          if (parsed.uniteLegale) {
+            const company = parsed.uniteLegale;
+            const period = (company.periodesUniteLegale && company.periodesUniteLegale.length > 0) ? company.periodesUniteLegale[0] : {};
             resolve({
-              name: company.denominationUniteLegale || null,
-              siteWeb: company.siteWeb || null,
-              naf: company.activitePrincipaleUniteLegale || null
+              name: period.denominationUniteLegale || period.denominationUsuelle1UniteLegale || null,
+              siteWeb: null, // V3.11 never returns websites natively
+              naf: period.activitePrincipaleUniteLegale || null
             });
           } else {
             resolve({ name: null, siteWeb: null, naf: null });

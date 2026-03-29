@@ -213,8 +213,13 @@ function filterCompanies(companies: CompanyResult[]): FilterResult {
       filtered.push({ company: c, reason: 'junk_social_slug' });
       continue;
     }
+    // Skip ALL social-only entities — Facebook/Instagram/YouTube posts are content, not companies
+    // LinkedIn company pages are extracted as linkedin URLs, not as entities
+    if (isSocialOnlyEntity(c.domains)) {
+      filtered.push({ company: c, reason: 'social_only' });
+      continue;
+    }
     // Skip media entities — news sites mention DJI Dock in articles but aren't partners.
-    // Backlog: scan articles with AI to extract actual companies mentioned, then import those.
     if (c.entityType === 'media') {
       filtered.push({ company: c, reason: 'media_entity' });
       continue;
@@ -226,10 +231,52 @@ function filterCompanies(companies: CompanyResult[]): FilterResult {
       'reuters.com', 'bloomberg.com', 'techcrunch.com',
       'theverge.com', 'wired.com', 'cnet.com', 'engadget.com',
       'global-agriculture.com', 'suasnews.com', 'uasweekly.com',
+      'journaldemontreal.com',
     ];
     const isNewsDomain = c.domains.some(d => NEWS_DOMAINS.some(nd => d.endsWith(nd)));
     if (isNewsDomain) {
       filtered.push({ company: c, reason: 'news_domain' });
+      continue;
+    }
+    // Skip DJI own domains/pages
+    const DJI_OWN = ['dji.com', 'dji.fr', 'dji.de', 'dji-retail.co.uk', 'enterprise-insights.dji.com'];
+    if (c.domains.some(d => DJI_OWN.some(dji => d.endsWith(dji)))) {
+      filtered.push({ company: c, reason: 'dji_own' });
+      continue;
+    }
+    // Skip academic/government domains — product listings, not partners
+    if (c.domains.some(d => d.endsWith('.edu') || d.endsWith('.edu.iq') || d.endsWith('.gov'))) {
+      filtered.push({ company: c, reason: 'academic_govt' });
+      continue;
+    }
+    // Skip entities with no real company domain (only researchgate, social, etc.)
+    const realDomains = c.domains.filter(d =>
+      !isSocialDomain(d) && !d.endsWith('researchgate.net')
+    );
+    if (realDomains.length === 0) {
+      filtered.push({ company: c, reason: 'no_real_domain' });
+      continue;
+    }
+    // Skip entities where ALL evidence URLs are search results pages (?s=, ?q=, /search?)
+    // These are sites that happened to have "DJI Dock" in search autocomplete, not real content
+    const allUrls = c.sourceUrls.map(u => u.link);
+    const allSearchPages = allUrls.length > 0 && allUrls.every(u =>
+      /[?&](s|q|search|query)=/i.test(u) || /\/search[/?]/i.test(u)
+    );
+    if (allSearchPages) {
+      filtered.push({ company: c, reason: 'search_page_only' });
+      continue;
+    }
+    // Skip government/municipality websites (.gouv, .govt, gemeente, waterschap, provincie)
+    const GOVT_PATTERNS = ['.gouv.', '.govt.', '.gov.', 'gemeente', 'waterschap', 'provincie', 'rijksoverheid'];
+    if (realDomains.some(d => GOVT_PATTERNS.some(g => d.includes(g)))) {
+      filtered.push({ company: c, reason: 'government_site' });
+      continue;
+    }
+    // Skip entities where ALL crawled pages failed (HTTP errors = dead/spam sites)
+    const crawlResults = (c as unknown as { crawlResults?: { ok: boolean }[] }).crawlResults;
+    if (crawlResults && crawlResults.length > 0 && crawlResults.every(cr => !cr.ok)) {
+      filtered.push({ company: c, reason: 'all_crawls_failed' });
       continue;
     }
     passed.push(c);
@@ -293,8 +340,12 @@ export async function POST(req: NextRequest) {
             no_dock_keyword: filtered.filter(f => f.reason === 'no_dock_keyword').length,
             excluded_social_only: filtered.filter(f => f.reason === 'excluded_social_only').length,
             junk_social_slug: filtered.filter(f => f.reason === 'junk_social_slug').length,
+            social_only: filtered.filter(f => f.reason === 'social_only').length,
             media_entity: filtered.filter(f => f.reason === 'media_entity').length,
             news_domain: filtered.filter(f => f.reason === 'news_domain').length,
+            dji_own: filtered.filter(f => f.reason === 'dji_own').length,
+            academic_govt: filtered.filter(f => f.reason === 'academic_govt').length,
+            no_real_domain: filtered.filter(f => f.reason === 'no_real_domain').length,
           },
         },
       });
@@ -353,7 +404,8 @@ export async function POST(req: NextRequest) {
       } : null;
 
       // Map entity_type to role
-      const roleMap: Record<string, string> = { operator: 'system_integrator', reseller: 'authorized_dealer' };
+      // All Google Search entities are discovery leads — no pre-classification
+      const roleMap: Record<string, string> = { operator: 'lead', reseller: 'lead', unknown: 'lead' };
       const role = roleMap[c.entityType] || null;
 
       // Match: name → domain → domain-base

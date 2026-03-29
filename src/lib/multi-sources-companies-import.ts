@@ -64,10 +64,10 @@ export async function upsertMultiSourcesFromDockHunter(
     csvRowIndex?: number | null;
     qa: DockQaInternetResult;
   },
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ ok: boolean; error?: string; dockVerified?: boolean | null; skipped?: boolean }> {
   const cleaned = cleanCompanyName(params.displayName);
   const normalizedName = cleaned.cleaned.toLowerCase().trim();
-  if (!normalizedName) return { ok: false, error: 'empty normalized name' };
+  if (!normalizedName) return { ok: false, error: 'empty normalized name', dockVerified: null };
 
   const cc = params.countryCode.toUpperCase();
   const normDomain = websiteToNormalizedDomain(params.website);
@@ -81,7 +81,7 @@ export async function upsertMultiSourcesFromDockHunter(
     .eq('country_code', cc)
     .maybeSingle();
 
-  if (selErr) return { ok: false, error: selErr.message };
+  if (selErr) return { ok: false, error: selErr.message, dockVerified: null };
 
   const now = new Date().toISOString();
 
@@ -150,6 +150,12 @@ export async function upsertMultiSourcesFromDockHunter(
 
   const dockModels = recomputeDockModelsFromVerifications(mergedVerifications);
 
+  // Policy: only persist positive/retained evidence rows.
+  // If computed dock_verified is false, skip DB write entirely.
+  if (dockVerified === false) {
+    return { ok: false, dockVerified: false, skipped: true };
+  }
+
   const row = {
     normalized_name: normalizedName,
     country_code: cc,
@@ -172,16 +178,16 @@ export async function upsertMultiSourcesFromDockHunter(
 
   if (!existing?.id) {
     const { error } = await db.from('multi_sources_companies_import').insert(row);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: error.message, dockVerified: null };
   } else {
     const { error } = await db
       .from('multi_sources_companies_import')
       .update(row)
       .eq('id', existing.id as string);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: error.message, dockVerified: null };
   }
 
-  return { ok: true };
+  return { ok: true, dockVerified };
 }
 
 /**
@@ -204,10 +210,10 @@ export async function upsertMultiSourcesFromCsvPipeline(
     /** Object key (path) inside the bucket for this row's JSON artifact. */
     storageObjectKey: string;
   },
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ ok: boolean; error?: string; dockVerified?: boolean | null }> {
   const cleaned = cleanCompanyName(params.displayName);
   const normalizedName = cleaned.cleaned.toLowerCase().trim();
-  if (!normalizedName) return { ok: false, error: 'empty normalized name' };
+  if (!normalizedName) return { ok: false, error: 'empty normalized name', dockVerified: null };
 
   const cc = params.countryCode.toUpperCase();
   const normDomain = websiteToNormalizedDomain(params.website);
@@ -221,7 +227,7 @@ export async function upsertMultiSourcesFromCsvPipeline(
     .eq('country_code', cc)
     .maybeSingle();
 
-  if (selErr) return { ok: false, error: selErr.message };
+  if (selErr) return { ok: false, error: selErr.message, dockVerified: null };
 
   const now = new Date().toISOString();
 
@@ -311,14 +317,14 @@ export async function upsertMultiSourcesFromCsvPipeline(
 
   if (!existing?.id) {
     const { error } = await db.from('multi_sources_companies_import').insert(row);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: error.message, dockVerified: null };
   } else {
     const { error } = await db
       .from('multi_sources_companies_import')
       .update(row)
       .eq('id', existing.id as string);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: error.message, dockVerified: null };
   }
 
-  return { ok: true };
+  return { ok: true, dockVerified };
 }
