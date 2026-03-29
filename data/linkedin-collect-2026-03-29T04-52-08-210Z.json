@@ -1,0 +1,94 @@
+{
+  "run": {
+    "id": "run_li_202603290451118",
+    "keywords": [
+      "DJI Dock"
+    ],
+    "sources": [
+      "linkedin"
+    ],
+    "regions": [],
+    "filter_days": 1,
+    "min_score": 40,
+    "max_articles": 50,
+    "status": "completed",
+    "articles_fetched": 5,
+    "articles_stored": 5,
+    "dedup_removed": 0,
+    "created_at": "2026-03-29T04:52:08.210Z",
+    "completed_at": "2026-03-29T04:52:08.210Z"
+  },
+  "stats": {
+    "totalFetched": 5,
+    "afterDateFilter": 5,
+    "afterDedup": 5,
+    "stored": 5
+  },
+  "articles": [
+    {
+      "id": "li_run_li_202603290451118_1774759927973_0",
+      "run_id": "run_li_202603290451118",
+      "source": "linkedin",
+      "title": "How fast can your drone respond, without human intervention? Traditional workflows rely on manual dispatch, which can slow down response tim",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443567588518932480/",
+      "publisher_url": "https://www.linkedin.com/company/dji/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443567588518932480",
+      "snippet": "How fast can your drone respond, without human intervention? Traditional workflows rely on manual dispatch, which can slow down response times and limit situational awareness. With DJI Dock 3 and DJI FlightHub 2, teams can enable Drone as First Responder (DFR) with auto-dispatch. This workflow allows teams to: 🚨 Trigger drone missions instantly from alerts 🚨 Connect with systems like VMS, CAD, or SCADA 🚨 Deploy drones automatically without manual input 🚨 Gain real-time aerial visibility during incidents 🚨 Build scalable and repeatable response workflows In this video, you’ll learn: 1️⃣ How to connect your systems to FlightHub 2 2️⃣ How Auto-dispatch works in real scenarios 3️⃣ How to enable instant drone response 4️⃣ How to reduce manual intervention in operations From detection to action, this is how response workflows are evolving. Watch here 👉 https://brnw.ch/21x12jN hashtag #djienterprise hashtag #djidock3 hashtag #publicsafety hashtag #emergencyresponse hashtag #securityoper",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-28T08:52:07.973Z",
+      "created_at": "2026-03-29T04:52:07.973Z"
+    },
+    {
+      "id": "li_run_li_202603290451118_1774759927973_1",
+      "run_id": "run_li_202603290451118",
+      "source": "linkedin",
+      "title": "Security isn't just a gate guard: it’s 24/7 autonomous response. The DJI Dock 2 is the backbone of YOUR protection: delivering rapid respons",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443816898368270336/",
+      "publisher_url": "https://www.linkedin.com/company/oil-well-security/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443816898368270336",
+      "snippet": "Security isn't just a gate guard: it’s 24/7 autonomous response. The DJI Dock 2 is the backbone of YOUR protection: delivering rapid response when it counts. Secure YOUR assets: https://lnkd.in/gDZpAzJ4 hashtag #OilWellSecurity hashtag #DJIDock2 hashtag #Security",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-29T00:52:07.973Z",
+      "created_at": "2026-03-29T04:52:07.973Z"
+    },
+    {
+      "id": "li_run_li_202603290451118_1774759927973_2",
+      "run_id": "run_li_202603290451118",
+      "source": "linkedin",
+      "title": "Excited about this — integrating the MetScan methane scanning payload to fully automated DJI Dock systems is going to support a dramatic sca",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443286921021341696/",
+      "publisher_url": "https://www.linkedin.com/in/elimoselle",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443286921021341696",
+      "snippet": "Excited about this — integrating the MetScan methane scanning payload to fully automated DJI Dock systems is going to support a dramatic scaling of Methane Monitoring & Quantification for drones. We have tested the MetScan on M400 in Indonesia — works amazingly well. AIRINS is the absolute category leader here.",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-28T08:52:07.973Z",
+      "created_at": "2026-03-29T04:52:07.973Z"
+    },
+    {
+      "id": "li_run_li_202603290451118_1774759927973_3",
+      "run_id": "run_li_202603290451118",
+      "source": "linkedin",
+      "title": "Tecnologia que transforma operação em eficiência real 🚁⚙️ A DJI Dock 3 representa um novo nível de automação em missões com drones. Com dec",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443605859856773121/",
+      "publisher_url": "https://www.linkedin.com/in/thiago-souza-",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443605859856773121",
+      "snippet": "Tecnologia que transforma operação em eficiência real 🚁⚙️ A DJI Dock 3 representa um novo nível de automação em missões com drones. Com decolagem, pouso e recarga totalmente autônomos, ela permite operações contínuas, mesmo em locais remotos — reduzindo custos, tempo e exposição humana. Na prática, isso significa: ✔️ Monitoramento inteligente e em tempo real ✔️ Coleta de dados com muito mais frequência e precisão ✔️ Operações remotas com mínima intervenção humana ✔️ Maior segurança em áreas de difícil acesso Para quem trabalha com topografia, inspeções ou monitoramento ambiental, soluções como essa deixam de ser tendência e passam a ser necessidade. O futuro não é mais sobre operar drones… é sobre gerenciar sistemas autônomos. hashtag #Tecnologia hashtag #Drones hashtag #Inovação hashtag #Topografia hashtag #Automação hashtag #cpe hashtag #DJI hashtag #DOCK hashtag #dock3 hashtag #matrice4 hashtag #matrice4D",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-28T10:52:07.973Z",
+      "created_at": "2026-03-29T04:52:07.973Z"
+    },
+    {
+      "id": "li_run_li_202603290451118_1774759927973_4",
+      "run_id": "run_li_202603290451118",
+      "source": "linkedin",
+      "title": "Testeando lo que pronto llegará a la faena en Minera Zaldívar En Eleccon compartimos un breve recap de las pruebas realizadas con el sistema",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443787550273716224/",
+      "publisher_url": "https://www.linkedin.com/company/eleccon/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443787550273716224",
+      "snippet": "Testeando lo que pronto llegará a la faena en Minera Zaldívar En Eleccon compartimos un breve recap de las pruebas realizadas con el sistema DJI Dock 2. En esta etapa estamos afinando configuraciones y parámetros, además de validar la integración con la nube, asegurando conectividad estable y transmisión de datos en tiempo real. El dock permite una operación autónoma del dron, gestionando automáticamente su carga, resguardo y disponibilidad sin intervención en terreno, mientras que la plataforma en la nube DJI FlightHub 2 nos permitirá planificar, controlar y optimizar las operaciones en Minera Zaldívar. Creemos en la innovación, pero sobre todo en el impacto real que ya empieza a verse en la operación: – Menor exposición de personas en zonas críticas – Acceso a información en tiempo real – Inspecciones más ágiles y continuas Damos pasos concretos hacia una operación más segura, eficiente y cada vez más autónoma. hashtag #mineria hashtag #chile hashtag #dji hashtag #construccion",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-28T22:52:07.973Z",
+      "created_at": "2026-03-29T04:52:07.973Z"
+    }
+  ]
+}

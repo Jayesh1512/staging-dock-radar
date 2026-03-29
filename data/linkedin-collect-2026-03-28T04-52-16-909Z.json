@@ -1,0 +1,159 @@
+{
+  "run": {
+    "id": "run_li_202603280451189",
+    "keywords": [
+      "DJI Dock"
+    ],
+    "sources": [
+      "linkedin"
+    ],
+    "regions": [],
+    "filter_days": 1,
+    "min_score": 40,
+    "max_articles": 50,
+    "status": "completed",
+    "articles_fetched": 11,
+    "articles_stored": 10,
+    "dedup_removed": 0,
+    "created_at": "2026-03-28T04:52:16.909Z",
+    "completed_at": "2026-03-28T04:52:16.909Z"
+  },
+  "stats": {
+    "totalFetched": 11,
+    "afterDateFilter": 10,
+    "afterDedup": 10,
+    "stored": 10
+  },
+  "articles": [
+    {
+      "id": "li_run_li_202603280451189_1774673536471_0",
+      "run_id": "run_li_202603280451189",
+      "source": "linkedin",
+      "title": "In Babanango Game Reserve, it’s more than land, it’s life. With DJI Dock 3, drones launch instantly when alerts are triggered, giving ranger",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443311784083574785/",
+      "publisher_url": "https://www.linkedin.com/company/dji/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443311784083574785",
+      "snippet": "In Babanango Game Reserve, it’s more than land, it’s life. With DJI Dock 3, drones launch instantly when alerts are triggered, giving rangers real-time visibility day and night. Every second counts in protecting wildlife. Find out how 👉 https://brnw.ch/21x16Rq Special thanks to OPTRON (Pty) Ltd hashtag #djienterprise hashtag #djidock3 hashtag #wildlifeconservation hashtag #thermalimaging hashtag #conservation",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T15:52:16.471Z",
+      "created_at": "2026-03-28T04:52:16.471Z"
+    },
+    {
+      "id": "li_run_li_202603280451189_1774673536471_2",
+      "run_id": "run_li_202603280451189",
+      "source": "linkedin",
+      "title": "Security shouldn't sleep: meet the DJI Dock 2. Our ultimate autonomous solution for 24/7 oilfield surveillance. Real-time protection, zero d",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443469672487919617/",
+      "publisher_url": "https://www.linkedin.com/company/oil-well-security/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443469672487919617",
+      "snippet": "Security shouldn't sleep: meet the DJI Dock 2. Our ultimate autonomous solution for 24/7 oilfield surveillance. Real-time protection, zero downtime. Ready to elevate YOUR security? Let’s talk. 🔗 https://lnkd.in/gDZpAzJ4 hashtag #DJIDock2 hashtag #OWS hashtag #Drones hashtag #Security",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-28T01:52:16.472Z",
+      "created_at": "2026-03-28T04:52:16.471Z"
+    },
+    {
+      "id": "li_run_li_202603280451189_1774673536471_3",
+      "run_id": "run_li_202603280451189",
+      "source": "linkedin",
+      "title": "Meet&Greet with the European DJI Distributors for the DJI Dock Advanced Certificate🎓 *** Advanced FlightHub2 Feature Knowledge Advanced Liv",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443261120167149568/",
+      "publisher_url": "https://www.linkedin.com/in/carsten-fischer-b09801301",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443261120167149568",
+      "snippet": "Meet&Greet with the European DJI Distributors for the DJI Dock Advanced Certificate🎓 *** Advanced FlightHub2 Feature Knowledge Advanced Live stream Feature Knowledge Advanced Data Security Feature Knowledge Advanced Air Space Knowledge *** Thx DJI for this informative & powerfull Workshop! hashtag #DJIDock hashtag #FH2 hashtag #DJIDockDAC hashtag #DJIEnterprise",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T11:52:16.472Z",
+      "created_at": "2026-03-28T04:52:16.471Z"
+    },
+    {
+      "id": "li_run_li_202603280451189_1774673536471_4",
+      "run_id": "run_li_202603280451189",
+      "source": "linkedin",
+      "title": "Control de obra con criterio, evidencia y repetibilidad. DJI Dock 2 + FlightHub 2 llevan el monitoreo a un estándar profesional.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443371295452348416/",
+      "publisher_url": "https://www.linkedin.com/company/automasys/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443371295452348416",
+      "snippet": "Control de obra con criterio, evidencia y repetibilidad. DJI Dock 2 + FlightHub 2 llevan el monitoreo a un estándar profesional.",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T19:52:16.472Z",
+      "created_at": "2026-03-28T04:52:16.471Z"
+    },
+    {
+      "id": "li_run_li_202603280451189_1774673536471_5",
+      "run_id": "run_li_202603280451189",
+      "source": "linkedin",
+      "title": "Protecting wildlife across vast landscapes requires speed and visibility 🦒 With DJI Dock 3, rangers can deploy drones instantly, monitor la",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443462044793774081/",
+      "publisher_url": "https://www.linkedin.com/company/dji/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443462044793774081",
+      "snippet": "Protecting wildlife across vast landscapes requires speed and visibility 🦒 With DJI Dock 3, rangers can deploy drones instantly, monitor large areas, and use thermal imaging to detect animals day and night. The result? Faster response and stronger wildlife protection. Watch the full video 👉 https://brnw.ch/21x17Bh hashtag #djienterprise hashtag #djidock3 hashtag #conservation hashtag #southafrica",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-28T01:52:16.472Z",
+      "created_at": "2026-03-28T04:52:16.471Z"
+    },
+    {
+      "id": "li_run_li_202603280451189_1774673536471_6",
+      "run_id": "run_li_202603280451189",
+      "source": "linkedin",
+      "title": "🎓DJI Enterprise Dock 3 After-Sales Training & Certification 📌19-20 March, Zagreb We had the opportunity to host the DJI Enterprise Dock 3 ",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443220389226520577/",
+      "publisher_url": "https://www.linkedin.com/company/alsogroup/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443220389226520577",
+      "snippet": "🎓DJI Enterprise Dock 3 After-Sales Training & Certification 📌19-20 March, Zagreb We had the opportunity to host the DJI Enterprise Dock 3 After-Sales Training & Certification at ALSO Croatia bringing together technical teams for two days of focused, hands-on product training. The session was centered around the DJI Dock 3 platform and its practical after-sales, service, and support aspects. The training was designed with a strong technical focus, going beyond standard product presentation and into practical assembly and disassembly, hardware familiarization, component-level understanding, and direct technical discussion with DJI specialists. As an important part of DJI’s enterprise ecosystem, Dock 3 supports the growing need for automated drone operations, enabling more efficient remote deployment, operational continuity, and scalable mission workflows in professional environments. For partners and technical teams, understanding the dock’s architecture, serviceability, and maintenanc",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T09:52:16.472Z",
+      "created_at": "2026-03-28T04:52:16.471Z"
+    },
+    {
+      "id": "li_run_li_202603280451189_1774673536471_7",
+      "run_id": "run_li_202603280451189",
+      "source": "linkedin",
+      "title": "🐘Protección inteligente de la vida silvestre con tecnología de vanguardia En la conservación, cada segundo cuenta. En la Reserva de Caza de",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443401052923691008/",
+      "publisher_url": "https://www.linkedin.com/company/drones-industriales/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443401052923691008",
+      "snippet": "🐘Protección inteligente de la vida silvestre con tecnología de vanguardia En la conservación, cada segundo cuenta. En la Reserva de Caza de Babanango, en Sudáfrica, el DJI Dock 3 está revolucionando la forma de proteger la fauna: despliegue automatizado de drones ante cualquier alerta, capturando imágenes térmicas en tiempo real, tanto de día como de noche. 🚁 ¿El resultado? Monitoreo continuo, respuesta inmediata y una protección mucho más eficiente en entornos extensos y de difícil acceso. La tecnología no solo optimiza operaciones… salva vidas. 👉 Lleva tus proyectos de monitoreo ambiental y seguridad al siguiente nivel. Nosotros te ayudamos a implementar la solución completa. hashtag #DJIEnterprise hashtag #DJIDock3 hashtag #ConservacionDeVidaSilvestre hashtag #MonitoreoAmbiental hashtag #ImagenesTermicas hashtag #DronesIndustriales",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T21:52:16.472Z",
+      "created_at": "2026-03-28T04:52:16.471Z"
+    },
+    {
+      "id": "li_run_li_202603280451189_1774673536471_8",
+      "run_id": "run_li_202603280451189",
+      "source": "linkedin",
+      "title": "Dock Advanced Training în Frankfurt 🇩🇪 Recent am încheiat un program intensiv de pregătire organizat de DJI Enterprise în Frankfurt, Mihai",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443310987874603008/",
+      "publisher_url": "https://www.linkedin.com/in/mihai-laszlo-2095a2261/",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443310987874603008",
+      "snippet": "Dock Advanced Training în Frankfurt 🇩🇪 Recent am încheiat un program intensiv de pregătire organizat de DJI Enterprise în Frankfurt, Mihai Laszlo obținând cel mai înalt nivel de calificare pentru ecosistemul DJI Dock. Această sesiune nu a fost doar despre hardware, ci despre integrarea dronelor în infrastructuri complexe și fluxuri de lucru critice. •Metodologia SORA: Evaluarea riscurilor pentru operațiuni complexe BVLOS (Beyond Visual Line of Sight), esențială pentru conformitatea legală și siguranța zborului UAV. •Optimizare FlightHub 2: Configurare Sync pentru streaming video în timp real și stocare securizată pe servere externe (Third-Party Cloud Integration). •Workflow-uri Automate: Integrarea sistemelor externe de declanșare (External Triggers) pentru un răspuns rapid și autonom. hashtag #DJIEnterprise hashtag #DJIDock hashtag #BVLOS hashtag #SORA hashtag #FlightHub2 hashtag #DronesForWork",
+      "publisher": "Mihai Laszlo",
+      "published_at": "2026-03-27T15:52:16.472Z",
+      "created_at": "2026-03-28T04:52:16.471Z"
+    },
+    {
+      "id": "li_run_li_202603280451189_1774673536471_9",
+      "run_id": "run_li_202603280451189",
+      "source": "linkedin",
+      "title": "The start of 2026 has largely been about preparing for what’s ahead. Behind the scenes, we are building and testing new capabilities – inclu",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443404978020474880/",
+      "publisher_url": "https://www.linkedin.com/in/sverre-hogstad-997a78101",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443404978020474880",
+      "snippet": "The start of 2026 has largely been about preparing for what’s ahead. Behind the scenes, we are building and testing new capabilities – including a new drone vehicle under construction, deployment of DJI Dock for remote operations, and continued evaluation of the DJI FlyCart 100. The direction is clear: faster response, improved situational awareness, and increased operational impact. This spring will also bring important arenas for sharing and collaboration, including UK Emergency Robotics Responders Organisation (UKERRO) Summit and SAR61°N (Stiftelsen Norsk Luftambulanse). We’ll be sharing more detailed insights from each of these projects in the coming weeks. hashtag #drones hashtag #UAS hashtag #BVLOS hashtag #emergencyresponse hashtag #publicsafety hashtag #situationalawareness hashtag #dronetechnology hashtag #innovation hashtag #SAR hashtag #fireandrescue hashtag #UTM hashtag #DFR hashtag #beredskap hashtag #redningstjeneste",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T21:52:16.472Z",
+      "created_at": "2026-03-28T04:52:16.471Z"
+    },
+    {
+      "id": "li_run_li_202603280451189_1774673536471_10",
+      "run_id": "run_li_202603280451189",
+      "source": "linkedin",
+      "title": "In wildlife conservation, timing is critical 🦁🐆 At Babanango Game Reserve in South Africa, DJI Dock 3 enables instant drone deployment whe",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443281103647338496/",
+      "publisher_url": "https://www.linkedin.com/company/dji/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443281103647338496",
+      "snippet": "In wildlife conservation, timing is critical 🦁🐆 At Babanango Game Reserve in South Africa, DJI Dock 3 enables instant drone deployment when alerts are triggered, providing real-time aerial visibility through thermal imaging, both day and night. The result? Faster response and stronger protection for wildlife across vast landscapes. Watch the full video here 👉 https://brnw.ch/21x16zd Special thanks to OPTRON (Pty) Ltd hashtag #djienterprise hashtag #djidock3 hashtag #wildlifeconservation hashtag #thermalimaging hashtag #droneasfirstresponder",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T13:52:16.472Z",
+      "created_at": "2026-03-28T04:52:16.471Z"
+    }
+  ]
+}

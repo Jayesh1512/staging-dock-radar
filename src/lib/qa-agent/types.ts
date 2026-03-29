@@ -30,8 +30,17 @@ export interface SerperVerifyResult {
   hits: number;
   variant: string | null; // "Dock 2, Dock 3"
   best_url: string | null;
+  relevance: 'direct' | 'indirect' | 'mention_only';
   mentions: Array<{ url: string; title: string; snippet: string }>;
   error: string | null;
+}
+
+/** DB-driven batch verify request */
+export interface VerifyBatchRequest {
+  countryCodes: string[];
+  dryRun?: boolean;
+  offset?: number;     // for chunked execution
+  limit?: number;      // max records per call (default 200)
 }
 
 /** LinkedIn Serper-based check result */

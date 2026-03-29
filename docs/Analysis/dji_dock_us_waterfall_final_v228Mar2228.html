@@ -1,0 +1,153 @@
+<style>
+.src-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:12px 0 20px}
+.src-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 14px}
+.src-name{font-size:13px;color:var(--color-text-secondary);margin:0}
+.src-count{font-size:20px;font-weight:500;margin:2px 0 0}
+.step{border-left:3px solid var(--color-border-tertiary);padding:0 0 28px 20px;margin-left:16px;position:relative}
+.step:last-child{border-left-color:transparent;padding-bottom:0}
+.step::before{content:'';position:absolute;left:-7px;top:0;width:11px;height:11px;border-radius:50%;border:2px solid var(--color-border-secondary);background:var(--color-background-primary)}
+.step.active::before{background:var(--color-text-info);border-color:var(--color-text-info)}
+.step-head{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+.step-label{font-size:14px;font-weight:500}
+.step-count{font-size:13px;color:var(--color-text-secondary)}
+.step-bar{height:10px;border-radius:5px;margin:6px 0 10px;transition:width .3s}
+.drop-pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:var(--border-radius-md);background:var(--color-background-warning);color:var(--color-text-warning);margin-left:6px}
+.detail-grid{display:grid;grid-template-columns:90px 1fr;gap:3px 10px;font-size:13px;margin:0 0 8px}
+.detail-lbl{color:var(--color-text-secondary)}
+.detail-val{color:var(--color-text-primary);line-height:1.5}
+.evi-box{margin:6px 0 0;padding:10px 14px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:12px;line-height:1.6}
+.evi-title{font-weight:500;font-size:12px;margin:0 0 4px;color:var(--color-text-secondary)}
+.evi-item{margin:3px 0}
+.evi-item a{color:var(--color-text-info);text-decoration:none}
+.out-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:8px;margin:12px 0 0}
+.out-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 14px;text-align:center}
+.out-num{font-size:22px;font-weight:500;margin:0}
+.out-lbl{font-size:12px;color:var(--color-text-secondary);margin:2px 0 0}
+</style>
+
+<p style="font-size:14px;font-weight:500;margin:0 0 4px">Sources scanned (top of funnel)</p>
+<p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px">6 databases queried to build the raw universe</p>
+
+<div class="src-grid">
+<div class="src-card"><p class="src-name">FAA Part 107 waivers</p><p class="src-count">1,514</p></div>
+<div class="src-card"><p class="src-name">DJI enterprise dealer list</p><p class="src-count">~45</p></div>
+<div class="src-card"><p class="src-name">DJI case studies / ViewPoints / AirWorks</p><p class="src-count">~25</p></div>
+<div class="src-card"><p class="src-name">Industry media (DroneDJ, DroneXL, DroneLife, sUAS)</p><p class="src-count">~30</p></div>
+<div class="src-card"><p class="src-name">DJI ecosystem partners page</p><p class="src-count">~8</p></div>
+<div class="src-card"><p class="src-name">FAA BEYOND program + Part 91 COAs</p><p class="src-count">~58</p></div>
+</div>
+
+<p style="font-size:13px;color:var(--color-text-secondary);margin:0 0 16px">After dedup across all 6 sources: <span style="font-weight:500;color:var(--color-text-primary)">~1,580 unique names</span></p>
+
+<p style="font-size:14px;font-weight:500;margin:0 0 12px">Waterfall steps</p>
+
+<div class="step active">
+<div class="step-head">
+<span class="step-label">Step 1: Remove definite non-Dock categories</span>
+<span class="step-count">1,580 → 1,492</span>
+<span class="drop-pill">-88 removed</span>
+</div>
+<div class="step-bar" style="width:100%;background:var(--color-border-info)"></div>
+<div class="detail-grid">
+<span class="detail-lbl">Logic</span><span class="detail-val">Remove entities whose business is drone entertainment, photography, or media production. DJI Dock is a $10K-16K enterprise infrastructure product with zero use case in entertainment or aerial imaging.</span>
+<span class="detail-lbl">Filter rule</span><span class="detail-val">Company name contains: photo, film, show, firework, pyro, entertainment, cinema, studio, production, wedding, portrait, camera, illuminat, creative, stories, picture, artistic</span>
+</div>
+<div class="evi-box">
+<div class="evi-title">Sample dropouts with verification evidence</div>
+<div class="evi-item"><strong>Sky Elements LLC</strong> (8 waivers) — <a href="https://skyelementsdrones.com/">skyelementsdrones.com</a> — Self-describes as "largest drone light show company in the US"; performs 80+ choreographed LED shows per season for MLB, Disney, Coca-Cola. Zero enterprise infrastructure.</div>
+<div class="evi-item"><strong>DRONISOS</strong> (3 waivers) — <a href="https://www.dronisos.com">dronisos.com</a> — French drone show company. Creates animated spectacles for theme parks and events globally. Consumer show drones only.</div>
+<div class="evi-item"><strong>Moss Photography</strong> (6 waivers) — Aerial photography business. Despite 6 waivers, business model is capturing images for real estate/events, not autonomous infrastructure operations.</div>
+</div>
+</div>
+
+<div class="step active">
+<div class="step-head">
+<span class="step-label">Step 2: Apply DJI Dock keyword filter</span>
+<span class="step-count">1,492 → ~210 candidates</span>
+<span class="drop-pill">-1,282 parked</span>
+</div>
+<div class="step-bar" style="width:55%;background:var(--color-border-info)"></div>
+<div class="detail-grid">
+<span class="detail-lbl">Logic</span><span class="detail-val">Search every remaining name across all 6 databases for explicit DJI Dock evidence: product pages listing "DJI Dock", case studies naming the entity, deployment articles, DJI ecosystem listings, or FAA waivers held by known Dock operators. Strictly DJI Dock — not generic drone, not even "drone-in-a-box".</span>
+<span class="detail-lbl">Filter rule</span><span class="detail-val">Must have at least one signal containing: "DJI Dock", "Dock 2", "Dock 3", "Matrice 3D dock", "Matrice 4D dock", or "FlightHub 2 dock" across any of the 6 databases.</span>
+<span class="detail-lbl">Parked, not deleted</span><span class="detail-val">1,282 names had zero DJI Dock signal. They remain in the CSV (flagged as "Parked") for future web crawl enrichment via Google Dock Crawler. If a parked name later shows "DJI Dock" on their website, it gets promoted.</span>
+</div>
+<div class="evi-box">
+<div class="evi-title">Sample parked entities — why no DJI Dock signal found</div>
+<div class="evi-item"><strong>Xcel Energy</strong> (7 waivers) — Major utility with mature UAS program, but no public evidence of DJI Dock. Uses drones for powerline inspection via handheld pilot ops. Dock status unknown, not negative.</div>
+<div class="evi-item"><strong>Freeport-McMoRan</strong> (8 waivers) — Mining company with extensive drone program. All evidence points to pilot-operated flights, not autonomous DJI Dock. Parked for future enrichment.</div>
+<div class="evi-item"><strong>Southern Company Services</strong> (6 waivers) — Utility holding company. Drone program confirmed but no DJI Dock deployment evidence across any database. Would be promoted if web crawl reveals Dock keywords.</div>
+</div>
+</div>
+
+<div class="step active">
+<div class="step-head">
+<span class="step-label">Step 3: Cross-reference and deduplicate</span>
+<span class="step-count">~210 → ~140 deduplicated</span>
+<span class="drop-pill">-70 duplicates</span>
+</div>
+<div class="step-bar" style="width:38%;background:var(--color-border-info)"></div>
+<div class="detail-grid">
+<span class="detail-lbl">Logic</span><span class="detail-val">Many entities appear in multiple databases under different names. Merge all variant names into canonical entries. Also remove DJI Dock competitor companies — they make rival dock products, not DJI Dock.</span>
+<span class="detail-lbl">Filter rule</span><span class="detail-val">Name normalization (FAA vs DJI dealer vs article names) + competitor exclusion (Skydio, Percepto, Asylon, Nightingale, American Robotics, Sunflower Labs, GreenSight).</span>
+</div>
+<div class="evi-box">
+<div class="evi-title">Sample dedup merges and competitor removals</div>
+<div class="evi-item"><strong>Merged:</strong> "Unmanned Vehicle Technologies" (FAA, 6 waivers) = "UVT" (DJI dealer list) = same entity in Enel case study. Canonical name: UVT.</div>
+<div class="evi-item"><strong>Merged:</strong> "Brandon Karr (DroneSense)" (FAA, 1 waiver) = "DroneSense" (DJI ecosystem page) = "DroneSense" (KCPD DroneLife article). Canonical name: DroneSense.</div>
+<div class="evi-item"><strong>Removed:</strong> Skydio Inc. (12 FAA waivers) — Makes rival <a href="https://www.skydio.com/dock">Skydio Dock</a>, not DJI Dock. Competitor intelligence, not a customer target.</div>
+</div>
+</div>
+
+<div class="step active">
+<div class="step-head">
+<span class="step-label">Step 4: Verify DJI Dock evidence (not generic DJI)</span>
+<span class="step-count">~140 → 55 verified</span>
+<span class="drop-pill">-85 unverifiable</span>
+</div>
+<div class="step-bar" style="width:18%;background:var(--color-border-info)"></div>
+<div class="detail-grid">
+<span class="detail-lbl">Logic</span><span class="detail-val">For each remaining name, require at least one concrete clickable evidence URL proving DJI Dock involvement — not just generic DJI enterprise products. Every verified entity has a link you can open and confirm.</span>
+<span class="detail-lbl">Filter rule</span><span class="detail-val">Evidence URL must contain: a DJI Dock product page, a DJI case study naming Dock, an industry article confirming Dock deployment, or a government record specifying DJI Dock procurement.</span>
+<span class="detail-lbl">Key finding</span><span class="detail-val">Only 11 of 55 verified entities appear in FAA Part 107. The other 44 were found via supplementary databases — proving Part 107 alone misses 80% of DJI Dock operators.</span>
+</div>
+<div class="evi-box">
+<div class="evi-title">Sample dropouts — DJI dealers without verifiable Dock evidence</div>
+<div class="evi-item"><strong>Adorama</strong> — On DJI dealer list, sells DJI enterprise drones, but no DJI Dock product page found. Sells Mavic/Matrice, not Dock specifically. Dropped until Dock page appears.</div>
+<div class="evi-item"><strong>RMUS</strong> — DJI dealer in Utah, government solutions provider. Enterprise drone products listed, but no Dock-specific product page or deployment evidence found.</div>
+<div class="evi-item"><strong>Ohio Drone Repair</strong> — On DJI dealer list. Offers DJI repair services but no evidence of selling or deploying DJI Dock.</div>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head">
+<span class="step-label">Step 5: Classify and enrich</span>
+<span class="step-count">55 verified entities</span>
+</div>
+<div class="step-bar" style="width:12%;background:var(--color-text-info)"></div>
+<div class="detail-grid">
+<span class="detail-lbl">Logic</span><span class="detail-val">Each verified entity enriched with full data columns for outreach readiness. Every claim traceable to a clickable source.</span>
+<span class="detail-lbl">Columns</span><span class="detail-val">company_name, country, role, dock_models, dock_count, website, linkedin_url, evidence_url_1/2, source_type_1/2, confidence, discovery_database, waterfall_step, last_signal_date, notes, dji_dock_verified, source_database, responsible_persons</span>
+</div>
+<div class="evi-box">
+<div class="evi-title">Sample verified entities with clickable proof</div>
+<div class="evi-item"><strong>Kansas City PD</strong> (9 Dock 3s) — <a href="https://dronelife.com/2026/03/09/kansas-city-police-move-forward-with-dji-for-dfr-program-expansion/">DroneLife Mar 2026</a> — "the drone nests are DJI Dock 3s" + "Matrice 4TD" + "$600K Police Foundation grant". NOT in FAA Part 107; operates under Part 91 COW.</div>
+<div class="evi-item"><strong>El Paso PD</strong> (22 Docks) — <a href="https://dronedj.com/2025/08/26/texas-dji-public-safety-drone/">DroneDJ Aug 2025</a> + <a href="https://viewpoints.dji.com/blog/coordinated-from-above-how-el-pasos-drone-network-supports-citywide-emergency-response">DJI ViewPoints</a> — "22 DJI Dock stations positioned throughout the city".</div>
+<div class="evi-item"><strong>DSLRPros</strong> — <a href="https://www.dslrpros.com/products/dji-dock-3">Dock 3 product page</a> + <a href="https://www.dslrpros.com/blogs/enterprise-drones/dji-dock-3-vs-dock-2-the-ultimate-breakdown-for-industrial-drone-programs-in-2025">Dock 3 vs 2 blog</a> — Active Dock pages with pricing, DFR bundles, comparison content.</div>
+</div>
+</div>
+
+<p style="font-size:14px;font-weight:500;margin:20px 0 8px">Final output breakdown (55 verified entities)</p>
+
+<div class="out-grid">
+<div class="out-card"><p class="out-num">17</p><p class="out-lbl">Government / DFR deployers</p></div>
+<div class="out-card"><p class="out-num">13</p><p class="out-lbl">Authorized Dock dealers</p></div>
+<div class="out-card"><p class="out-num">7</p><p class="out-lbl">Enterprise end-users</p></div>
+<div class="out-card"><p class="out-num">7</p><p class="out-lbl">Software integrators</p></div>
+<div class="out-card"><p class="out-num">5</p><p class="out-lbl">DFR service providers</p></div>
+<div class="out-card"><p class="out-num">4</p><p class="out-lbl">Resellers / distributors</p></div>
+<div class="out-card" style="grid-column:span 2"><p class="out-num">2</p><p class="out-lbl">Academia / research</p></div>
+<div class="out-card"><p class="out-num">47 High / 8 Med</p><p class="out-lbl">Confidence split</p></div>
+</div>
+
+<p style="font-size:12px;color:var(--color-text-secondary);margin:16px 0 0">1,424 parked names remain in the CSV (dji_dock_verified = No) for future web crawl enrichment. Full 1,555-row CSV delivered with waterfall_step and dji_dock_verified columns for filtering.</p>

@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DJI Dock Verification Analysis — FR + NL — 28 Mar 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8FAFC; color: #1E293B; padding: 32px; line-height: 1.5; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 24px; font-weight: 800; margin-bottom: 4px; color: #0F172A; }
+  h2 { font-size: 17px; font-weight: 700; margin: 0 0 12px; color: #0F172A; border-bottom: 2px solid #E2E8F0; padding-bottom: 6px; }
+  h3 { font-size: 14px; font-weight: 700; margin: 14px 0 8px; color: #334155; }
+  .subtitle { font-size: 13px; color: #64748B; margin-bottom: 24px; }
+  .timestamp { font-size: 11px; color: #94A3B8; float: right; margin-top: -36px; }
+
+  .section { background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+  .kpi-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .kpi { background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; padding: 14px 18px; text-align: center; min-width: 100px; flex: 1; }
+  .kpi .value { font-size: 28px; font-weight: 800; }
+  .kpi .label { font-size: 10px; color: #64748B; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
+  th { background: #F8FAFC; padding: 8px 10px; text-align: left; font-weight: 600; color: #64748B; border-bottom: 2px solid #E2E8F0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+  td { padding: 8px 10px; border-bottom: 1px solid #F1F5F9; }
+  tr:hover td { background: #F8FAFC; }
+  .num { text-align: center; font-weight: 600; }
+  .pct { text-align: center; font-size: 11px; color: #64748B; }
+  tr.highlight { background: #F0FDF4; }
+  tr.warn { background: #FFFBEB; }
+  tr.dim td { color: #94A3B8; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+  .b-green { background: #DCFCE7; color: #166534; }
+  .b-blue { background: #DBEAFE; color: #1E40AF; }
+  .b-orange { background: #FEF3C7; color: #92400E; }
+  .b-red { background: #FEE2E2; color: #991B1B; }
+  .b-gray { background: #F1F5F9; color: #64748B; }
+  .b-purple { background: #F3E8FF; color: #7C3AED; }
+
+  .callout { border-radius: 8px; padding: 14px 18px; margin: 12px 0; font-size: 12px; line-height: 1.7; }
+  .callout-green { background: #F0FDF4; border: 1px solid #BBF7D0; }
+  .callout-amber { background: #FFFBEB; border: 1px solid #FDE68A; }
+  .callout-blue { background: #EFF6FF; border: 1px solid #BFDBFE; }
+  .callout-purple { background: #FAF5FF; border: 1px solid #E9D5FF; }
+  .callout strong { display: block; margin-bottom: 4px; }
+
+  .flow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step { background: #fff; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 14px; text-align: center; min-width: 120px; }
+  .flow-step .step-title { font-size: 11px; font-weight: 700; color: #334155; }
+  .flow-step .step-detail { font-size: 10px; color: #64748B; margin-top: 2px; }
+  .flow-arrow { font-size: 18px; color: #94A3B8; }
+
+  .bar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; margin: 6px 0; }
+  .bar > div { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; min-width: 24px; }
+
+  ul { padding-left: 20px; margin: 6px 0; }
+  li { margin: 4px 0; font-size: 12px; }
+
+  .footer { text-align: center; font-size: 11px; color: #94A3B8; margin-top: 32px; padding: 16px; border-top: 1px solid #E2E8F0; }
+  a { color: #2563EB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>DJI Dock Verification Analysis</h1>
+<p class="subtitle">France + Netherlands — Automated QA Agent Dry-Run Results &amp; Scaling Strategy</p>
+<span class="timestamp">28 March 2026 · Dock Radar · FlytBase BD Intelligence</span>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 1: Executive Summary KPIs -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="kpi-row">
+  <div class="kpi"><div class="value" style="color:#111827">743</div><div class="label">Total Records</div></div>
+  <div class="kpi"><div class="value" style="color:#2563EB">552</div><div class="label">Have Website</div></div>
+  <div class="kpi"><div class="value" style="color:#059669">26</div><div class="label">DJI Dock Confirmed<br>(Prior QA Runs)</div></div>
+  <div class="kpi"><div class="value" style="color:#059669">4</div><div class="label">New DJI Dock Found<br>(This Dry-Run)</div></div>
+  <div class="kpi"><div class="value" style="color:#7C3AED">6</div><div class="label">Puppeteer<br>Candidates</div></div>
+  <div class="kpi"><div class="value" style="color:#DC2626">177</div><div class="label">Not Found<br>(This Batch)</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 2: Registry Source Hit Rate (THE KEY INSIGHT) -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <h2>Registry Source: DJI Dock Hit Rate</h2>
+  <p style="font-size:12px; color:#64748B; margin-bottom:12px;">
+    This is the critical metric — how many companies from each data source actually mention DJI Dock on their website?
+    Govt/aviation registries have the most noise; intelligence sources have the highest signal.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Data Source</th>
+        <th>Type</th>
+        <th class="num">Total</th>
+        <th class="num">Have Website</th>
+        <th class="num">DJI Dock Confirmed</th>
+        <th class="num">Hit Rate</th>
+        <th>Assessment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="highlight">
+        <td><span class="badge b-blue">DJI Dealer</span> DJI Enterprise Dealer List</td>
+        <td>Intelligence</td>
+        <td class="num">17</td>
+        <td class="num">17</td>
+        <td class="num" style="color:#059669;font-weight:800">11</td>
+        <td class="num" style="color:#059669;font-weight:800">65%</td>
+        <td><span class="badge b-green">High signal</span> — authorized sellers, most list Dock</td>
+      </tr>
+      <tr class="highlight">
+        <td><span class="badge b-orange">Google Search</span> "DJI Dock" country search</td>
+        <td>Intelligence</td>
+        <td class="num">8</td>
+        <td class="num">8</td>
+        <td class="num" style="color:#059669;font-weight:800">7</td>
+        <td class="num" style="color:#059669;font-weight:800">88%</td>
+        <td><span class="badge b-green">Highest signal</span> — Google already associated them with Dock</td>
+      </tr>
+      <tr class="highlight">
+        <td><span class="badge b-red">ChatGPT</span> Deep Research</td>
+        <td>Intelligence</td>
+        <td class="num">5</td>
+        <td class="num">5</td>
+        <td class="num" style="color:#059669;font-weight:800">5</td>
+        <td class="num" style="color:#059669;font-weight:800">100%</td>
+        <td><span class="badge b-green">Perfect signal</span> — pre-validated with evidence</td>
+      </tr>
+      <tr class="highlight">
+        <td><span class="badge b-purple">Comet</span> Intelligence</td>
+        <td>Intelligence</td>
+        <td class="num">2</td>
+        <td class="num">2</td>
+        <td class="num">0</td>
+        <td class="num">0%</td>
+        <td><span class="badge b-orange">Needs Puppeteer</span> — may have LinkedIn evidence only</td>
+      </tr>
+      <tr class="warn">
+        <td><span class="badge b-gray">SIRENE</span> French Business Registry</td>
+        <td>Govt Registry</td>
+        <td class="num">378</td>
+        <td class="num">212</td>
+        <td class="num" style="color:#059669">7</td>
+        <td class="num" style="color:#DC2626;font-weight:700">3.3%</td>
+        <td><span class="badge b-red">Very low signal</span> — bulk "drone" keyword match, ~45 false positives (surnames)</td>
+      </tr>
+      <tr class="warn">
+        <td><span class="badge b-blue">ILT-OA</span> NL Aviation Operator Permits</td>
+        <td>Aviation Registry</td>
+        <td class="num">274</td>
+        <td class="num">250</td>
+        <td class="num" style="color:#059669">0</td>
+        <td class="num" style="color:#DC2626;font-weight:700">0%</td>
+        <td><span class="badge b-red">No signal</span> — drone operators, not necessarily DJI Dock users</td>
+      </tr>
+      <tr class="dim">
+        <td><span class="badge b-gray">DCRO</span> NL Drone Register</td>
+        <td>Govt Registry</td>
+        <td class="num">50</td>
+        <td class="num">50</td>
+        <td class="num">0</td>
+        <td class="num" style="color:#DC2626">0%</td>
+        <td><span class="badge b-red">No signal</span> — general drone registration</td>
+      </tr>
+      <tr class="dim">
+        <td><span class="badge b-gray">ILT-STS</span> NL Special Operations</td>
+        <td>Aviation Registry</td>
+        <td class="num">8</td>
+        <td class="num">7</td>
+        <td class="num">0</td>
+        <td class="num" style="color:#DC2626">0%</td>
+        <td>Small set, no DJI Dock signal</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-amber">
+    <strong>Key Finding: Govt &amp; Aviation Registries Have 0-3% DJI Dock Hit Rate</strong>
+    Out of 710 registry records (SIRENE + ILT-OA + DCRO + ILT-STS) with 519 websites checked, only <strong>7 confirmed DJI Dock</strong> (1.3%).
+    All 7 came from SIRENE — and they were already known companies (Escadrone, Prodrones, Instadrone) that also appeared in intelligence sources.<br><br>
+    <strong>Implication for scaling:</strong> Running verification on bulk govt/aviation registries for new countries will consume significant Serper credits
+    (~1 per domain) with extremely low yield. <strong>Recommendation:</strong> For new countries, prioritize intelligence sources (DJI Dealers, Google Search, ChatGPT)
+    first. Only run registry verification if the country has &lt;20 intelligence-source records and you need volume.
+  </div>
+
+  <div class="callout callout-green">
+    <strong>Intelligence Sources: 65-100% Hit Rate</strong>
+    Combined, DJI Dealers + Google Search + ChatGPT + Comet = 30 records, of which <strong>23 confirmed DJI Dock</strong> (77%).
+    These sources are pre-qualified — they were selected <em>because</em> of DJI Dock relevance.
+    For new countries, these should be the primary verification targets.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 3: Confirmed Companies -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <h2>DJI Dock Confirmed Companies (30 total)</h2>
+  <p style="font-size:12px; color:#64748B; margin-bottom:12px;">26 from prior QA runs + 4 newly discovered in this dry-run. Sorted by Serper hits (evidence strength).</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Company</th>
+        <th>Country</th>
+        <th>Source</th>
+        <th class="num">Serper Hits</th>
+        <th>Dock Models</th>
+        <th>Relevance</th>
+        <th>Evidence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="highlight"><td class="num">1</td><td style="font-weight:700">ESCADRONE</td><td>FR</td><td><span class="badge b-gray">SIRENE</span></td><td class="num" style="color:#059669">10</td><td>Dock 1, 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://escadrone.com/produit/dji-dock-3-drone-de-securite-automatise/" target="_blank">Product page ↗</a></td></tr>
+      <tr class="highlight"><td class="num">2</td><td style="font-weight:700">PRODRONES</td><td>FR</td><td><span class="badge b-gray">SIRENE</span></td><td class="num" style="color:#059669">10</td><td>Dock 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://shop.prodrones.fr/gamme-dock/1738-dji-dock-3-M4TD.html" target="_blank">Shop ↗</a></td></tr>
+      <tr class="highlight"><td class="num">3</td><td style="font-weight:700">Flying Eye</td><td>FR</td><td><span class="badge b-blue">DJI</span></td><td class="num" style="color:#059669">10</td><td>Dock 1, 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://www.flyingeye.fr/product/dji-dock-2/" target="_blank">Product ↗</a></td></tr>
+      <tr class="highlight"><td class="num">4</td><td style="font-weight:700">ABOT</td><td>FR</td><td><span class="badge b-blue">DJI</span></td><td class="num" style="color:#059669">10</td><td>Dock 1, 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://www.abot.fr/dji-dock-2-avec-matrice-3d-ou-matrice-3td-25570.html" target="_blank">Product ↗</a></td></tr>
+      <tr class="highlight"><td class="num">5</td><td style="font-weight:700">La Camera Embarquée</td><td>FR</td><td><span class="badge b-blue">DJI</span></td><td class="num" style="color:#059669">10</td><td>Dock 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://www.lacameraembarquee.fr" target="_blank">Website ↗</a></td></tr>
+      <tr class="highlight"><td class="num">6</td><td style="font-weight:700">StudioSport</td><td>FR</td><td><span class="badge b-orange">Google</span></td><td class="num" style="color:#059669">10</td><td>Dock 1, 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://www.studiosport.fr/drones/dji/dock/" target="_blank">Shop ↗</a></td></tr>
+      <tr class="highlight"><td class="num">7</td><td style="font-weight:700">DJI Paris (Boutique)</td><td>FR</td><td><span class="badge b-orange">Google</span></td><td class="num" style="color:#059669">10</td><td>Dock 1, 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://www.dji-paris.com" target="_blank">Website ↗</a></td></tr>
+      <tr class="highlight"><td class="num">8</td><td style="font-weight:700">DroneLand</td><td>NL</td><td><span class="badge b-blue">DJI</span></td><td class="num" style="color:#059669">10</td><td>Dock 1, 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://en.droneland.nl/dji-dock-2-mapping-combo" target="_blank">Product ↗</a></td></tr>
+      <tr class="highlight"><td class="num">9</td><td style="font-weight:700">Drone Class B.V.</td><td>NL</td><td><span class="badge b-orange">Google</span></td><td class="num" style="color:#059669">10</td><td>Dock 1, 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://www.eudronebewijs.nl" target="_blank">Website ↗</a></td></tr>
+      <tr class="highlight"><td class="num">10</td><td style="font-weight:700">AirHub B.V.</td><td>NL</td><td><span class="badge b-orange">Google</span></td><td class="num" style="color:#059669">10</td><td>Dock 1, 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://www.airhub.app" target="_blank">Website ↗</a></td></tr>
+      <tr class="highlight"><td class="num">11</td><td style="font-weight:700">Dronebotics</td><td>NL</td><td><span class="badge b-orange">Google</span></td><td class="num" style="color:#059669">10</td><td>Dock 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://nl.dronebotics.nl" target="_blank">Website ↗</a></td></tr>
+      <tr class="highlight"><td class="num">12</td><td style="font-weight:700">Droneshop.nl</td><td>NL</td><td><span class="badge b-blue">DJI</span></td><td class="num" style="color:#059669">10</td><td>Dock 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://droneshop.nl" target="_blank">Website ↗</a></td></tr>
+      <tr class="highlight"><td class="num">13</td><td style="font-weight:700">Geocentrum</td><td>NL</td><td><span class="badge b-blue">DJI</span></td><td class="num" style="color:#059669">10</td><td>Dock 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://geocentrum.nl" target="_blank">Website ↗</a></td></tr>
+      <tr class="highlight"><td class="num">14</td><td style="font-weight:700">COPTRZ</td><td>NL</td><td><span class="badge b-orange">Google</span></td><td class="num" style="color:#059669">10</td><td>Dock 1, 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://coptrz.com" target="_blank">Website ↗</a></td></tr>
+      <tr class="highlight"><td class="num">15</td><td style="font-weight:700">Drone Parts Center</td><td>NL</td><td><span class="badge b-orange">Google</span></td><td class="num" style="color:#059669">10</td><td>Dock 2, 3</td><td><span class="badge b-green">direct</span></td><td><a href="https://dronepartscenter.nl" target="_blank">Website ↗</a></td></tr>
+      <tr><td class="num">16</td><td style="font-weight:700">DRONES EXPERTS SERVICES</td><td>FR</td><td><span class="badge b-gray">SIRENE</span></td><td class="num" style="color:#059669">10</td><td>Dock 3, Dock 2</td><td><span class="badge b-green">direct</span></td><td><a href="https://www.dronexperts.com/en/article/dji-dock-3-the-revolutionary-autonomous-station-for-drone-deployment/" target="_blank">Article ↗</a></td></tr>
+      <tr><td class="num">17</td><td style="font-weight:700">CIVIC DRONE</td><td>FR</td><td><span class="badge b-gray">SIRENE</span></td><td class="num" style="color:#059669">8</td><td>Dock 3, Dock 2</td><td><span class="badge b-green">direct</span></td><td><a href="https://www.civicdrone.fr/dji-dock-3-les-nouvelles-fonctionnalites-qui-revolutionnent-les-operations-industrielles/" target="_blank">Article ↗</a></td></tr>
+      <tr><td class="num">18</td><td style="font-weight:700">TOUT LE DRONE</td><td>FR</td><td><span class="badge b-gray">SIRENE</span></td><td class="num" style="color:#059669">7</td><td>Dock 3, Dock 2</td><td><span class="badge b-green">direct</span></td><td><a href="https://ledrones.org/dji-dock-3-delivers-drone-in-a-box-enterprise-solution-for-24-7-remote-operations/" target="_blank">Article ↗</a></td></tr>
+      <tr><td class="num">19</td><td style="font-weight:700">Rivolier</td><td>FR</td><td><span class="badge b-blue">DJI</span></td><td class="num">6</td><td>Dock 3</td><td>—</td><td><a href="https://www.rivolier-sd.com/" target="_blank">Website ↗</a></td></tr>
+      <tr><td class="num">20</td><td style="font-weight:700">INSTADRONE</td><td>FR</td><td><span class="badge b-gray">SIRENE</span></td><td class="num">5</td><td>Dock 3</td><td>—</td><td><a href="https://www.instadrone.fr" target="_blank">Website ↗</a></td></tr>
+      <tr><td class="num">21</td><td style="font-weight:700">Dumont Securite</td><td>FR</td><td><span class="badge b-blue">DJI</span></td><td class="num">2</td><td>Dock 3</td><td>—</td><td><a href="https://www.dumont-securite.fr/" target="_blank">Website ↗</a></td></tr>
+      <tr><td class="num">22</td><td style="font-weight:700">DRONE TECHNOLOGY SERVICE</td><td>FR</td><td><span class="badge b-gray">SIRENE</span></td><td class="num">1</td><td>Dock 3</td><td><span class="badge b-gray">mention</span></td><td><a href="https://thedronebrothers.com/technology/" target="_blank">Mention ↗</a></td></tr>
+      <tr class="dim"><td class="num">23</td><td>EPC France (EPC Groupe)</td><td>FR</td><td><span class="badge b-red">ChatGPT</span></td><td class="num">0</td><td>Dock 2</td><td>—</td><td>Pre-loaded evidence</td></tr>
+      <tr class="dim"><td class="num">24</td><td>i-TechGroup (i-Techdrone)</td><td>FR</td><td><span class="badge b-red">ChatGPT</span></td><td class="num">0</td><td>Dock 1</td><td>—</td><td>Pre-loaded evidence</td></tr>
+      <tr class="dim"><td class="num">25</td><td>Dronestars B.V.</td><td>NL</td><td><span class="badge b-blue">DJI</span></td><td class="num">0</td><td>Dock 3</td><td>—</td><td>LinkedIn evidence</td></tr>
+      <tr class="dim"><td class="num">26</td><td>Vliegend.nl</td><td>NL</td><td><span class="badge b-blue">DJI</span></td><td class="num">0</td><td>Dock</td><td>—</td><td>LinkedIn evidence</td></tr>
+      <tr class="dim"><td class="num">27</td><td>Geodirect</td><td>NL</td><td><span class="badge b-blue">DJI</span></td><td class="num">0</td><td>Dock 3</td><td>—</td><td>LinkedIn evidence</td></tr>
+      <tr class="dim"><td class="num">28</td><td>Skeye (Terra Drone Europe)</td><td>NL</td><td><span class="badge b-red">ChatGPT</span></td><td class="num">0</td><td>Dock 1/2</td><td>—</td><td>Pre-loaded evidence</td></tr>
+      <tr class="dim"><td class="num">29</td><td>Shell (Pernis / Europort)</td><td>NL</td><td><span class="badge b-red">ChatGPT</span></td><td class="num">0</td><td>Dock 1/2</td><td>—</td><td>Pre-loaded evidence</td></tr>
+      <tr class="dim"><td class="num">30</td><td>Tata Steel Nederland</td><td>NL</td><td><span class="badge b-red">ChatGPT</span></td><td class="num">0</td><td>Dock 2</td><td>—</td><td>Pre-loaded evidence</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-blue">
+    <strong>Observation: 10 hits = strong presence, 0 hits with pre-loaded evidence = needs Puppeteer validation</strong>
+    Companies #23-30 were confirmed by ChatGPT Deep Research or LinkedIn scans but have 0 Serper website hits.
+    These are legitimate DJI Dock users (Shell, Tata Steel are end-users, not resellers) whose Dock usage isn't on their public website.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 4: Verification Methodology -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <h2>Verification Methodology</h2>
+
+  <h3>Three-Step Verification Pipeline</h3>
+  <div class="flow">
+    <div class="flow-step" style="border-color:#059669">
+      <div class="step-title" style="color:#059669">Step 1: Serper Website</div>
+      <div class="step-detail">site:domain "DJI Dock"<br>1 credit per domain<br>~500ms per call</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:#7C3AED">
+      <div class="step-title" style="color:#7C3AED">Step 2: Puppeteer LinkedIn</div>
+      <div class="step-detail">Deep scan company posts<br>0 credits (cookie auth)<br>~20s per company</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:#2563EB">
+      <div class="step-title" style="color:#2563EB">Step 3: Confidence Score</div>
+      <div class="step-detail">Weighted source scoring<br>Evidence URL capture<br>Dock model detection</div>
+    </div>
+  </div>
+
+  <h3>Step 1: Serper Website Verification (Primary)</h3>
+  <ul>
+    <li><strong>Query:</strong> <code>site:domain "DJI Dock"</code> — exact phrase match ensures DJI-specific results</li>
+    <li><strong>Deduplication:</strong> Records grouped by domain before verification — one API call per unique domain, results fanned out to all matching records</li>
+    <li><strong>Variant detection:</strong> Regexes require "DJI" context within 30 characters of "Dock 2/3" to prevent false positives from shipping docks, loading docks, etc.</li>
+    <li><strong>Relevance classification:</strong>
+      <ul>
+        <li><span class="badge b-green">direct</span> — URL contains /product/, /shop/, /dji-dock, or snippet mentions price/buy/order</li>
+        <li><span class="badge b-orange">indirect</span> — Snippet mentions "vs", "alternative", "comparison"</li>
+        <li><span class="badge b-gray">mention_only</span> — Generic blog or news mention</li>
+      </ul>
+    </li>
+    <li><strong>Evidence priority:</strong> Product page URL &gt; URL with "dock" in path &gt; first organic result</li>
+    <li><strong>Cost:</strong> 1 Serper credit per unique domain (0 for duplicates)</li>
+  </ul>
+
+  <h3>Step 2: Puppeteer LinkedIn Deep Scan (Selective)</h3>
+  <ul>
+    <li><strong>Trigger:</strong> Only runs on companies where Step 1 found 0 hits AND company came from a high-value source (DJI Dealer, Google Search, ChatGPT, Comet)</li>
+    <li><strong>Method:</strong> Headless Chrome with LinkedIn cookie auth → navigates to company /posts/ page → scrolls → scrapes post text</li>
+    <li><strong>Keywords:</strong> Strictly <code>/dji\s*dock/i</code>, <code>/dji\s*dock\s*[123]/i</code> — no generic "dock", no BVLOS, no drone-in-a-box</li>
+    <li><strong>Captures:</strong> Post URL (clickable evidence), post date (for freshness analysis), full snippet text, dock model variants</li>
+    <li><strong>Limitations:</strong> Cookie expiry (~24h), rate limiting (~40 companies/session), CAPTCHA risk</li>
+    <li><strong>Circuit breaker:</strong> 3 consecutive LOGIN_WALL/CAPTCHA → stop batch, notify user</li>
+    <li><strong>Cost:</strong> 0 API credits (uses browser session)</li>
+  </ul>
+
+  <h3>Step 3: Confidence Scoring</h3>
+  <table>
+    <thead><tr><th>Source</th><th class="num">Weight</th><th>Amplifier</th></tr></thead>
+    <tbody>
+      <tr><td>DJI Dealer List</td><td class="num">0.5</td><td>—</td></tr>
+      <tr><td>Google Search</td><td class="num">1.0</td><td>—</td></tr>
+      <tr><td>Comet Intelligence</td><td class="num">1.5</td><td>—</td></tr>
+      <tr><td>ChatGPT Deep Research</td><td class="num">0.5</td><td>—</td></tr>
+      <tr><td>Serper Website Scan</td><td class="num">1.5</td><td>+0.5 if ≥10 hits, +0.25 if ≥5</td></tr>
+      <tr><td>LinkedIn Posts (Puppeteer)</td><td class="num">1.0</td><td>+0.5 if ≥4 matches, +0.25 if ≥2</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:11px; color:#64748B; margin-top:6px;">Thresholds: ≥4.0 = high, ≥2.0 = medium, ≥0.5 = low. Scores are for ranking only — no records are ever dropped.</p>
+
+  <h3>False Positive Prevention</h3>
+  <table>
+    <thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>"Dock 2" / "Dock 3" matching shipping/loading docks</td><td>Serper query already uses <code>"DJI Dock"</code> (exact phrase). Variant regex requires "DJI" within 30 chars: <code>/dji[^.]{0,30}dock\s*3/i</code></td></tr>
+      <tr><td>Competitor comparison articles mentioning DJI Dock</td><td>Relevance classifier flags as <span class="badge b-orange">indirect</span> — visible in report, not treated as "direct" evidence</td></tr>
+      <tr><td>SIRENE surname matches (DRONEAU, MADRONET, etc.)</td><td>These have no website → never reach Serper. ~45 records flagged for removal during QA review</td></tr>
+      <tr><td>Puppeteer matching non-DJI "dock" in LinkedIn posts</td><td>Gate: <code>RE_DJI_DOCK.test(text)</code> must pass first — only then check for model numbers</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 5: Scaling Strategy -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <h2>Scaling to 18+ Countries</h2>
+
+  <h3>Recommended Verification Priority per Country</h3>
+  <table>
+    <thead>
+      <tr><th>Priority</th><th>Source</th><th>Est. Records (18 countries)</th><th>Expected Hit Rate</th><th>Serper Credits</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr class="highlight">
+        <td><span class="badge b-green">P1</span></td>
+        <td>DJI Enterprise Dealers</td>
+        <td class="num">~349</td>
+        <td class="num" style="color:#059669">60-70%</td>
+        <td class="num">~349</td>
+        <td>Run Serper first — highest ROI</td>
+      </tr>
+      <tr class="highlight">
+        <td><span class="badge b-green">P1</span></td>
+        <td>ChatGPT Deep Research</td>
+        <td class="num">~142</td>
+        <td class="num" style="color:#059669">80-100%</td>
+        <td class="num">~142</td>
+        <td>Run Serper — already pre-validated</td>
+      </tr>
+      <tr class="highlight">
+        <td><span class="badge b-green">P1</span></td>
+        <td>Google Search Campaign</td>
+        <td class="num">~200 (est.)</td>
+        <td class="num" style="color:#059669">70-90%</td>
+        <td class="num">~200</td>
+        <td>Run Serper — Google already linked them to Dock</td>
+      </tr>
+      <tr class="warn">
+        <td><span class="badge b-orange">P2</span></td>
+        <td>Govt/Aviation Registries</td>
+        <td class="num">Varies by country</td>
+        <td class="num" style="color:#DC2626">1-3%</td>
+        <td class="num">Varies</td>
+        <td>Only if P1 sources yield &lt;20 results for a country</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Credit Budget (18 Countries)</h3>
+  <table>
+    <thead><tr><th>Source</th><th class="num">Domains</th><th class="num">Credits</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>P1: Intelligence sources (DJI + ChatGPT + Google)</td><td class="num">~600</td><td class="num">~600</td><td>Deduped by domain</td></tr>
+      <tr><td>P2: Registries (only for thin countries)</td><td class="num">~200</td><td class="num">~200</td><td>Selective — not all countries</td></tr>
+      <tr style="font-weight:700"><td>Total estimated</td><td class="num">~800</td><td class="num">~800</td><td>Current balance: ~2,177 + 2,500 (second account)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-green">
+    <strong>Sufficient budget:</strong> With ~4,677 total Serper credits available, we can verify all intelligence-source records
+    across 18 countries (~800 credits) and still have ~3,877 remaining for registry verification, re-verification, and future countries.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 6: Automation Value -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <h2>How the Automation Agent Reduces Manual Work</h2>
+
+  <h3>Manual vs Automated Comparison</h3>
+  <table>
+    <thead>
+      <tr><th>Task</th><th>Manual Process</th><th>Time (Manual)</th><th>Automated (QA Agent)</th><th>Time (Auto)</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Verify 1 company website</td>
+        <td>Open website → Ctrl+F "DJI Dock" → check pages → screenshot evidence</td>
+        <td>3-5 min</td>
+        <td><code>site:domain "DJI Dock"</code> via Serper</td>
+        <td>0.5 sec</td>
+      </tr>
+      <tr>
+        <td>Check LinkedIn for DJI Dock posts</td>
+        <td>Open LinkedIn → scroll company posts → read each post → note Dock mentions</td>
+        <td>5-10 min</td>
+        <td>Puppeteer deep scan with keyword regex</td>
+        <td>20 sec</td>
+      </tr>
+      <tr>
+        <td>Verify 500 companies</td>
+        <td>500 × 8 min avg = 66 hours (8+ business days)</td>
+        <td><strong>8 days</strong></td>
+        <td>500 Serper calls + 10 Puppeteer deep scans</td>
+        <td><strong>5 min</strong></td>
+      </tr>
+      <tr>
+        <td>Classify evidence (product page vs blog vs comparison)</td>
+        <td>Read each result → categorize → note in spreadsheet</td>
+        <td>2 min/result</td>
+        <td>Automated URL + snippet classification</td>
+        <td>Instant</td>
+      </tr>
+      <tr>
+        <td>Detect Dock model (1, 2, 3)</td>
+        <td>Read page content → note which Dock version</td>
+        <td>1 min/page</td>
+        <td>Regex with DJI context validation</td>
+        <td>Instant</td>
+      </tr>
+      <tr>
+        <td>Generate shareable report</td>
+        <td>Copy data to spreadsheet → format → add filters → share</td>
+        <td>2-4 hours</td>
+        <td>Auto-generated HTML with filters, KPIs, evidence links</td>
+        <td>Instant</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-purple">
+    <strong>Scale impact: 18 countries × ~50 companies avg = ~900 verifications</strong><br>
+    Manual: 900 × 8 min = <strong>120 hours</strong> (15 business days for 1 person)<br>
+    Automated: 900 Serper calls = <strong>~8 minutes</strong> + ~30 Puppeteer deep scans (~10 min) = <strong>18 minutes total</strong><br><br>
+    <strong>That's a 400× speed improvement.</strong> The agent handles the exhaustive scan;
+    the BD team focuses on interpreting results and engaging confirmed partners.
+  </div>
+
+  <h3>What the Agent Cannot Do (Human Judgment Still Required)</h3>
+  <ul>
+    <li><strong>Qualify partner fit:</strong> A confirmed DJI Dock reseller in Japan may not be relevant to FlytBase's immediate market entry — the team decides priority.</li>
+    <li><strong>Interpret indirect mentions:</strong> A company blogging about DJI Dock comparison vs Percepto is a signal of interest but needs context — are they evaluating, reviewing, or selling?</li>
+    <li><strong>Validate ChatGPT/Comet pre-loaded data:</strong> These sources may have dated information; the agent flags 0-hit records for manual follow-up.</li>
+    <li><strong>LinkedIn cookie management:</strong> Puppeteer requires periodic LinkedIn session refresh (~every 24h).</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 7: Gaps & Recommendations -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <h2>Known Gaps &amp; Recommendations</h2>
+
+  <table>
+    <thead><tr><th>#</th><th>Gap</th><th>Impact</th><th>Recommendation</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="num">1</td>
+        <td>Serper only finds Google-indexed content</td>
+        <td>New product pages (added in last 2-4 weeks) may not be indexed yet → false negative</td>
+        <td>Re-verify 0-hit records after 30 days. Add <code>reverify_after</code> column.</td>
+        <td><span class="badge b-orange">Medium</span></td>
+      </tr>
+      <tr>
+        <td class="num">2</td>
+        <td>176 records have no website at all</td>
+        <td>Cannot verify via Serper — permanently dark</td>
+        <td>SIRENE false positives (~45) should be flagged as <code>rejected</code>. Remainder are micro-businesses — low DJI Dock probability.</td>
+        <td><span class="badge b-gray">Low</span></td>
+      </tr>
+      <tr>
+        <td class="num">3</td>
+        <td>End-users (Shell, Tata Steel) don't list DJI Dock on their website</td>
+        <td>Serper returns 0 even though they genuinely use DJI Dock</td>
+        <td>Puppeteer LinkedIn scan catches these. Also accept ChatGPT/Comet evidence as valid for end-users.</td>
+        <td><span class="badge b-green">Handled</span></td>
+      </tr>
+      <tr>
+        <td class="num">4</td>
+        <td>Non-English websites (JP, KR, BR, TR)</td>
+        <td><code>"DJI Dock"</code> is the product name in all languages — Serper query works. But snippets may be in local language → relevance classification may miss "product page" signals.</td>
+        <td>Add localized product keywords to relevance classifier: /produit/, /produkt/, /produto/, /製品/</td>
+        <td><span class="badge b-orange">Medium</span></td>
+      </tr>
+      <tr>
+        <td class="num">5</td>
+        <td>No country completion tracking in UI</td>
+        <td>User may accidentally re-run verification on already-completed countries</td>
+        <td>Add completed country badges, re-run warning, and auto-deselect. Store completion state in localStorage.</td>
+        <td><span class="badge b-orange">Medium</span></td>
+      </tr>
+      <tr>
+        <td class="num">6</td>
+        <td>5-minute API timeout limits batch size</td>
+        <td>~500 domains at 500ms/call = 250s. Larger sets may timeout.</td>
+        <td>Already handled: UI sends limit param, API auto-chunks for dry runs. For live runs, implement offset-based pagination.</td>
+        <td><span class="badge b-green">Handled</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 8: Next Steps -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <h2>Recommended Next Steps</h2>
+  <ol style="font-size:13px; line-height:2;">
+    <li><strong>Review this dry-run report</strong> — confirm the 4 newly found companies are valid, review relevance classifications</li>
+    <li><strong>Execute live verification for FR+NL</strong> — uncheck "Dry Run" in QA Agent → writes dock_verified, evidence_url, etc. to DB</li>
+    <li><strong>Run Puppeteer deep scan</strong> on the 6 identified candidates (Geomesure, STTL, Capture Solutions, Protec, Voltaneo, Powerloop)</li>
+    <li><strong>Import Batch 2 data</strong> — ChatGPT (142 records) + DJI Dealers (349 records) across 18 countries</li>
+    <li><strong>Run verification on Batch 2</strong> — P1 intelligence sources first (~600 domains), registries second if needed</li>
+    <li><strong>Build country completion tracking</strong> in QA Agent UI — prevent duplicate runs, show progress per country</li>
+  </ol>
+</div>
+
+<div class="footer">
+  Dock Radar — FlytBase BD Intelligence · Generated 28 March 2026 · QA Agent v2 Dry-Run Analysis<br>
+  Data sources: SIRENE (FR), ILT-OA/DCRO/ILT-STS (NL), DJI Enterprise Dealers, Google Search, Comet Intelligence, ChatGPT Deep Research
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+Country for this research: France
+
+You are a panel of research experts helping FlytBase's Business Development team build a comprehensive census of every entity dealing with DJI Dock in the country specified above. This is a top-of-funnel exercise — capture everybody first, then filter down to verified DJI Dock operators. 
+
+(Use the country above for all searches, queries, and file outputs. Derive the 2-letter ISO code automatically.)
+
+Find every entity in the specified country that is dealing with DJI Dock (DJI Dock 1, DJI Dock 2, or DJI Dock 3) in any capacity — operators, deployers, dealers, resellers, installers, software integrators, system integrators, end-users (government, enterprise, public safety), or any other entity in the DJI Dock value chain.
+
+## SEARCH STRATEGY
+
+Run all of the following searches. Search in both English and the local language of the target country:
+
+1. "DJI Dock" "[country]"
+2. "DJI Dock 2" "[country]"
+3. "DJI Dock 3" "[country]"
+4. "DJI Dock" site:[country TLD] (e.g., site:.fr, site:.de, site:.co.uk, site:.com.au)
+5. "DJI Dock" "[country]" site:enterprise-insights.dji.com
+6. "DJI Dock" "[country]" site:viewpoints.dji.com
+7. "DJI Dock" "[country]" site:dronedj.com
+8. "DJI Dock" "[country]" site:dronexl.co
+9. "DJI Dock" "[country]" site:dronelife.com
+10. "DJI Dock" "[country]" site:linkedin.com
+11. "Dock 2" OR "Dock 3" DJI "[country]" drone
+12. "DJI Dock" "[country]" [local language term for drone/inspection/police/security]
+
+Also check:
+- enterprise.dji.com/ecosystem for software partners in the country
+- DJI AirWorks presentations mentioning the country
+
+## STRICT KEYWORD RULE
+
+ONLY include entities with evidence containing these exact terms: "DJI Dock", "Dock 2", "Dock 3".
+
+Do NOT include entities based on:
+- Generic "drone" or "UAV" mentions
+- Generic "DJI" without "Dock" specifically
+- "Drone-in-a-box" without DJI Dock confirmation
+- Competitor products (Skydio Dock, Percepto, Asylon, Nightingale)
+- "Matrice 3D", "Matrice 4D", or "FlightHub 2" alone without "Dock"
+
+## OUTPUT
+
+Create a CSV file named dji_dock_[ISO code]_comet.csv with these columns:
+
+company_name, country, role, dock_models, dock_count, website, linkedin_url, evidence_url_1, source_type_1, evidence_url_2, source_type_2, confidence, notes
+
+Where:
+- role = one of: Government End-User, Enterprise End-User, Authorized Dealer, Software Platform, DFR Service Provider, Reseller, Distributor, System Integrator, Academia/Research
+- dock_models = Dock 1, Dock 2, Dock 3, or combination found in evidence
+- dock_count = number of docks deployed if mentioned, otherwise "Unknown"
+- evidence_url_1 = clickable URL proving DJI Dock involvement (MANDATORY — no URL, no row)
+- source_type_1 = what type of source (Company Website, DJI Case Study, Industry Article, LinkedIn Post, Government Record, Social Media Post)
+- confidence = High (2+ sources), Medium (1 source)
+
+## RULES
+
+1. Every row MUST have at least one clickable evidence URL containing "DJI Dock", "Dock 2", or "Dock 3". No URL = do not include.
+2. Do not fabricate URLs. If you cannot verify, do not include the entity.
+3. Do not include DJI Dock competitors (Skydio, Percepto, Asylon, Nightingale, etc.).
+4. Quality over quantity. 5 verified entities beats 30 guesses.
+5. Report the honest count. If the country has 3 verified entities, output 3 rows.
+
+Execute now.

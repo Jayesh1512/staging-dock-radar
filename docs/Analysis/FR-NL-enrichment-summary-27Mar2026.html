@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FR + NL Enrichment Summary — 27 Mar 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8FAFC; color: #1E293B; padding: 32px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; color: #0F172A; }
+  .subtitle { font-size: 13px; color: #64748B; margin-bottom: 24px; }
+  .timestamp { font-size: 11px; color: #94A3B8; float: right; margin-top: -40px; }
+
+  .kpi-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+  .kpi { background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; padding: 16px 20px; text-align: center; min-width: 110px; flex: 1; }
+  .kpi .value { font-size: 28px; font-weight: 800; }
+  .kpi .label { font-size: 10px; color: #64748B; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi.green .value { color: #059669; }
+  .kpi.blue .value { color: #2563EB; }
+  .kpi.orange .value { color: #D97706; }
+  .kpi.red .value { color: #DC2626; }
+  .kpi.gray .value { color: #64748B; }
+
+  .section { background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .section h2 { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: #0F172A; }
+  .section h3 { font-size: 13px; font-weight: 700; margin: 16px 0 8px; color: #334155; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #F8FAFC; padding: 8px 10px; text-align: left; font-weight: 600; color: #64748B; border-bottom: 2px solid #E2E8F0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+  td { padding: 8px 10px; border-bottom: 1px solid #F1F5F9; }
+  tr:hover td { background: #F8FAFC; }
+  .num { text-align: center; font-weight: 600; }
+  .pct { text-align: center; font-size: 11px; color: #64748B; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+  .badge-green { background: #DCFCE7; color: #166534; }
+  .badge-blue { background: #DBEAFE; color: #1E40AF; }
+  .badge-orange { background: #FEF3C7; color: #92400E; }
+  .badge-red { background: #FEE2E2; color: #991B1B; }
+  .badge-gray { background: #F1F5F9; color: #64748B; }
+
+  .delta { font-size: 11px; font-weight: 600; }
+  .delta.up { color: #059669; }
+  .delta.down { color: #DC2626; }
+  .delta.neutral { color: #64748B; }
+
+  .bar-container { display: flex; height: 24px; border-radius: 6px; overflow: hidden; margin: 8px 0; }
+  .bar-segment { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; min-width: 30px; }
+  .bar-both { background: #059669; }
+  .bar-web { background: #2563EB; }
+  .bar-li { background: #7C3AED; }
+  .bar-none { background: #E2E8F0; color: #64748B; }
+
+  .legend { display: flex; gap: 16px; margin: 8px 0 16px; font-size: 11px; color: #64748B; }
+  .legend span::before { content: ''; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+  .legend .l-both::before { background: #059669; }
+  .legend .l-web::before { background: #2563EB; }
+  .legend .l-li::before { background: #7C3AED; }
+  .legend .l-none::before { background: #E2E8F0; }
+
+  .method-table td:first-child { font-weight: 600; }
+  .cost { color: #059669; font-weight: 600; }
+
+  .insight { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 12px 16px; margin: 12px 0; font-size: 12px; line-height: 1.6; }
+  .insight strong { color: #92400E; }
+
+  .footer { text-align: center; font-size: 11px; color: #94A3B8; margin-top: 32px; padding: 16px; border-top: 1px solid #E2E8F0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>FR + NL Enrichment Summary</h1>
+  <p class="subtitle">Apollo Company Search + Serper LinkedIn Lookup — Batch Enrichment Run</p>
+  <span class="timestamp">27 March 2026 · Dock Radar</span>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi"><div class="value">743</div><div class="label">Total Records</div></div>
+    <div class="kpi green"><div class="value">495</div><div class="label">Both W+LI</div></div>
+    <div class="kpi blue"><div class="value">57</div><div class="label">Website Only</div></div>
+    <div class="kpi" style=""><div class="value" style="color:#7C3AED">15</div><div class="label">LinkedIn Only</div></div>
+    <div class="kpi red"><div class="value">176</div><div class="label">Still Missing</div></div>
+    <div class="kpi gray"><div class="value">76%</div><div class="label">Coverage Rate</div></div>
+  </div>
+
+  <!-- Before / After Comparison -->
+  <div class="section">
+    <h2>Before vs After Enrichment</h2>
+    <div class="legend">
+      <span class="l-both">Both Website + LinkedIn</span>
+      <span class="l-web">Website Only</span>
+      <span class="l-li">LinkedIn Only</span>
+      <span class="l-none">Neither</span>
+    </div>
+
+    <h3>France (393 records)</h3>
+    <p style="font-size:11px; color:#64748B; margin-bottom:6px;">BEFORE</p>
+    <div class="bar-container">
+      <div class="bar-segment bar-both" style="width:31.6%">124</div>
+      <div class="bar-segment bar-web" style="width:0.3%"></div>
+      <div class="bar-segment bar-li" style="width:2.3%">9</div>
+      <div class="bar-segment bar-none" style="width:65.9%">259</div>
+    </div>
+    <p style="font-size:11px; color:#64748B; margin-bottom:6px;">AFTER</p>
+    <div class="bar-container">
+      <div class="bar-segment bar-both" style="width:50.6%">199</div>
+      <div class="bar-segment bar-web" style="width:7.1%">28</div>
+      <div class="bar-segment bar-li" style="width:2.8%">11</div>
+      <div class="bar-segment bar-none" style="width:39.4%">155</div>
+    </div>
+
+    <h3>Netherlands (350 records)</h3>
+    <p style="font-size:11px; color:#64748B; margin-bottom:6px;">BEFORE</p>
+    <div class="bar-container">
+      <div class="bar-segment bar-both" style="width:64.3%">225</div>
+      <div class="bar-segment bar-web" style="width:23.7%">83</div>
+      <div class="bar-segment bar-li" style="width:0%"></div>
+      <div class="bar-segment bar-none" style="width:12%">42</div>
+    </div>
+    <p style="font-size:11px; color:#64748B; margin-bottom:6px;">AFTER</p>
+    <div class="bar-container">
+      <div class="bar-segment bar-both" style="width:84.6%">296</div>
+      <div class="bar-segment bar-web" style="width:8.3%">29</div>
+      <div class="bar-segment bar-li" style="width:1.1%">4</div>
+      <div class="bar-segment bar-none" style="width:6%">21</div>
+    </div>
+
+    <table style="margin-top:16px;">
+      <thead>
+        <tr><th>Metric</th><th>FR Before</th><th>FR After</th><th>Delta</th><th>NL Before</th><th>NL After</th><th>Delta</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Both Website + LinkedIn</td>
+          <td class="num">124</td><td class="num" style="color:#059669;font-weight:700">199</td>
+          <td class="num"><span class="delta up">+75</span></td>
+          <td class="num">225</td><td class="num" style="color:#059669;font-weight:700">296</td>
+          <td class="num"><span class="delta up">+71</span></td>
+        </tr>
+        <tr>
+          <td>Website only (no LinkedIn)</td>
+          <td class="num">1</td><td class="num">28</td>
+          <td class="num"><span class="delta up">+27</span></td>
+          <td class="num">83</td><td class="num">29</td>
+          <td class="num"><span class="delta up">-54 (found LI)</span></td>
+        </tr>
+        <tr>
+          <td>LinkedIn only (no website)</td>
+          <td class="num">9</td><td class="num">11</td>
+          <td class="num"><span class="delta neutral">+2</span></td>
+          <td class="num">0</td><td class="num">4</td>
+          <td class="num"><span class="delta neutral">+4</span></td>
+        </tr>
+        <tr style="background:#FEF2F2;">
+          <td>Neither (no data at all)</td>
+          <td class="num" style="color:#DC2626">259</td><td class="num" style="color:#DC2626">155</td>
+          <td class="num"><span class="delta up">-104</span></td>
+          <td class="num" style="color:#DC2626">42</td><td class="num" style="color:#DC2626">21</td>
+          <td class="num"><span class="delta up">-21</span></td>
+        </tr>
+        <tr style="background:#F0FDF4;">
+          <td style="font-weight:700">Coverage (any enrichment)</td>
+          <td class="num">34%</td><td class="num" style="font-weight:800;color:#059669">61%</td>
+          <td class="num"><span class="delta up">+27pp</span></td>
+          <td class="num">88%</td><td class="num" style="font-weight:800;color:#059669">94%</td>
+          <td class="num"><span class="delta up">+6pp</span></td>
+        </tr>
+        <tr style="background:#F0FDF4;">
+          <td style="font-weight:700">Full coverage (both W+LI)</td>
+          <td class="num">32%</td><td class="num" style="font-weight:800;color:#059669">51%</td>
+          <td class="num"><span class="delta up">+19pp</span></td>
+          <td class="num">64%</td><td class="num" style="font-weight:800;color:#059669">85%</td>
+          <td class="num"><span class="delta up">+21pp</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Method -->
+  <div class="section">
+    <h2>Enrichment Method</h2>
+    <p style="font-size:12px; color:#64748B; margin-bottom:12px;">Three-track approach using Apollo.io Company Search (free) + Serper.dev Google Search (1 credit/query).</p>
+
+    <table class="method-table">
+      <thead>
+        <tr><th>Track</th><th>Target</th><th>Method</th><th>Records</th><th>Found</th><th>Hit Rate</th><th>Cost</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-green">A</span> Apollo Search</td>
+          <td>No website, no LinkedIn</td>
+          <td>POST /mixed_companies/search (name → domain + LI)</td>
+          <td class="num">301</td>
+          <td class="num" style="color:#059669">125</td>
+          <td class="num">41%</td>
+          <td class="cost">$0 (free)</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">B</span> Apollo Enrich → Serper</td>
+          <td>Website exists, no LinkedIn</td>
+          <td>GET /organizations/enrich (domain → LI), then Serper fallback</td>
+          <td class="num">84</td>
+          <td class="num" style="color:#059669">63</td>
+          <td class="num">75%</td>
+          <td class="cost">~40 Serper credits</td>
+        </tr>
+        <tr>
+          <td><span class="badge" style="background:#F3E8FF;color:#6B21A8">C</span> Serper Domain</td>
+          <td>LinkedIn exists, no website</td>
+          <td>Google search "company name" → top result domain</td>
+          <td class="num">9</td>
+          <td class="num" style="color:#059669">5</td>
+          <td class="num">56%</td>
+          <td class="cost">~9 Serper credits</td>
+        </tr>
+        <tr style="background:#F8FAFC; font-weight:600;">
+          <td colspan="3">Total</td>
+          <td class="num">394</td>
+          <td class="num" style="color:#059669">193</td>
+          <td class="num">49%</td>
+          <td class="cost">~49 Serper credits</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="insight">
+      <strong>Key innovation:</strong> Previous Apollo runs used the wrong API endpoint (<code>/organizations/enrich?organization_name=X</code> which requires a domain).
+      Switching to <code>POST /mixed_companies/search</code> unlocked name-based lookups for free. Combined with <strong>legal suffix stripping</strong>
+      (SAS, SARL, EURL, B.V., etc.), this recovered 125 records that were previously "unfindable".
+    </div>
+  </div>
+
+  <!-- Source Breakdown -->
+  <div class="section">
+    <h2>Enrichment by Data Source</h2>
+    <table>
+      <thead>
+        <tr><th>Source</th><th>Country</th><th class="num">Total</th><th class="num">Both</th><th class="num">Web Only</th><th class="num">LI Only</th><th class="num">Neither</th><th class="num">Coverage</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-gray">SIRENE</span> French Business Registry</td>
+          <td>FR</td>
+          <td class="num">378</td><td class="num">184</td><td class="num">28</td><td class="num">11</td><td class="num" style="color:#DC2626">155</td>
+          <td class="num">59%</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">ILT-OA</span> NL Aviation Registry</td>
+          <td>NL</td>
+          <td class="num">274</td><td class="num">225</td><td class="num">25</td><td class="num">4</td><td class="num" style="color:#DC2626">20</td>
+          <td class="num">93%</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">DCRO</span> NL Drone Registry</td>
+          <td>NL</td>
+          <td class="num">50</td><td class="num">46</td><td class="num">4</td><td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#059669;font-weight:700">100%</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-orange">DJI Dealer</span></td>
+          <td>FR + NL</td>
+          <td class="num">17</td><td class="num">17</td><td class="num">0</td><td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#059669;font-weight:700">100%</td>
+        </tr>
+        <tr>
+          <td><span class="badge" style="background:#FEF3C7;color:#92400E">Google Search</span></td>
+          <td>FR + NL</td>
+          <td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#059669;font-weight:700">100%</td>
+        </tr>
+        <tr>
+          <td><span class="badge" style="background:#FEE2E2;color:#991B1B">ChatGPT</span></td>
+          <td>FR + NL</td>
+          <td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#059669;font-weight:700">100%</td>
+        </tr>
+        <tr>
+          <td><span class="badge" style="background:#E9D5FF;color:#6B21A8">Comet</span></td>
+          <td>FR + NL</td>
+          <td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td>
+          <td class="num" style="color:#059669;font-weight:700">100%</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">ILT-STS</span> NL Special Ops</td>
+          <td>NL</td>
+          <td class="num">8</td><td class="num">7</td><td class="num">0</td><td class="num">0</td><td class="num">1</td>
+          <td class="num">88%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="insight">
+      <strong>Observation:</strong> Intelligence sources (DJI, Google, ChatGPT, Comet) are 100% enriched — these companies were already well-known.
+      The gap is in <strong>registry bulk imports</strong> (SIRENE 59%, ILT-OA 93%). The remaining 155 FR unenriched records are mostly
+      micro-businesses, sole traders (DRONET surname variants), and local associations with no web presence.
+    </div>
+  </div>
+
+  <!-- Remaining Gap Analysis -->
+  <div class="section">
+    <h2>Remaining Gap: 176 Unenriched Records</h2>
+    <p style="font-size:12px; color:#64748B; margin-bottom:12px;">These records have no website and no LinkedIn after all enrichment attempts.</p>
+
+    <table>
+      <thead>
+        <tr><th>Category</th><th class="num">Count</th><th>Description</th><th>Recommended Action</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-gray">SIRENE False Positives</span></td>
+          <td class="num">~45</td>
+          <td>Names containing "drone" as part of a surname, place, or unrelated word<br><em>e.g., DRONEAU, MADRONET, PEDRONE, ANDRONE, BODRONE, CHAUDRONERIE</em></td>
+          <td><span class="badge badge-red">Flag for removal</span> — not actual drone companies</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-gray">SIRENE Micro-businesses</span></td>
+          <td class="num">~60</td>
+          <td>Very small drone operators with no web footprint<br><em>e.g., DRONE JET, BP DRONE, F2 DRONE, TD DRONE, OA DRONE</em></td>
+          <td><span class="badge badge-orange">Low priority</span> — unlikely DJI Dock buyers</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-gray">SIRENE Real Companies</span></td>
+          <td class="num">~50</td>
+          <td>Legitimate drone businesses Apollo couldn't match<br><em>e.g., DELTA DRONE MANAGERS, MECADRONE, DRONEMATCH FRANCE</em></td>
+          <td><span class="badge badge-blue">Manual enrichment</span> or Serper targeted search</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">NL Registry</span></td>
+          <td class="num">21</td>
+          <td>Small NL operators / photography businesses<br><em>e.g., Marcel Willems Photography, BiBi House Styling</em></td>
+          <td><span class="badge badge-orange">Low priority</span> — photography/media operators</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="insight">
+      <strong>Recommendation:</strong> Of the 176 remaining, ~45 are SIRENE false positives (surname matches, not drone companies).
+      These should be flagged with <code>dock_qa_status = 'rejected'</code> during QA review.
+      The ~50 real companies could be enriched via targeted Serper domain search or manual Google lookup —
+      estimated 25-30 additional finds at ~50 Serper credits.
+    </div>
+  </div>
+
+  <!-- DJI Dock Verification Status -->
+  <div class="section">
+    <h2>DJI Dock Verification Pipeline Status</h2>
+    <table>
+      <thead>
+        <tr><th>Stage</th><th class="num">FR</th><th class="num">NL</th><th class="num">Total</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Total records in DB</td>
+          <td class="num">393</td><td class="num">350</td><td class="num" style="font-weight:700">743</td>
+          <td>All sources combined</td>
+        </tr>
+        <tr>
+          <td>Enriched (have website)</td>
+          <td class="num">227</td><td class="num">325</td><td class="num" style="font-weight:700">552</td>
+          <td>Ready for DJI Dock keyword verification via QA Agent</td>
+        </tr>
+        <tr style="background:#F0FDF4;">
+          <td>DJI Dock verified</td>
+          <td class="num" style="color:#059669;font-weight:700">18</td>
+          <td class="num" style="color:#059669;font-weight:700">8</td>
+          <td class="num" style="color:#059669;font-weight:700">26</td>
+          <td>Confirmed via Serper site-search + LinkedIn scan</td>
+        </tr>
+        <tr>
+          <td>With evidence URL</td>
+          <td class="num">20</td><td class="num">8</td><td class="num" style="font-weight:700">28</td>
+          <td>Direct link to DJI Dock content on company site</td>
+        </tr>
+        <tr>
+          <td>Pending verification</td>
+          <td class="num">209</td><td class="num">317</td><td class="num" style="font-weight:700">526</td>
+          <td>Website available but QA Agent not yet run</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="insight">
+      <strong>Next step:</strong> Run the QA Agent on the 526 enriched-but-unverified records to check for DJI Dock keyword mentions.
+      Based on the FR+NL pilot (29 confirmed out of 34 tested), expected confirmation rate is ~5-15% of enriched records.
+    </div>
+  </div>
+
+  <!-- Cost Summary -->
+  <div class="section">
+    <h2>Cost Summary</h2>
+    <table>
+      <thead>
+        <tr><th>Resource</th><th>Used</th><th>Unit Cost</th><th>Total Cost</th><th>Remaining Balance</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Apollo Company Search</td>
+          <td>~600 API calls (301 records × ~2 variants each)</td>
+          <td class="cost">Free (0 credits)</td>
+          <td class="cost">$0</td>
+          <td>~585 credits remaining</td>
+        </tr>
+        <tr>
+          <td>Apollo Org Enrich</td>
+          <td>~84 API calls (domain → LinkedIn)</td>
+          <td class="cost">Free (0 credits)</td>
+          <td class="cost">$0</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>Serper Google Search</td>
+          <td>~49 queries (Track B fallback + Track C)</td>
+          <td>1 credit/query</td>
+          <td>~49 credits</td>
+          <td>~2,177 credits remaining</td>
+        </tr>
+        <tr style="background:#F0FDF4; font-weight:600;">
+          <td>Total</td>
+          <td colspan="2"></td>
+          <td>49 Serper credits + $0 Apollo</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Technical Notes -->
+  <div class="section">
+    <h2>Technical Notes</h2>
+    <ul style="font-size:12px; line-height:1.8; color:#475569; padding-left:20px;">
+      <li><strong>Name cleaning:</strong> Legal suffixes (SAS, SARL, EURL, B.V., NV, LLC, etc.) stripped before Apollo lookup. Parenthetical trade names tried as variants.</li>
+      <li><strong>Apollo endpoint fix:</strong> Previous runs used <code>GET /organizations/enrich?organization_name=X</code> which requires a domain parameter (returns 422 without it). Switched to <code>POST /mixed_companies/search</code> which accepts company names — this is why previous runs returned 0 results.</li>
+      <li><strong>Track B optimization:</strong> Apollo domain-enrich tried first (free), Serper only used as fallback when Apollo didn't return LinkedIn.</li>
+      <li><strong>Track C quality control:</strong> 20/20 Serper domain lookups returned results, but 15 were false positives (directory sites, unrelated pages). These were automatically reverted, keeping only 5 verified domains.</li>
+      <li><strong>Rate limiting:</strong> 300ms between Apollo calls (~200/min), 500ms between Serper calls. No rate limit errors encountered.</li>
+      <li><strong>DB updates:</strong> Each successful enrichment sets <code>enriched_at</code> timestamp and updates <code>dock_qa_status</code> to 'enriched' when website is found.</li>
+      <li><strong>API route created:</strong> <code>POST /api/registry/enrich-batch</code> — reusable for future country enrichment. Accepts <code>{countryCodes, dryRun}</code>.</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    Dock Radar — FlytBase BD Intelligence · Generated 27 March 2026 · Data as of enrichment batch run completion
+  </div>
+</div>
+</body>
+</html>
