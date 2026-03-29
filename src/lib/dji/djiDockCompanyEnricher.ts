@@ -242,7 +242,13 @@ export async function enrichDjiDockCompanyFromSerperRegex(
   const serperQuery = `${companyName} ${companyCountryInput} drone`;
 
   const searchResults = await searchGoogle(
-    { keyword: serperQuery, country: serperCountryCode, pages },
+    {
+      keyword: serperQuery,
+      country: serperCountryCode,
+      pages,
+      // Broad match: exact phrase on "name + country + drone" almost never appears verbatim on the web.
+      exactPhrase: false,
+    },
     serperApiKey,
   );
 

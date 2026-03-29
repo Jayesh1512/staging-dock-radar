@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
-import { requireSupabase } from '@/lib/supabase';
+import { cleanCompanyName } from '@/lib/company-name-clean';
+import { JSDOM } from 'jsdom';
+import {
+  apolloCompanySearch,
+  apolloOrgEnrich,
+  extractDomain,
+  hasApolloKey,
+  normalizeWebsiteUrl,
+} from '@/lib/company-enrichment/apolloSerper';
 import { enrichDjiDockCompanyFromSerperRegex } from '@/lib/dji/djiDockCompanyEnricher';
 import { runDockQaInternetScan, type DockQaInternetResult } from '@/lib/dji/dockQaInternetScan';
 import { upsertMultiSourcesFromDockHunter, websiteToNormalizedDomain } from '@/lib/multi-sources-companies-import';
+import { requireSupabase } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -16,9 +25,169 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function fetchHtmlWithTimeout(url: string, timeoutMs: number): Promise<string | null> {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      redirect: 'follow',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; DockRadar/1.0)',
+        Accept: 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en,fr;q=0.9',
+      },
+    });
+    if (!res.ok) return null;
+    return await res.text();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+function extractLinkedInCompanyUrlFromHtml(html: string, baseUrl: string): string | null {
+  try {
+    const dom = new JSDOM(html);
+    const doc = dom.window.document;
+    const anchors = Array.from(doc.querySelectorAll('a[href]')) as HTMLAnchorElement[];
+
+    const candidates: string[] = [];
+    for (const a of anchors) {
+      const href = (a.getAttribute('href') ?? '').trim();
+      if (!href) continue;
+
+      let abs: string;
+      try {
+        abs = new URL(href, baseUrl).toString();
+      } catch {
+        continue;
+      }
+
+      if (!/https?:\/\/([a-z]{2,3}\.)?linkedin\.com\//i.test(abs)) continue;
+      if (/linkedin\.com\/company\//i.test(abs) || /linkedin\.com\/showcase\//i.test(abs)) {
+        candidates.push(abs);
+      }
+    }
+
+    if (candidates.length === 0) return null;
+
+    // Prefer canonical company URLs: shortest path, drop tracking.
+    const normalized = candidates.map((u) => {
+      try {
+        const url = new URL(u);
+        url.hash = '';
+        url.search = '';
+        return url.toString();
+      } catch {
+        return u;
+      }
+    });
+
+    normalized.sort((a, b) => a.length - b.length);
+    return normalized[0];
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * When APOLLO_API_KEY is set: resolve canonical domain + LinkedIn via Apollo (same idea as CSV pipeline).
+ * Prefers Apollo over Serper's #1 Google hit when the row did not supply website/LinkedIn in CSV.
+ */
+async function mergeApolloWebsiteLinkedin(
+  companyName: string,
+  csvWebsite: string | null,
+  csvLinkedin: string | null,
+  serperWebsite: string | null,
+  serperLinkedin: string | null,
+): Promise<{
+  website: string | null;
+  linkedin: string | null;
+  websiteSource: 'csv' | 'serper' | 'apollo';
+  linkedinSource: 'csv' | 'serper' | 'apollo' | 'apollo_org_enrich' | 'website_scan';
+}> {
+  let website = csvWebsite ?? serperWebsite;
+  let linkedin = csvLinkedin ?? serperLinkedin;
+  let websiteSource: 'csv' | 'serper' | 'apollo' = csvWebsite ? 'csv' : 'serper';
+  let linkedinSource: 'csv' | 'serper' | 'apollo' | 'apollo_org_enrich' | 'website_scan' = csvLinkedin
+    ? 'csv'
+    : serperLinkedin
+      ? 'serper'
+      : 'serper';
+
+  if (!hasApolloKey()) return { website, linkedin, websiteSource, linkedinSource };
+
+  const cleaned = cleanCompanyName(companyName);
+  let apolloDomain: string | null = null;
+  let apolloLi: string | null = null;
+  const serperWebsiteOriginal = serperWebsite;
+  let usedApolloDomain = false;
+
+  for (const variant of cleaned.variants) {
+    try {
+      const r = await apolloCompanySearch(variant);
+      if (r.domain || r.linkedinUrl) {
+        apolloDomain = r.domain ?? null;
+        apolloLi = r.linkedinUrl ?? null;
+        break;
+      }
+    } catch {
+      /* invalid key / network */
+    }
+    await sleep(300);
+  }
+
+  if (!csvWebsite && apolloDomain) {
+    website = normalizeWebsiteUrl(apolloDomain);
+    websiteSource = 'apollo';
+    usedApolloDomain = true;
+  }
+  if (!csvLinkedin && apolloLi) {
+    linkedin = apolloLi;
+    linkedinSource = 'apollo';
+  }
+
+  const dom = extractDomain(website);
+  if (!csvLinkedin && !linkedin && dom) {
+    try {
+      const o = await apolloOrgEnrich(dom);
+      if (o.linkedinUrl) linkedin = o.linkedinUrl;
+      if (o.linkedinUrl) linkedinSource = 'apollo_org_enrich';
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // Apollo may return a domain but still no LinkedIn.
+  // Fallback: visit the website and look for LinkedIn company/showcase links in the HTML.
+  if (!csvLinkedin && !linkedin && website) {
+    const websiteUrl = normalizeWebsiteUrl(website);
+    if (websiteUrl) {
+      const html = await fetchHtmlWithTimeout(websiteUrl, 7000);
+      if (html) {
+        const liFromSite = extractLinkedInCompanyUrlFromHtml(html, websiteUrl);
+        if (liFromSite) linkedin = liFromSite;
+        if (liFromSite) linkedinSource = 'website_scan';
+      }
+    }
+  }
+
+  // Guardrail: if Apollo only provided a domain but we still couldn't find LinkedIn,
+  // keep the Serper website instead (likely less ambiguous than Apollo for some names).
+  if (!csvLinkedin && usedApolloDomain && !apolloLi && !linkedin && serperWebsiteOriginal) {
+    website = serperWebsiteOriginal;
+    websiteSource = 'serper';
+  }
+
+  return { website, linkedin, websiteSource, linkedinSource };
+}
+
 type RegistryRow = {
   id: string;
   company_name: string;
+  trade_name?: string | null;
   country_code: string;
   website?: string | null;
   linkedin?: string | null;
@@ -29,6 +198,8 @@ type WorkRow = {
   /** Response id: registry UUID or `csv-{index}` */
   registry_id: string;
   company_name: string;
+  /** Preferred label for display and multi_sources.display_name (trade_name > company_name). */
+  display_name: string;
   country_code: string;
   website: string | null;
   linkedin: string | null;
@@ -46,6 +217,8 @@ type ScanResultRow = {
   linkedin_before: string | null;
   website_after: string | null;
   linkedin_after: string | null;
+  website_source?: 'csv' | 'serper' | 'apollo';
+  linkedin_source?: 'csv' | 'serper' | 'apollo' | 'apollo_org_enrich' | 'website_scan';
   dji_dock_hit: boolean;
   stored_to_discovered_company: boolean;
   serper_top_link: string | null;
@@ -148,6 +321,7 @@ export async function POST(req: Request) {
         parsed.push({
           registry_id: `csv-${idx}`,
           company_name: n.company_name,
+          display_name: n.company_name,
           country_code: n.country_code,
           website: n.website,
           linkedin: n.linkedin,
@@ -173,7 +347,7 @@ export async function POST(req: Request) {
       for (let attempt = 0; attempt < 2; attempt++) {
         let query = db
           .from('country_registered_companies')
-          .select('id, company_name, country_code, website, linkedin')
+          .select('id, company_name, trade_name, country_code, website, linkedin')
           .order('id', { ascending: true })
           .limit(scanLimit);
 
@@ -200,6 +374,7 @@ export async function POST(req: Request) {
       workRows = rows.map((r) => ({
         registry_id: r.id,
         company_name: r.company_name,
+        display_name: (r.trade_name && r.trade_name.trim().length > 0) ? r.trade_name.trim() : r.company_name,
         country_code: r.country_code,
         website: r.website ?? null,
         linkedin: r.linkedin ?? null,
@@ -222,6 +397,14 @@ export async function POST(req: Request) {
         let analysis: Awaited<ReturnType<typeof enrichDjiDockCompanyFromSerperRegex>> | null = null;
         let nextWebsite = row.website ?? null;
         let nextLinkedin = row.linkedin ?? null;
+        let nextWebsiteSource: 'csv' | 'serper' | 'apollo' | undefined;
+        let nextLinkedinSource:
+          | 'csv'
+          | 'serper'
+          | 'apollo'
+          | 'apollo_org_enrich'
+          | 'website_scan'
+          | undefined;
 
         if (runEnrich) {
           analysis = await enrichDjiDockCompanyFromSerperRegex(
@@ -233,8 +416,17 @@ export async function POST(req: Request) {
             },
             serperApiKey,
           );
-          nextWebsite = row.website ?? analysis.websiteCandidate ?? null;
-          nextLinkedin = row.linkedin ?? analysis.linkedin.found ?? null;
+          const merged = await mergeApolloWebsiteLinkedin(
+            row.company_name,
+            row.website,
+            row.linkedin,
+            analysis.websiteCandidate ?? null,
+            analysis.linkedin.found ?? null,
+          );
+          nextWebsite = merged.website;
+          nextLinkedin = merged.linkedin;
+          nextWebsiteSource = merged.websiteSource;
+          nextLinkedinSource = merged.linkedinSource;
         } else {
           nextWebsite = row.website ?? null;
           nextLinkedin = row.linkedin ?? null;
@@ -261,7 +453,7 @@ export async function POST(req: Request) {
             if (delayMs > 0) await sleep(Math.min(delayMs, 400));
             qaInternet = await runDockQaInternetScan(domain, nextLinkedin, serperApiKey);
             const upsert = await upsertMultiSourcesFromDockHunter(db, {
-              displayName: row.company_name,
+              displayName: row.display_name,
               countryCode: row.country_code,
               website: nextWebsite,
               linkedin: nextLinkedin,
@@ -283,6 +475,8 @@ export async function POST(req: Request) {
           linkedin_before: row.linkedin ?? null,
           website_after: nextWebsite,
           linkedin_after: nextLinkedin,
+          website_source: nextWebsiteSource,
+          linkedin_source: nextLinkedinSource,
           dji_dock_hit: analysis?.djiDockRegex.anyHit ?? false,
           stored_to_discovered_company: analysis?.storedToDiscoveredCompany ?? false,
           serper_top_link: analysis?.topResult?.link ?? null,
@@ -300,6 +494,8 @@ export async function POST(req: Request) {
           linkedin_before: row.linkedin ?? null,
           website_after: row.website ?? null,
           linkedin_after: row.linkedin ?? null,
+          website_source: undefined,
+          linkedin_source: undefined,
           dji_dock_hit: false,
           stored_to_discovered_company: false,
           serper_top_link: null,
@@ -337,6 +533,7 @@ export async function POST(req: Request) {
         run_qa_internet: runQaInternet,
         persist_discovered: persistDiscovered,
         import_batch: importBatch,
+        apollo_merge: hasApolloKey(),
       },
       results,
     });
