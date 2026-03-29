@@ -283,7 +283,26 @@ export function Navbar({
 
                 <Link
                   role="menuitem"
-<<<<<<< HEAD
+                  href="/utilities/dji-dock-hunter"
+                  onClick={() => setToolsOpen(false)}
+                  style={{ ...menuItemStyle(pathname === '/utilities/dji-dock-hunter', '#B45309'), textDecoration: 'none', display: 'block' }}
+                >
+                  <div>DJI Dock Hunter</div>
+                  <div style={menuSubtitle}>Registry → Serper + crawl → DJI Dock regex → discovered_companies</div>
+                </Link>
+
+                <Link
+                  role="menuitem"
+                  href="/utilities/csv-company-pipeline"
+                  onClick={() => setToolsOpen(false)}
+                  style={{ ...menuItemStyle(pathname === '/utilities/csv-company-pipeline', '#047857'), textDecoration: 'none', display: 'block' }}
+                >
+                  <div>CSV company pipeline</div>
+                  <div style={menuSubtitle}>Apollo + Serper enrich → QA → Storage + multi_sources_companies_import</div>
+                </Link>
+
+                <Link
+                  role="menuitem"
                   href="/utilities/dock-verify"
                   onClick={() => setToolsOpen(false)}
                   style={{ ...menuItemStyle(pathname === '/utilities/dock-verify', '#059669'), textDecoration: 'none', display: 'block' }}
@@ -300,14 +319,16 @@ export function Navbar({
                 >
                   <div>DJI Dock Keyword QA Agent</div>
                   <div style={menuSubtitle}>Automated DJI Dock verification — Serper + LinkedIn + confidence scoring</div>
-=======
+                </Link>
+
+                <Link
+                  role="menuitem"
                   href="/utilities/dji-dock-company-enricher"
                   onClick={() => setToolsOpen(false)}
                   style={{ ...menuItemStyle(pathname === '/utilities/dji-dock-company-enricher', '#C2410C'), textDecoration: 'none', display: 'block' }}
                 >
                   <div>DJI Dock Company Enricher</div>
                   <div style={menuSubtitle}>Company + country | Serper | regex scrape</div>
->>>>>>> aa62a2b90bc19da56ad981667f291eeaa0cc6f2f
                 </Link>
 
                 <div style={{ width: '100%' }} title="Test company enrichment lookups">

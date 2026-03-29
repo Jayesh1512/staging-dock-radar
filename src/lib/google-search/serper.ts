@@ -29,6 +29,11 @@ interface SearchParams {
   country: string;       // ISO 2-letter: FR, DE, UK, AU
   pages: number;         // how many pages (10 results each)
   onPageDone?: (page: number, results: SerperResult[]) => void;
+  /**
+   * When true (default), the keyword is wrapped in quotes so Google matches that exact phrase.
+   * Set false for broader matches (e.g. company + location where the full phrase rarely appears verbatim).
+   */
+  exactPhrase?: boolean;
 }
 
 const COUNTRY_CONFIG: Record<string, { gl: string; hl: string; name: string }> = {
@@ -59,7 +64,10 @@ export async function searchGoogle(
   apiKey: string,
 ): Promise<SerperResult[]> {
   const config = COUNTRY_CONFIG[params.country.toUpperCase()] ?? { gl: params.country.toLowerCase(), hl: 'en', name: params.country };
-  const query = `"${params.keyword}" ${config.name}`;
+  const useExact = params.exactPhrase !== false;
+  const query = useExact
+    ? `"${params.keyword}" ${config.name}`
+    : `${params.keyword} ${config.name}`.trim();
 
   const allResults: SerperResult[] = [];
 

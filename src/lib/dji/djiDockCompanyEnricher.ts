@@ -174,10 +174,16 @@ function unionArray<T>(a: T[] | null | undefined, b: T[]): T[] {
   return Array.from(set);
 }
 
+function pickWebsiteCandidate(rootUrl: string | null, topUrl: string): string {
+  return rootUrl ?? topUrl;
+}
+
 export interface EnrichDjiDockCompanyInput {
   companyName: string;
   companyCountry: string; // Prefer ISO-2 (FR/DE/UK...) but we also accept canonical names
   pages?: number; // keep default small
+  /** When false, skip writes to discovered_companies (enrichment + QA can use multi_sources only). Default true. */
+  persistToDiscovered?: boolean;
 }
 
 export interface EnrichDjiDockCompanyResult {
@@ -199,6 +205,9 @@ export interface EnrichDjiDockCompanyResult {
   };
   linkedin: { found: string | null; source: 'top' | 'root' | null };
 
+  /** Best-effort company site: root homepage from top SERP URL, else the top result URL */
+  websiteCandidate: string | null;
+
   storedToDiscoveredCompany: boolean;
   discoveredCompany?: {
     normalized_name: string;
@@ -218,6 +227,7 @@ export async function enrichDjiDockCompanyFromSerperRegex(
   const companyName = (input.companyName ?? '').trim();
   const companyCountryInput = (input.companyCountry ?? '').trim();
   const pages = Math.max(1, Math.min(3, input.pages ?? 1));
+  const persistToDiscovered = input.persistToDiscovered !== false;
 
   if (!companyName) throw new Error('companyName is required');
   if (!companyCountryInput) throw new Error('companyCountry is required');
@@ -258,6 +268,7 @@ export async function enrichDjiDockCompanyFromSerperRegex(
         anyHit: false,
       },
       linkedin: { found: null, source: null },
+      websiteCandidate: null,
       storedToDiscoveredCompany: false,
     };
   }
@@ -322,11 +333,34 @@ export async function enrichDjiDockCompanyFromSerperRegex(
         anyHit: false,
       },
       linkedin: { found: linkedinFound, source: linkedinSource },
+      websiteCandidate: pickWebsiteCandidate(rootUrl, topUrl),
       storedToDiscoveredCompany: false,
     };
   }
 
-  // ── Store to discovered_companies (only when hit) ──
+  if (!persistToDiscovered) {
+    return {
+      companyName,
+      companyCountryInput,
+      normalizedCompanyName,
+      canonicalCountryName,
+      serperQuery,
+      serperCountryCode,
+      topResult,
+      crawledTop,
+      crawledRoot,
+      djiDockRegex: {
+        top: { hit: topMatch.hit, count: topCount, match: topMatch.match, snippet: topSnippet },
+        root: { hit: rootMatch.hit, count: rootCount, match: rootMatch.match, snippet: rootSnippet },
+        anyHit: true,
+      },
+      linkedin: { found: linkedinFound, source: linkedinSource },
+      websiteCandidate: pickWebsiteCandidate(rootUrl, topUrl),
+      storedToDiscoveredCompany: false,
+    };
+  }
+
+  // ── Store to discovered_companies (only when hit && persistToDiscovered) ──
   const db = requireSupabase();
   const now = new Date().toISOString();
 
@@ -411,6 +445,7 @@ export async function enrichDjiDockCompanyFromSerperRegex(
       anyHit: true,
     },
     linkedin: { found: linkedinFound, source: linkedinSource },
+    websiteCandidate: pickWebsiteCandidate(rootUrl, topUrl),
     storedToDiscoveredCompany: true,
     discoveredCompany: stored
       ? {

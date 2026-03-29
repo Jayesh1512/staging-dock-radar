@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { cleanCompanyName } from '@/lib/company-name-clean';
+import {
+  apolloCompanySearch,
+  apolloOrgEnrich,
+  extractDomain,
+  serperDomainLookup,
+  serperLinkedInLookup,
+} from '@/lib/company-enrichment/apolloSerper';
 
 export const maxDuration = 300; // 5 min
 
@@ -260,153 +267,4 @@ export async function POST(req: Request) {
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function apolloHeaders() {
-  const key = process.env.APOLLO_API_KEY;
-  if (!key) throw new Error('APOLLO_API_KEY not set');
-  return { 'x-api-key': key, 'Content-Type': 'application/json', accept: 'application/json' };
-}
-
-/**
- * Apollo Company Search — finds domain + LinkedIn by company name.
- * Uses POST /mixed_companies/search (free, 0 credits).
- */
-async function apolloCompanySearch(companyName: string): Promise<{ domain: string | null; linkedinUrl: string | null }> {
-  try {
-    const res = await fetch('https://api.apollo.io/api/v1/mixed_companies/search', {
-      method: 'POST',
-      headers: apolloHeaders(),
-      body: JSON.stringify({ q_organization_name: companyName, per_page: 1 }),
-    });
-    if (!res.ok) return { domain: null, linkedinUrl: null };
-    const data = await res.json() as {
-      accounts?: Array<{ domain?: string; linkedin_url?: string; website_url?: string }>;
-    };
-    const acct = data.accounts?.[0];
-    return {
-      domain: acct?.domain ?? null,
-      linkedinUrl: acct?.linkedin_url ?? null,
-    };
-  } catch {
-    return { domain: null, linkedinUrl: null };
-  }
-}
-
-/**
- * Apollo Org Enrich — gets LinkedIn by domain.
- * Uses GET /organizations/enrich?domain=X (free, 0 credits).
- */
-async function apolloOrgEnrich(domain: string): Promise<{ linkedinUrl: string | null }> {
-  try {
-    const res = await fetch(
-      `https://api.apollo.io/api/v1/organizations/enrich?domain=${encodeURIComponent(domain)}`,
-      { headers: apolloHeaders() },
-    );
-    if (!res.ok) return { linkedinUrl: null };
-    const data = await res.json() as {
-      organization?: { linkedin_url?: string };
-    };
-    return { linkedinUrl: data.organization?.linkedin_url ?? null };
-  } catch {
-    return { linkedinUrl: null };
-  }
-}
-
-/**
- * Extract domain from a website URL.
- * e.g. "https://www.escadrone.com/something" → "escadrone.com"
- */
-function extractDomain(website: string | null): string | null {
-  if (!website) return null;
-  try {
-    const u = new URL(website.startsWith('http') ? website : `https://${website}`);
-    return u.hostname.replace(/^www\./, '');
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Serper: search for company LinkedIn page
- * Query: "company name" site:linkedin.com/company
- * Returns first matching LinkedIn URL or null
- */
-async function serperLinkedInLookup(
-  companyName: string,
-  countryCode: string,
-  apiKey: string,
-): Promise<string | null> {
-  try {
-    const gl = countryCode.toLowerCase();
-    const res = await fetch('https://google.serper.dev/search', {
-      method: 'POST',
-      headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        q: `"${companyName}" site:linkedin.com/company`,
-        gl,
-        num: 3,
-      }),
-    });
-
-    if (!res.ok) return null;
-    const data = await res.json() as { organic?: Array<{ link: string }> };
-    const match = data.organic?.find(r =>
-      r.link.includes('linkedin.com/company/') &&
-      !r.link.includes('/posts') &&
-      !r.link.includes('/jobs')
-    );
-    return match?.link ?? null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Serper: search for company website
- * Query: "company name" country -site:linkedin.com -site:facebook.com
- * Returns first plausible domain or null
- */
-async function serperDomainLookup(
-  companyName: string,
-  countryCode: string,
-  apiKey: string,
-): Promise<string | null> {
-  try {
-    const gl = countryCode.toLowerCase();
-    const res = await fetch('https://google.serper.dev/search', {
-      method: 'POST',
-      headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        q: `"${companyName}" -site:linkedin.com -site:facebook.com -site:twitter.com`,
-        gl,
-        num: 5,
-      }),
-    });
-
-    if (!res.ok) return null;
-    const data = await res.json() as { organic?: Array<{ link: string; title: string }> };
-
-    // Exclude social/marketplace/directory sites
-    const EXCLUDE = ['linkedin.com', 'facebook.com', 'twitter.com', 'youtube.com',
-      'amazon.', 'ebay.', 'wikipedia.org', 'yelp.com', 'trustpilot.com',
-      'societe.com', 'pappers.fr', 'infogreffe.fr', 'kvk.nl', 'opencorporates.com'];
-
-    const match = data.organic?.find(r => {
-      const url = r.link.toLowerCase();
-      return !EXCLUDE.some(ex => url.includes(ex));
-    });
-
-    if (!match) return null;
-
-    // Extract clean URL (just scheme + domain)
-    try {
-      const u = new URL(match.link);
-      return `${u.protocol}//${u.hostname}`;
-    } catch {
-      return match.link;
-    }
-  } catch {
-    return null;
-  }
 }
