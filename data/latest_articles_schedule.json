@@ -1,12 +1,21 @@
 {
   "enabled": true,
+<<<<<<< HEAD
   "timeOfDay": "10:21",
+=======
+  "timeOfDay": "01:36",
+>>>>>>> aa62a2b90bc19da56ad981667f291eeaa0cc6f2f
   "minScore": 50,
   "maxArticles": 50,
   "linkedin30SecScrape": false,
   "linkedinHeadless": false,
   "browserTimeoutMs": 180000,
+<<<<<<< HEAD
   "nextRunAt": "2026-03-30T04:51:00.000Z",
   "lastRunAt": "2026-03-29T04:52:38.700Z",
+=======
+  "nextRunAt": "2026-03-27T20:06:00.000Z",
+  "lastRunAt": "2026-03-25T20:28:52.892Z",
+>>>>>>> aa62a2b90bc19da56ad981667f291eeaa0cc6f2f
   "lastStatus": "success"
 }

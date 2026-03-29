@@ -32,6 +32,8 @@ type CompanyResult = {
   name: string;
   slug: string;
   totalPosts: number;
+  djiCount: number;
+  djiDockCount: number;
   matchedPosts: number;
   signal: boolean;
 };
@@ -47,6 +49,23 @@ type ScanLogEntry = {
   batch: string | null;
   run_id: string;
   scanned_at: string;
+};
+
+type WebsiteScanRow = {
+  slug: string;
+  posts_scraped: number;
+  // Field mapping mirrors scan log table.
+  dock_matches: number;
+  dji_count: number;
+  dock_count: number;
+  diab_count: number;
+};
+
+type WebsiteScanResponse = {
+  runId?: string;
+  count?: number;
+  rows?: WebsiteScanRow[];
+  error?: string;
 };
 
 function escapeRegExp(input: string): string {
@@ -94,8 +113,19 @@ function extractCompanySlug(article: Article): string | null {
   const candidates = [article.publisher_url, article.url];
   for (const value of candidates) {
     const raw = String(value || '');
-    const match = raw.match(/linkedin\.com\/company\/([^/?#]+)/i);
-    if (match?.[1]) return decodeURIComponent(match[1]).toLowerCase();
+    if (!raw) continue;
+
+    // Keep existing behavior for LinkedIn company URLs.
+    if (/linkedin\.com/i.test(raw)) {
+      const match = raw.match(/linkedin\.com\/company\/([^/?#]+)/i);
+      if (match?.[1]) return decodeURIComponent(match[1]).toLowerCase();
+      continue;
+    }
+
+    // Non-LinkedIn URL branch (placeholder).
+    // We'll decide later how to map non-LinkedIn URLs to "companies" (domain grouping, custom slugs, etc).
+    const nonLinkedInSlug = extractCompanySlugFromNonLinkedInUrl(raw);
+    if (nonLinkedInSlug) return nonLinkedInSlug;
   }
   return null;
 }
@@ -109,6 +139,32 @@ function parseSlugOrUrl(input: string): string {
   if (urlMatch?.[1]) return decodeURIComponent(urlMatch[1]).toLowerCase().replace(/\/+$/, '');
   // Strip trailing /posts/ or similar suffixes if someone pasted a partial path
   return trimmed.replace(/\/+$/, '').split('/').pop()?.toLowerCase() || trimmed.toLowerCase();
+}
+
+function extractCompanySlugFromNonLinkedInUrl(_url: string): string | null {
+  // TODO: implement non-LinkedIn company mapping once we agree on desired behavior.
+  return null;
+}
+
+function isLinkedInCompanyInput(input: string): boolean {
+  return /linkedin\.com\/company\//i.test(input);
+}
+
+function looksLikeWebsiteInput(input: string): boolean {
+  const t = input.trim();
+  if (!t) return false;
+  if (isLinkedInCompanyInput(t)) return false;
+  if (/^https?:\/\//i.test(t)) return true;
+  // If it contains a dot or path-like chars, treat it as a website.
+  // (Company slugs are usually hyphen/underscore-only.)
+  return t.includes('.') || t.includes('/');
+}
+
+function normalizeWebsiteUrl(input: string): string {
+  const t = input.trim();
+  if (!t) return '';
+  if (/^https?:\/\//i.test(t)) return t;
+  return `https://${t}`;
 }
 
 export function LinkedinCompanyPostsUtility() {
@@ -232,13 +288,22 @@ export function LinkedinCompanyPostsUtility() {
     });
   }, [scanLog, scanLogSearch, sortCol, sortAsc]);
 
-  const companySlugs = useMemo(
-    () =>
-      companyInput
-        .split('\n')
-        .map(parseSlugOrUrl)
-        .filter(Boolean),
+  const companyInputLines = useMemo(
+    () => companyInput.split('\n').map((s) => s.trim()).filter(Boolean),
     [companyInput],
+  );
+
+  // Split the manual input into two branches:
+  // 1) LinkedIn company inputs (company slug or linkedin.com/company URL) → scrape LinkedIn posts
+  // 2) Non-LinkedIn company website URLs/domains → crawl HTML and count DJI / DJI Dock
+  const websiteUrls = useMemo(
+    () => companyInputLines.filter(looksLikeWebsiteInput).map(normalizeWebsiteUrl),
+    [companyInputLines],
+  );
+
+  const linkedInCompanySlugs = useMemo(
+    () => companyInputLines.filter((s) => !looksLikeWebsiteInput(s)).map(parseSlugOrUrl).filter(Boolean),
+    [companyInputLines],
   );
   const visibleArticles = useMemo(
     () => (filterKeyword.trim() ? articles.filter((article) => articleContainsKeyword(article, filterKeyword)) : articles),
@@ -280,11 +345,23 @@ export function LinkedinCompanyPostsUtility() {
     // Count total and matched per slug
     const totalBySlug = new Map<string, number>();
     const matchedBySlug = new Map<string, number>();
+    const djiCountBySlug = new Map<string, number>();
+    const djiDockCountBySlug = new Map<string, number>();
+
+    const RE_DJI = /\bdji\b/gi;
+    const RE_DJI_DOCK = /dji\s*dock/gi;
 
     for (const article of allArticles) {
       const slug = extractCompanySlug(article);
       if (!slug) continue;
       totalBySlug.set(slug, (totalBySlug.get(slug) ?? 0) + 1);
+
+      const text = [article.title, article.snippet, article.publisher, article.url].filter(Boolean).join(' ');
+      const djiOcc = (text.match(RE_DJI) ?? []).length;
+      const djiDockOcc = (text.match(RE_DJI_DOCK) ?? []).length;
+      djiCountBySlug.set(slug, (djiCountBySlug.get(slug) ?? 0) + djiOcc);
+      djiDockCountBySlug.set(slug, (djiDockCountBySlug.get(slug) ?? 0) + djiDockOcc);
+
       if (keyword.trim() && articleContainsKeyword(article, keyword)) {
         matchedBySlug.set(slug, (matchedBySlug.get(slug) ?? 0) + 1);
       }
@@ -299,6 +376,8 @@ export function LinkedinCompanyPostsUtility() {
         slug,
         name: slugToName.get(slug) ?? slug,
         totalPosts: total,
+        djiCount: djiCountBySlug.get(slug) ?? 0,
+        djiDockCount: djiDockCountBySlug.get(slug) ?? 0,
         matchedPosts: matched,
         signal: matched > 0,
       };
@@ -313,16 +392,16 @@ export function LinkedinCompanyPostsUtility() {
   }
 
   async function runCollectionAndCount() {
-    let slugsToCollect = companySlugs;
+    let slugsToCollect = linkedInCompanySlugs;
     let slugToName = new Map<string, string>();
 
     if (dataSource === 'manual') {
-      if (!companySlugs.length) {
-        setError('Enter at least one company slug or LinkedIn URL');
+      if (!linkedInCompanySlugs.length && websiteUrls.length === 0) {
+        setError('Enter at least one LinkedIn company (slug/URL) or a company website URL/domain');
         return;
       }
       // For manual mode, build slug-to-name map from the slugs themselves
-      slugToName = new Map(companySlugs.map((s) => [s, s]));
+      slugToName = new Map(linkedInCompanySlugs.map((s) => [s, s]));
     } else {
       const companies = await loadDjiResellerCompanies(batchSize);
       slugsToCollect = companies.map((row) => row.companySlug);
@@ -345,35 +424,112 @@ export function LinkedinCompanyPostsUtility() {
     setStatus('collecting');
 
     try {
-      const collectRes = await fetch('/api/collect-linkedin/company-posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          companySlugs: slugsToCollect,
-          filterDays,
-          maxArticles,
-          headless,
-        }),
-      });
-      const collectData = (await collectRes.json()) as CollectResponse;
-      if (!collectRes.ok || collectData.error) {
-        setError(collectData.error ?? `Collection failed (HTTP ${collectRes.status})`);
-        setStatus('error');
-        return;
+      // 1) LinkedIn branch: scrape posts for LinkedIn company slugs.
+      if (slugsToCollect.length > 0) {
+        const collectRes = await fetch('/api/collect-linkedin/company-posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            companySlugs: slugsToCollect,
+            filterDays,
+            maxArticles,
+            headless,
+          }),
+        });
+        const collectData = (await collectRes.json()) as CollectResponse;
+        if (!collectRes.ok || collectData.error) {
+          setError(collectData.error ?? `Collection failed (HTTP ${collectRes.status})`);
+          setStatus('error');
+          return;
+        }
+
+        const fetchedArticles = collectData.articles ?? [];
+        setRunId(collectData.runId);
+        setArticles(fetchedArticles);
+        setStoredCount(collectData.stats?.stored ?? 0);
+        setScrapedArticlesCount(fetchedArticles.length);
+        setSourceCompanyCount(slugsToCollect.length);
+
+        const keywordStats = countKeywordOccurrences(fetchedArticles, filterKeyword);
+        setKeywordOccurrences(keywordStats.occurrences);
+        setKeywordMatchedArticles(keywordStats.matchedArticles);
+
+        setCompanyResults(buildCompanyResults(fetchedArticles, slugsToCollect, slugToName, filterKeyword));
       }
 
-      const fetchedArticles = collectData.articles ?? [];
-      setRunId(collectData.runId);
-      setArticles(fetchedArticles);
-      setStoredCount(collectData.stats?.stored ?? 0);
-      setScrapedArticlesCount(fetchedArticles.length);
-      setSourceCompanyCount(slugsToCollect.length);
+      // 2) Company-website branch: crawl the HTML and count DJI / DJI Dock occurrences.
+      if (dataSource === 'manual' && websiteUrls.length > 0) {
+        const webRes = await fetch('/api/linkedin/company-website/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            websiteUrls,
+          }),
+        });
+        const webData = await webRes.json().catch(() => ({}));
+        if (!webRes.ok || webData.error) {
+          setError(webData.error ?? `Website crawl failed (HTTP ${webRes.status})`);
+          setStatus('error');
+          return;
+        }
 
-      const keywordStats = countKeywordOccurrences(fetchedArticles, filterKeyword);
-      setKeywordOccurrences(keywordStats.occurrences);
-      setKeywordMatchedArticles(keywordStats.matchedArticles);
+        const websiteData = webData as WebsiteScanResponse;
+        if (typeof websiteData.runId === 'string') setRunId(websiteData.runId);
 
-      setCompanyResults(buildCompanyResults(fetchedArticles, slugsToCollect, slugToName, filterKeyword));
+        const rows = (websiteData.rows ?? []) as WebsiteScanRow[];
+        const websiteCompanies = rows.length;
+        const scrapedTotal = rows.reduce((sum, r) => sum + (r.posts_scraped ?? 0), 0);
+
+        // Map UI keyword(s) to the fields we computed in the website scanner.
+        // We count occurrences of DJI / DJI Dock based on the active filter keyword.
+        const terms = filterKeyword
+          .split('|')
+          .map((t) => t.trim())
+          .filter(Boolean);
+
+        const fieldKeys: Array<keyof Pick<WebsiteScanRow, 'dock_matches' | 'dji_count' | 'dock_count' | 'diab_count'>> = [];
+        for (const term of terms) {
+          const t = term.toLowerCase();
+          if (/dji\s*dock/i.test(t)) fieldKeys.push('dock_matches');
+          else if (/\bdji\b/i.test(t)) fieldKeys.push('dji_count');
+          else if (/\bdock\b/i.test(t)) fieldKeys.push('dock_count');
+          else if (/drone\.in\.a\.box|diab/i.test(t)) fieldKeys.push('diab_count');
+        }
+        // Default: treat keyword as DJI Dock.
+        if (fieldKeys.length === 0) fieldKeys.push('dock_matches');
+
+        const occurrencesTotal = rows.reduce((sum, r) => {
+          return sum + fieldKeys.reduce((acc, k) => acc + (r[k] ?? 0), 0);
+        }, 0);
+        const matchedCompanies = rows.filter((r) =>
+          fieldKeys.some((k) => (r[k] ?? 0) > 0)
+        ).length;
+
+        // For website scans, "Stored" should represent companies that matched the
+        // active keyword filter (not just "HTML fetched and non-empty").
+        const storedTotal = matchedCompanies;
+
+        const websiteCompanyResults: CompanyResult[] = rows.map((r) => {
+          const matchedHere = fieldKeys.some((k) => (r[k] ?? 0) > 0);
+          return {
+            slug: r.slug,
+            name: r.slug,
+            totalPosts: r.posts_scraped ?? 0,
+            djiCount: r.dji_count ?? 0,
+            djiDockCount: r.dock_matches ?? 0,
+            matchedPosts: matchedHere ? 1 : 0,
+            signal: matchedHere,
+          };
+        });
+
+        setSourceCompanyCount((prev) => prev + websiteCompanies);
+        setScrapedArticlesCount((prev) => prev + scrapedTotal);
+        setStoredCount((prev) => prev + storedTotal);
+        setKeywordOccurrences((prev) => prev + occurrencesTotal);
+        setKeywordMatchedArticles((prev) => prev + matchedCompanies);
+        setCompanyResults((prev) => [...prev, ...websiteCompanyResults]);
+      }
+
       setStatus('done');
       fetchScanLog();
     } catch (e) {
@@ -461,12 +617,12 @@ export function LinkedinCompanyPostsUtility() {
               {dataSource === 'manual' ? (
                 <>
                   <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, marginBottom: 6, color: '#6B7280' }}>
-                    Company slugs or LinkedIn URLs (one per line)
+                    LinkedIn company slugs/URLs OR company websites (one per line)
                   </label>
                   <textarea
                     value={companyInput}
                     onChange={(e) => setCompanyInput(e.target.value)}
-                    placeholder={'gresco-uas\nhttps://www.linkedin.com/company/heliguy\ndronenerds'}
+                    placeholder={'aerosmartuav.com\nhttps://www.linkedin.com/company/aeronex-fzco/\ngresco-uas'}
                     style={{
                       width: '100%',
                       minHeight: 110,
@@ -608,6 +764,8 @@ export function LinkedinCompanyPostsUtility() {
                         <th style={{ textAlign: 'left', padding: '8px 10px', borderBottom: '1px solid #E5E7EB', color: '#6B7280' }}>Company</th>
                         <th style={{ textAlign: 'left', padding: '8px 10px', borderBottom: '1px solid #E5E7EB', color: '#6B7280' }}>LinkedIn</th>
                         <th style={{ textAlign: 'center', padding: '8px 10px', borderBottom: '1px solid #E5E7EB', color: '#6B7280' }}>Posts</th>
+                        <th style={{ textAlign: 'center', padding: '8px 10px', borderBottom: '1px solid #E5E7EB', color: '#6B7280' }}>DJI</th>
+                        <th style={{ textAlign: 'center', padding: '8px 10px', borderBottom: '1px solid #E5E7EB', color: '#6B7280' }}>DJI Dock</th>
                         {filterKeyword.trim() && (
                           <>
                             <th style={{ textAlign: 'center', padding: '8px 10px', borderBottom: '1px solid #E5E7EB', color: '#6B7280' }}>Matched</th>
@@ -622,7 +780,7 @@ export function LinkedinCompanyPostsUtility() {
                           <td style={{ padding: '8px 10px', borderBottom: '1px solid #EEF2FF', fontWeight: 500 }}>{row.name}</td>
                           <td style={{ padding: '8px 10px', borderBottom: '1px solid #EEF2FF' }}>
                             <a
-                              href={`https://www.linkedin.com/company/${row.slug}`}
+                              href={row.slug.includes('.') ? `https://${row.slug}` : `https://www.linkedin.com/company/${row.slug}/posts/`}
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{ color: '#0369A1', textDecoration: 'none', fontSize: 11 }}
@@ -631,6 +789,8 @@ export function LinkedinCompanyPostsUtility() {
                             </a>
                           </td>
                           <td style={{ padding: '8px 10px', borderBottom: '1px solid #EEF2FF', textAlign: 'center' }}>{row.totalPosts}</td>
+                          <td style={{ padding: '8px 10px', borderBottom: '1px solid #EEF2FF', textAlign: 'center', color: row.djiCount > 0 ? '#1D4ED8' : '#D1D5DB', fontWeight: 700 }}>{row.djiCount}</td>
+                          <td style={{ padding: '8px 10px', borderBottom: '1px solid #EEF2FF', textAlign: 'center', color: row.djiDockCount > 0 ? '#0891B2' : '#D1D5DB', fontWeight: 700 }}>{row.djiDockCount}</td>
                           {filterKeyword.trim() && (
                             <>
                               <td style={{ padding: '8px 10px', borderBottom: '1px solid #EEF2FF', textAlign: 'center', fontWeight: row.matchedPosts > 0 ? 700 : 400 }}>
@@ -831,8 +991,16 @@ export function LinkedinCompanyPostsUtility() {
                           </span>
                         </td>
                         <td style={{ padding: '6px 8px', borderBottom: '1px solid #EEF2FF', fontWeight: 500 }}>
-                          <a href={`https://www.linkedin.com/company/${entry.slug}/posts/`} target="_blank" rel="noopener noreferrer" style={{ color: '#0369A1', textDecoration: 'none', fontSize: 11.5 }}>{entry.slug}</a>
+                          <a
+                            href={entry.slug.includes('.') ? `https://${entry.slug}` : `https://www.linkedin.com/company/${entry.slug}/posts/`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: '#0369A1', textDecoration: 'none', fontSize: 11.5 }}
+                          >
+                            {entry.slug}
+                          </a>
                         </td>
+                        {/** Website scans store slug as a hostname (e.g. aero.com). */}
                         <td style={{ padding: '6px 8px', borderBottom: '1px solid #EEF2FF', textAlign: 'center', color: entry.posts_scraped === 0 ? '#D1D5DB' : '#111827', fontWeight: 600 }}>{entry.posts_scraped}</td>
                         <td style={{ padding: '6px 8px', borderBottom: '1px solid #EEF2FF', textAlign: 'center', color: (entry.dji_count ?? 0) > 0 ? '#1D4ED8' : '#D1D5DB', fontWeight: 600 }}>{entry.dji_count ?? 0}</td>
                         <td style={{ padding: '6px 8px', borderBottom: '1px solid #EEF2FF', textAlign: 'center' }}>
