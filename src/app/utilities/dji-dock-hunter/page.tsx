@@ -68,6 +68,13 @@ type ScanRow = {
   linkedin_before: string | null;
   website_after: string | null;
   linkedin_after: string | null;
+  website_source?: 'csv' | 'serper' | 'apollo';
+  linkedin_source?:
+    | 'csv'
+    | 'serper'
+    | 'apollo'
+    | 'apollo_org_enrich'
+    | 'website_scan';
   dji_dock_hit: boolean;
   stored_to_discovered_company: boolean;
   serper_top_link: string | null;
@@ -115,6 +122,8 @@ type ApiResult = {
     run_qa_internet: boolean;
     persist_discovered: boolean;
     import_batch: string;
+    /** Server merges Apollo domain/LinkedIn when APOLLO_API_KEY is set (after Serper crawl). */
+    apollo_merge?: boolean;
   };
   results: ScanRow[];
 };
@@ -153,6 +162,7 @@ export default function DjiDockHunterPage() {
       setError('That file has no data rows. Use a header row plus at least one data row.');
     } else {
       setError(null);
+      setHitsOnly(false);
     }
   }
 
@@ -232,16 +242,28 @@ export default function DjiDockHunterPage() {
     return hitsOnly ? data.results.filter((r) => r.dji_dock_hit) : data.results;
   }, [data, hitsOnly]);
 
+  const postRunStats = useMemo(() => {
+    if (!data?.results?.length) {
+      return { websiteAfter: 0, linkedinAfter: 0, hiddenByHitsOnly: 0 };
+    }
+    const r = data.results;
+    const websiteAfter = r.filter((x) => Boolean(x.website_after)).length;
+    const linkedinAfter = r.filter((x) => Boolean(x.linkedin_after)).length;
+    const hiddenByHitsOnly = hitsOnly ? r.filter((x) => !x.dji_dock_hit).length : 0;
+    return { websiteAfter, linkedinAfter, hiddenByHitsOnly };
+  }, [data, hitsOnly]);
+
   return (
     <div className="min-h-screen" style={{ background: '#F3F4F6' }}>
       <Navbar />
       <main style={{ maxWidth: 1280, margin: '0 auto', padding: '24px 32px 64px' }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 8px', color: '#111827' }}>DJI DOCK HUNTER</h1>
         <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 16px', maxWidth: 820 }}>
-          Upload a CSV of companies. (1) <strong>Enrich</strong>: Serper + crawl for website and LinkedIn when missing.
+          Upload a CSV of companies. (1) <strong>Enrich</strong>: Serper + site crawl; if <code style={{ fontSize: 11 }}>APOLLO_API_KEY</code> is set, Apollo refines website/LinkedIn (same idea as the CSV company pipeline). Optional columns in CSV override Apollo/Serper.
           (2) <strong>Internet QA</strong>: <code style={{ fontSize: 11 }}>site:domain &quot;DJI Dock&quot;</code> plus optional LinkedIn search →{' '}
           <code style={{ fontSize: 12 }}>multi_sources_companies_import</code>.
-          (3) Optional: regex DJI Dock hits → <code style={{ fontSize: 12 }}>discovered_companies</code>. Country is taken from each row (ISO-2).
+          (3) Optional: regex DJI Dock hits → <code style={{ fontSize: 12 }}>discovered_companies</code>. Country is taken from each row (ISO-2).{' '}
+          <strong>Hits only</strong> filters the results table to rows where the company&apos;s crawled site matched the DJI Dock regex — it does not mean &quot;only show enriched rows&quot;; turn it off to see website/LinkedIn for every row.
         </p>
 
         <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: 16, marginBottom: 16 }}>
@@ -394,9 +416,12 @@ export default function DjiDockHunterPage() {
                 title="Pause between companies to reduce Serper rate limits"
               />
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#374151', cursor: 'pointer', userSelect: 'none', marginBottom: 2 }}>
+            <label
+              title="When checked, the table lists only rows where the crawled homepage matched “DJI Dock” (regex). Uncheck to see all rows, including enrichment without that regex hit."
+              style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#374151', cursor: 'pointer', userSelect: 'none', marginBottom: 2 }}
+            >
               <input type="checkbox" checked={hitsOnly} onChange={(e) => setHitsOnly(e.target.checked)} disabled={loading} />
-              Hits only
+              Hits only (regex crawl)
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#374151', cursor: 'pointer', userSelect: 'none', marginBottom: 2 }}>
               <input type="checkbox" checked={enrich} onChange={(e) => setEnrich(e.target.checked)} disabled={loading} />
@@ -432,19 +457,27 @@ export default function DjiDockHunterPage() {
                 Processing capped at {data.scan_limit ?? scanLimit} rows; CSV had {data.csv_rows_valid ?? '—'} valid row(s) ({data.csv_rows_raw ?? '—'} raw lines). Increase Max rows to process more.
               </div>
             )}
+            {hitsOnly && postRunStats.hiddenByHitsOnly > 0 && (
+              <div style={{ ...sError, background: '#FFFBEB', borderColor: '#FDE68A', color: '#92400E', marginBottom: 12 }}>
+                {postRunStats.hiddenByHitsOnly} row{postRunStats.hiddenByHitsOnly === 1 ? '' : 's'} hidden: <strong>Hits only (regex crawl)</strong> is on and no row matched DJI Dock on the crawled site. Uncheck it to see every row — including website and LinkedIn from enrich when Serper/crawl found them.
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
               <Kpi label="Scanned" value={data.total_scanned} />
+              <Kpi label="Website URL (after enrich)" value={postRunStats.websiteAfter} />
+              <Kpi label="LinkedIn URL (after enrich)" value={postRunStats.linkedinAfter} />
               <Kpi label="Regex DJI Dock (crawl)" value={data.hit_count} />
               <Kpi label="→ discovered_companies" value={data.stored_count} />
               <Kpi label="Internet QA: DJI Dock found" value={data.qa_internet_dock_found ?? 0} />
               <Kpi label="→ multi_sources_companies_import" value={data.multi_sources_stored ?? 0} />
-              <Kpi label="LinkedIn found (enrich)" value={data.linkedin_found_count} />
             </div>
             {data.options && (
               <div style={{ fontSize: 11, color: '#6B7280', marginBottom: 10 }}>
                 Batch: <code>{data.options.import_batch}</code>
                 {' · '}
                 enrich={String(data.options.enrich)} · qa_internet={String(data.options.run_qa_internet)} · persist_discovered={String(data.options.persist_discovered)}
+                {' · '}
+                apollo_merge={String(data.options.apollo_merge ?? false)}
               </div>
             )}
 
@@ -455,6 +488,7 @@ export default function DjiDockHunterPage() {
                     <th style={sTh}></th>
                     <th style={sTh}>Company</th>
                     <th style={sTh}>Country</th>
+                    <th style={sTh}>Added to DB</th>
                     <th style={sTh}>Regex crawl</th>
                     <th style={sTh}>discovered</th>
                     <th style={sTh}>QA web</th>
@@ -466,11 +500,20 @@ export default function DjiDockHunterPage() {
                 <tbody>
                   {displayRows.length === 0 ? (
                     <tr>
-                      <td colSpan={9} style={{ ...sTd, color: '#6B7280', fontStyle: 'italic' }}>
-                        No rows to show. {hitsOnly ? 'Turn off &quot;Hits only&quot; or run again when the batch includes DJI Dock matches.' : 'No rows in this batch.'}
+                      <td colSpan={10} style={{ ...sTd, color: '#6B7280', fontStyle: 'italic' }}>
+                        {hitsOnly && (data.results?.length ?? 0) > 0 ? (
+                          <>
+                            Table is filtered: {data.results.length} row{data.results.length === 1 ? '' : 's'} ran but none had a regex DJI Dock hit on crawl.{' '}
+                            <strong>Uncheck &quot;Hits only (regex crawl)&quot;</strong> above to list all rows (website/LinkedIn columns show enrich results).
+                          </>
+                        ) : (
+                          'No rows in this batch.'
+                        )}
                       </td>
                     </tr>
-                  ) : displayRows.map((row) => (
+                  ) : displayRows.map((row) => {
+                    const addedToDb = row.stored_to_discovered_company || row.stored_to_multi_sources;
+                    return (
                     <React.Fragment key={row.registry_id}>
                       <tr
                         onClick={() => setExpandedId((id) => (id === row.registry_id ? null : row.registry_id))}
@@ -479,20 +522,35 @@ export default function DjiDockHunterPage() {
                         <td style={sTd}>{expandedId === row.registry_id ? '▼' : '▶'}</td>
                         <td style={sTd}>{row.company_name}</td>
                         <td style={sTd}>{row.country_code}</td>
+                        <td style={sTd}>{addedToDb ? 'Yes' : 'No'}</td>
                         <td style={sTd}>{row.dji_dock_hit ? 'Yes' : 'No'}</td>
                         <td style={sTd}>{row.stored_to_discovered_company ? 'Yes' : 'No'}</td>
                         <td style={sTd}>{row.qa_internet?.dock_found ? 'Yes' : (row.qa_internet ? 'No' : '—')}</td>
                         <td style={sTd}>{row.stored_to_multi_sources ? 'Yes' : (row.multi_sources_error ? 'Err' : '—')}</td>
                         <td style={sTd}>
-                          {row.website_after ? <a href={row.website_after} target="_blank" rel="noreferrer" style={sLink}>Website ↗</a> : '—'}
+                          {row.website_after ? (
+                            <a href={row.website_after} target="_blank" rel="noreferrer" style={sLink}>
+                              Website ↗
+                              {row.website_source ? ` (${row.website_source})` : ''}
+                            </a>
+                          ) : (
+                            '—'
+                          )}
                         </td>
                         <td style={sTd}>
-                          {row.linkedin_after ? <a href={row.linkedin_after} target="_blank" rel="noreferrer" style={sLink}>LinkedIn ↗</a> : '—'}
+                          {row.linkedin_after ? (
+                            <a href={row.linkedin_after} target="_blank" rel="noreferrer" style={sLink}>
+                              LinkedIn ↗
+                              {row.linkedin_source ? ` (${row.linkedin_source})` : ''}
+                            </a>
+                          ) : (
+                            '—'
+                          )}
                         </td>
                       </tr>
                       {expandedId === row.registry_id && (
                         <tr>
-                          <td colSpan={9} style={{ background: '#FAFAFA', padding: '12px 16px', borderBottom: '1px solid #E5E7EB' }}>
+                          <td colSpan={10} style={{ background: '#FAFAFA', padding: '12px 16px', borderBottom: '1px solid #E5E7EB' }}>
                             {row.error ? (
                               <div style={{ color: '#991B1B', fontSize: 12 }}>Error: {row.error}</div>
                             ) : (
@@ -505,6 +563,11 @@ export default function DjiDockHunterPage() {
                                       <div style={sDetailLine}><strong>Top URL:</strong> {row.analysis.crawledTop?.url ?? '—'}</div>
                                       <div style={sDetailLine}><strong>Root URL:</strong> {row.analysis.crawledRoot?.url ?? '—'}</div>
                                       <div style={sDetailLine}><strong>Website candidate:</strong> {row.analysis.websiteCandidate ?? '—'}</div>
+                                      <div style={sDetailLine}><strong>Final Website:</strong> {row.website_after ? (
+                                        <a href={row.website_after} target="_blank" rel="noreferrer" style={sLink}>
+                                          {row.website_after}
+                                        </a>
+                                      ) : '—'} {row.website_source ? <span style={{ color: '#6B7280', fontSize: 11 }}>({row.website_source})</span> : null}</div>
                                     </div>
                                     <div>
                                       <div style={sDetailTitle}>Regex DJI Dock + LinkedIn (enrich)</div>
@@ -520,6 +583,11 @@ export default function DjiDockHunterPage() {
                                           : '—'}
                                       </div>
                                       <div style={sDetailLine}><strong>LinkedIn source:</strong> {row.analysis.linkedin.source ?? '—'}</div>
+                                      <div style={sDetailLine}><strong>Final LinkedIn:</strong> {row.linkedin_after ? (
+                                        <a href={row.linkedin_after} target="_blank" rel="noreferrer" style={sLink}>
+                                          {row.linkedin_after}
+                                        </a>
+                                      ) : '—'} {row.linkedin_source ? <span style={{ color: '#6B7280', fontSize: 11 }}>({row.linkedin_source})</span> : null}</div>
                                     </div>
                                     <div style={{ gridColumn: '1 / span 2' }}>
                                       <div style={sDetailTitle}>Snippet</div>
@@ -557,7 +625,8 @@ export default function DjiDockHunterPage() {
                         </tr>
                       )}
                     </React.Fragment>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

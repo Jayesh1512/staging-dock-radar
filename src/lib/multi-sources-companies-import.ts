@@ -75,7 +75,7 @@ export async function upsertMultiSourcesFromDockHunter(
   const { data: existing, error: selErr } = await db
     .from('multi_sources_companies_import')
     .select(
-      'id, source_types, source_refs, website, linkedin, verifications, dock_verified, enrichment_methods, imported_via, import_batch',
+      'id, display_name, source_types, source_refs, website, linkedin, verifications, dock_verified, enrichment_methods, imported_via, import_batch',
     )
     .eq('normalized_name', normalizedName)
     .eq('country_code', cc)
@@ -153,7 +153,9 @@ export async function upsertMultiSourcesFromDockHunter(
   const row = {
     normalized_name: normalizedName,
     country_code: cc,
+    // Prefer trade_name-backed display label; also backfill legacy company_name column when present.
     display_name: params.displayName,
+    company_name: params.displayName,
     website: nextWebsite,
     linkedin: nextLinkedin,
     normalized_domain: normDomain,
@@ -213,7 +215,7 @@ export async function upsertMultiSourcesFromCsvPipeline(
   const { data: existing, error: selErr } = await db
     .from('multi_sources_companies_import')
     .select(
-      'id, source_types, source_refs, website, linkedin, verifications, dock_verified, enrichment_methods, imported_via, import_batch, storage_bucket, storage_object_key',
+      'id, display_name, source_types, source_refs, website, linkedin, verifications, dock_verified, enrichment_methods, imported_via, import_batch, storage_bucket, storage_object_key',
     )
     .eq('normalized_name', normalizedName)
     .eq('country_code', cc)
@@ -288,7 +290,9 @@ export async function upsertMultiSourcesFromCsvPipeline(
   const row = {
     normalized_name: normalizedName,
     country_code: cc,
+    // Prefer trade_name-backed display label; also backfill legacy company_name column when present.
     display_name: params.displayName,
+    company_name: params.displayName,
     website: nextWebsite,
     linkedin: nextLinkedin,
     normalized_domain: normDomain,
