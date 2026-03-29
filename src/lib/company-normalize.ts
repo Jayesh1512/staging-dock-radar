@@ -21,6 +21,14 @@ export function normalizeCompanyName(name: string): string {
   // Remove parenthetical content: "STTL (Service Technique...)" → "STTL"
   normalized = normalized.replace(/\(.*?\)/g, '');
 
+  // Remove dotted legal suffixes first (B.V., N.V., V.O.F., S.A.S., etc.)
+  // Must happen before punctuation stripping
+  const dottedSuffixes = ['b.v.', 'b.v', 'n.v.', 'n.v', 'v.o.f.', 'v.o.f', 's.a.s.', 's.a.r.l.', 's.e.'];
+  for (const ds of dottedSuffixes) {
+    const escaped = ds.replace(/\./g, '\\.');
+    normalized = normalized.replace(new RegExp(`(?:^|\\s)${escaped}(?:\\s|,|$)`, 'gi'), ' ');
+  }
+
   // Remove legal suffixes at end of name only
   const legalSuffixes = [
     'inc', 'ltd', 'llc', 'gmbh', 'corp', 'corporation', 'limited', 'co', 'plc',
@@ -29,7 +37,7 @@ export function normalizeCompanyName(name: string): string {
     'bv', 'nv',   // Dutch
     'ag',         // German/Swiss
     'srl', 'spa', // Italian
-    'sl',         // Spanish
+    'sl', 'se',   // Spanish / European
   ];
   for (const suffix of legalSuffixes) {
     normalized = normalized.replace(new RegExp(`\\b${suffix}\\s*$`), '');

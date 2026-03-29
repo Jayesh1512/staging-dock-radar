@@ -68,6 +68,49 @@ interface FinalResults {
   companies: CompanyResult[];
 }
 
+/* ─── Derive clean company name from slug + google title ─── */
+
+const SOCIAL_DOMAINS_SET = ['linkedin.com', 'facebook.com', 'instagram.com', 'youtube.com', 'reddit.com', 'twitter.com', 'x.com', 'tiktok.com'];
+const UPPER_WORDS = ['dji', 'ai', 'nl', 'eu', 'bv', 'nv', 'uk', 'us', 'hp', 'ndw', 'nlr', 'knrm'];
+
+function titleCaseSlug(slug: string): string {
+  return slug.split(/[-_]/).map(w =>
+    UPPER_WORDS.includes(w.toLowerCase()) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)
+  ).join(' ');
+}
+
+function deriveDisplayName(c: CompanyResult): string {
+  // 1. Try google title: extract site name after last separator
+  const googleTitle = c.companyName;
+  if (googleTitle) {
+    const separators = [' - ', ' | ', ' — ', ' – '];
+    for (const sep of separators) {
+      const idx = googleTitle.lastIndexOf(sep);
+      if (idx > 0) {
+        let siteName = googleTitle.slice(idx + sep.length).trim();
+        siteName = siteName.replace(/\.(com|nl|de|fr|eu|co\.uk|be|io|ai|app|store)$/i, '');
+        const wordCount = siteName.split(/\s+/).length;
+        if (siteName.length >= 2 && siteName.length <= 30 && wordCount <= 3
+          && !/^(home|blog|news|about|products?|shop|linkedin|youtube|facebook)$/i.test(siteName)) {
+          if (wordCount === 1 && /[-_]/.test(c.slug)) return titleCaseSlug(c.slug);
+          return siteName;
+        }
+      }
+    }
+  }
+  // 2. Slug-based fallback
+  const STRIP_SUBS = ['www', 'shop', 'store', 'boutique', 'enterprise', 'm', 'fr', 'en', 'de', 'nl', 'es', 'it', 'pt'];
+  if (STRIP_SUBS.includes(c.slug)) {
+    const nonSocial = c.domains.filter(d => !SOCIAL_DOMAINS_SET.some(sd => d.endsWith(sd)));
+    if (nonSocial.length > 0) {
+      const parts = nonSocial[0].split('.');
+      const rootName = parts.length > 2 && STRIP_SUBS.includes(parts[0]) ? parts[1] : parts[0];
+      return titleCaseSlug(rootName);
+    }
+  }
+  return titleCaseSlug(c.slug);
+}
+
 /* ─── Sorting ─── */
 
 type SortKey = "rank" | "slug" | "entityType" | "totalScore" | "tier1Hit" | "tier2Hit" | "topSignal" | "signalCount" | "lastSeen" | "resultCount";
@@ -222,7 +265,7 @@ export default function GoogleDockCrawlerPage() {
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [savedPath, setSavedPath] = useState<string | null>(null);
   const [importState, setImportState] = useState<"idle" | "previewing" | "previewed" | "importing" | "done" | "error">("idle");
-  const [importPreview, setImportPreview] = useState<{ total_input: number; after_filter: number; filtered_out: number; already_imported: number; new_records: number; filter_reasons: { zero_score: number; media_no_dock_signal: number; excluded_social_only: number } } | null>(null);
+  const [importPreview, setImportPreview] = useState<{ total_input: number; after_filter: number; filtered_out: number; already_imported: number; will_merge: number; new_records: number; filter_reasons: { no_dock_keyword: number; excluded_social_only: number; junk_social_slug: number; media_entity: number; news_domain: number } } | null>(null);
   const [importStats, setImportStats] = useState<{ imported: number; filtered: number; errors: number } | null>(null);
 
   const [sortKey, setSortKey] = useState<SortKey>("totalScore");
@@ -373,7 +416,21 @@ export default function GoogleDockCrawlerPage() {
   }
 
   const scored = useMemo(() => {
-    const list = results?.companies.filter(c => c.totalScore > 0) ?? [];
+    const JUNK_SLUGS = ['reel', 'reels', 'post', 'posts', 'video', 'videos', 'watch', 'story', 'stories', 'status', 'feed', 'share', 'p', 'photo', 'photos'];
+    const NEWS_DOMAINS_UI = [
+      'prnewswire.com', 'dronelife.com', 'dronedj.com', 'dronexl.co',
+      'antaranews.com', 'anp.nl', 'persportaal.anp.nl',
+      'reuters.com', 'bloomberg.com', 'techcrunch.com',
+      'global-agriculture.com', 'suasnews.com', 'uasweekly.com',
+    ];
+    const list = results?.companies.filter(c => {
+      if (c.totalScore <= 0) return false;
+      if (JUNK_SLUGS.includes(c.slug.toLowerCase())) return false;
+      // Filter media entities and news domains from display
+      if (c.entityType === 'media') return false;
+      if (c.domains.some(d => NEWS_DOMAINS_UI.some(nd => d.endsWith(nd)))) return false;
+      return true;
+    }) ?? [];
     return [...list].sort((a, b) => comparator(a, b, sortKey, sortDir));
   }, [results, sortKey, sortDir]);
 
@@ -572,14 +629,16 @@ export default function GoogleDockCrawlerPage() {
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "#374151", marginBottom: 12 }}>
               <span><strong>{importPreview.total_input}</strong> total entities</span>
               <span>→ <strong>{importPreview.after_filter}</strong> pass filter</span>
-              <span>→ <strong style={{ color: "#059669" }}>{importPreview.new_records}</strong> new</span>
-              {importPreview.already_imported > 0 && <span>· <strong>{importPreview.already_imported}</strong> already in DB</span>}
+              <span>→ <strong style={{ color: "#059669" }}>{importPreview.new_records}</strong> new inserts</span>
+              {importPreview.already_imported > 0 && <span>· <strong>{importPreview.already_imported}</strong> will merge into existing</span>}
             </div>
             {importPreview.filtered_out > 0 && (
               <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 12 }}>
-                Filtered out: {importPreview.filter_reasons.zero_score > 0 && <span>{importPreview.filter_reasons.zero_score} zero-score · </span>}
-                {importPreview.filter_reasons.media_no_dock_signal > 0 && <span>{importPreview.filter_reasons.media_no_dock_signal} media (no Dock signal) · </span>}
-                {importPreview.filter_reasons.excluded_social_only > 0 && <span>{importPreview.filter_reasons.excluded_social_only} excluded-social-only</span>}
+                Filtered out: {importPreview.filter_reasons.no_dock_keyword > 0 && <span>{importPreview.filter_reasons.no_dock_keyword} no dock keyword · </span>}
+                {importPreview.filter_reasons.media_entity > 0 && <span>{importPreview.filter_reasons.media_entity} media/news · </span>}
+                {importPreview.filter_reasons.news_domain > 0 && <span>{importPreview.filter_reasons.news_domain} news domain · </span>}
+                {importPreview.filter_reasons.excluded_social_only > 0 && <span>{importPreview.filter_reasons.excluded_social_only} excluded-social-only · </span>}
+                {importPreview.filter_reasons.junk_social_slug > 0 && <span>{importPreview.filter_reasons.junk_social_slug} junk social slug</span>}
               </div>
             )}
             <div style={{ display: "flex", gap: 10 }}>
@@ -587,7 +646,7 @@ export default function GoogleDockCrawlerPage() {
                 onClick={confirmImport}
                 style={{ padding: "7px 20px", background: "#7C3AED", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
               >
-                Confirm Import ({importPreview.new_records} records)
+                Confirm Import ({importPreview.new_records} new + {importPreview.already_imported} merge)
               </button>
               <button
                 onClick={() => { setImportState("idle"); setImportPreview(null); }}
@@ -637,10 +696,8 @@ export default function GoogleDockCrawlerPage() {
                       >
                         <td style={tdStyle}>{c.rank}</td>
                         <td style={{ ...tdStyle, textAlign: "left", whiteSpace: "normal", lineHeight: 1.3 }}>
-                          <div style={{ fontWeight: 600, fontSize: 12 }}>{c.companyName}</div>
-                          {c.companyName.toLowerCase().replace(/\s/g, '') !== c.slug && (
-                            <div style={{ fontSize: 10, color: "#9CA3AF" }}>{c.slug}</div>
-                          )}
+                          <div style={{ fontWeight: 600, fontSize: 12 }}>{deriveDisplayName(c)}</div>
+                          <div style={{ fontSize: 10, color: "#9CA3AF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 280 }}>{c.companyName}</div>
                         </td>
                         <td style={tdStyle}>
                           <span style={{
@@ -749,7 +806,7 @@ export default function GoogleDockCrawlerPage() {
             <div style={{ padding: "0 16px 12px" }}>
               {unscored.map((c, i) => (
                 <div key={i} style={{ fontSize: 11, color: "#9CA3AF", padding: "3px 0", borderBottom: "1px solid #F3F4F6" }}>
-                  {c.companyName} ({c.slug}) — {c.domains.join(", ")} — {c.resultCount} result(s)
+                  {deriveDisplayName(c)} ({c.slug}) — {c.domains.join(", ")} — {c.resultCount} result(s)
                   {c.sourceUrls.map((u, ui) => (
                     <div key={ui} style={{ marginLeft: 16, fontSize: 10, color: "#D1D5DB" }}>
                       {u.type === "social" ? `[${u.socialPlatform}]` : "[web]"} {u.link.substring(0, 80)}
