@@ -137,14 +137,23 @@ export default function DjiDockHunterPage() {
   const [enrich, setEnrich] = useState(true);
   const [runQaInternet, setRunQaInternet] = useState(true);
   const [persistDiscovered, setPersistDiscovered] = useState(true);
+  const [sourceName, setSourceName] = useState('');
+  const [sourceNameConfirmed, setSourceNameConfirmed] = useState(false);
   const [csvRows, setCsvRows] = useState<Record<string, string>[] | null>(null);
   const [csvFileName, setCsvFileName] = useState<string | null>(null);
   const [csvFileSizeBytes, setCsvFileSizeBytes] = useState<number | null>(null);
   const [csvDragActive, setCsvDragActive] = useState(false);
   const csvFileInputRef = useRef<HTMLInputElement>(null);
 
+  const [onlyStoreVerified, setOnlyStoreVerified] = useState(true);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [estimatedProgress, setEstimatedProgress] = useState(0);
+  const [streamCurrent, setStreamCurrent] = useState(0);
+  const [streamTotal, setStreamTotal] = useState(0);
+  const [streamCurrentName, setStreamCurrentName] = useState<string | null>(null);
+  const [streamVerifiedCount, setStreamVerifiedCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<ApiResult | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -156,11 +165,30 @@ export default function DjiDockHunterPage() {
 
   const csvHints = useMemo(() => csvColumnHints(csvHeaders), [csvHeaders]);
 
+  function extractSourceNameFromFilename(filename: string): string {
+    let n = filename
+      .replace(/\.(csv|xlsx|xls|json)$/i, '')       // strip extension
+      .replace(/[-_]\d{2}[A-Z][a-z]{2}\d{4}$/,'')   // strip date like -29Mar1500
+      .replace(/[-_]\d{4,}$/,'')                      // strip timestamps
+      .replace(/\s+/g, '_')                            // spaces to underscores
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, '_')                     // clean special chars
+      .replace(/_+/g, '_')                              // collapse underscores
+      .replace(/^_|_$/g, '');                           // trim underscores
+    return n || 'manual_csv';
+  }
+
   function ingestCsvText(text: string, name: string, sizeBytes: number | null) {
     const rows = parseCsvToRows(text);
     setCsvFileName(name);
     setCsvFileSizeBytes(sizeBytes);
     setCsvRows(rows.length ? rows : null);
+    // Auto-fill max rows from CSV size
+    if (rows.length) setScanLimit(rows.length);
+    // Auto-extract source name from filename
+    const extracted = extractSourceNameFromFilename(name);
+    setSourceName(extracted);
+    setSourceNameConfirmed(false);
     if (!rows.length) {
       setError('That file has no data rows. Use a header row plus at least one data row.');
     } else {
@@ -178,13 +206,7 @@ export default function DjiDockHunterPage() {
     if (csvFileInputRef.current) csvFileInputRef.current.value = '';
   }
 
-  useEffect(() => {
-    if (!loading) return;
-    const id = setInterval(() => {
-      setEstimatedProgress((p) => Math.min(95, p + 2));
-    }, 350);
-    return () => clearInterval(id);
-  }, [loading]);
+  // Progress is now driven by real streaming data from the API.
 
   function onCsvFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -222,7 +244,11 @@ export default function DjiDockHunterPage() {
 
   async function runHunter() {
     setLoading(true);
-    setEstimatedProgress(5);
+    setEstimatedProgress(2);
+    setStreamCurrent(0);
+    setStreamTotal(0);
+    setStreamCurrentName(null);
+    setStreamVerifiedCount(0);
     setError(null);
     setData(null);
     setExpandedId(null);
@@ -237,13 +263,69 @@ export default function DjiDockHunterPage() {
           delay_ms: delayMs > 0 ? delayMs : 0,
           enrich,
           run_qa_internet: runQaInternet,
-          persist_discovered: persistDiscovered,
+          persist_discovered: false,
+          only_store_verified: onlyStoreVerified,
+          source_name: sourceName,
+          source_file_name: csvFileName,
         }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error ?? `HTTP ${res.status}`);
-      setData(json as ApiResult);
-      setEstimatedProgress(100);
+      if (!res.ok) {
+        const text = await res.text();
+        let msg = `HTTP ${res.status}`;
+        try { msg = JSON.parse(text)?.error ?? msg; } catch { /* */ }
+        throw new Error(msg);
+      }
+
+      // Consume NDJSON stream
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error('No response body');
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let verifiedSoFar = 0;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // Process complete NDJSON lines
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? ''; // keep incomplete last line
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const msg = JSON.parse(line);
+            if (msg.type === 'start') {
+              setStreamTotal(msg.total);
+              setEstimatedProgress(5);
+            } else if (msg.type === 'row') {
+              setStreamCurrent(msg.current);
+              setStreamCurrentName(msg.name);
+              if (msg.dock_verified === true) verifiedSoFar++;
+              setStreamVerifiedCount(verifiedSoFar);
+              const pct = Math.min(95, Math.round((msg.current / msg.total) * 95) + 5);
+              setEstimatedProgress(pct);
+            } else if (msg.type === 'done') {
+              setData(msg as unknown as ApiResult);
+              setEstimatedProgress(100);
+            }
+          } catch { /* skip malformed lines */ }
+        }
+      }
+
+      // Handle any remaining buffer
+      if (buffer.trim()) {
+        try {
+          const msg = JSON.parse(buffer);
+          if (msg.type === 'done') {
+            setData(msg as unknown as ApiResult);
+            setEstimatedProgress(100);
+          }
+        } catch { /* skip */ }
+      }
+
+      if (!data) setEstimatedProgress(100); // safety
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -273,11 +355,12 @@ export default function DjiDockHunterPage() {
       <main style={{ maxWidth: 1280, margin: '0 auto', padding: '24px 32px 64px' }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 8px', color: '#111827' }}>DJI DOCK HUNTER</h1>
         <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 16px', maxWidth: 820 }}>
-          Upload a CSV of companies. (1) <strong>Enrich</strong>: Serper + site crawl; if <code style={{ fontSize: 11 }}>APOLLO_API_KEY</code> is set, Apollo refines website/LinkedIn (same idea as the CSV company pipeline). Optional columns in CSV override Apollo/Serper.
-          (2) <strong>Internet QA</strong>: <code style={{ fontSize: 11 }}>site:domain &quot;DJI Dock&quot;</code> plus optional LinkedIn search →{' '}
-          <code style={{ fontSize: 12 }}>multi_sources_companies_import</code>.
-          (3) Optional: regex DJI Dock hits → <code style={{ fontSize: 12 }}>discovered_companies</code>. Country is taken from each row (ISO-2).{' '}
-          <strong>Hits only</strong> filters the results table to rows where the company&apos;s crawled site matched the DJI Dock regex — it does not mean &quot;only show enriched rows&quot;; turn it off to see website/LinkedIn for every row.
+          Upload a CSV of companies to enrich and verify for DJI Dock presence. All results write to{' '}
+          <code style={{ fontSize: 12 }}>multi_sources_companies_import</code> (master table).
+          {' '}<strong>Enrich</strong>: Serper search + site crawl to find website and LinkedIn. Skip if your CSV already has these columns filled.
+          {' '}<strong>Internet QA</strong>: runs <code style={{ fontSize: 11 }}>site:domain &quot;DJI Dock&quot;</code> + LinkedIn company search to verify DJI Dock presence.
+          {' '}Country is taken from each row (ISO-2). <strong>Source Name</strong> is mandatory — it identifies the data origin (e.g. nl_aviation_registry, fr_sirene).
+          {' '}<strong>Hits only</strong> filters the results table to show only companies where DJI Dock was found.
         </p>
 
         <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: 16, marginBottom: 16 }}>
@@ -404,34 +487,8 @@ export default function DjiDockHunterPage() {
             </div>
 
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap', paddingTop: 16, borderTop: '1px solid #E5E7EB' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: 11, color: '#6B7280', marginBottom: 4 }}>Max rows</label>
-              <input
-                type="number"
-                min={1}
-                max={500}
-                value={scanLimit}
-                onChange={(e) => setScanLimit(Math.min(500, Math.max(1, Number(e.target.value) || 50)))}
-                disabled={loading}
-                style={{ ...sInput, width: 88 }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: 11, color: '#6B7280', marginBottom: 4 }}>Delay (ms)</label>
-              <input
-                type="number"
-                min={0}
-                max={10000}
-                step={50}
-                value={delayMs}
-                onChange={(e) => setDelayMs(Math.min(10000, Math.max(0, Number(e.target.value) || 0)))}
-                disabled={loading}
-                style={{ ...sInput, width: 88 }}
-                title="Pause between companies to reduce Serper rate limits"
-              />
-            </div>
             <label
-              title="When checked, the table lists only rows where the crawled homepage matched “DJI Dock” (regex). Uncheck to see all rows, including enrichment without that regex hit."
+              title={'When checked, the table lists only rows where the crawled homepage matched "DJI Dock" (regex). Uncheck to see all rows, including enrichment without that regex hit.'}
               style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#374151', cursor: 'pointer', userSelect: 'none', marginBottom: 2 }}
             >
               <input type="checkbox" checked={hitsOnly} onChange={(e) => setHitsOnly(e.target.checked)} disabled={loading} />
@@ -443,37 +500,162 @@ export default function DjiDockHunterPage() {
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#374151', cursor: 'pointer', userSelect: 'none', marginBottom: 2 }}>
               <input type="checkbox" checked={runQaInternet} onChange={(e) => setRunQaInternet(e.target.checked)} disabled={loading} />
-              Internet QA → multi_sources
+              {'Internet QA → multi_sources'}
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#374151', cursor: 'pointer', userSelect: 'none', marginBottom: 2 }}>
-              <input type="checkbox" checked={persistDiscovered} onChange={(e) => setPersistDiscovered(e.target.checked)} disabled={loading} />
-              Store regex hits → discovered
-            </label>
-            <button
-              onClick={runHunter}
-              disabled={loading || !csvRows?.length}
-              style={{
-                ...sRunBtn,
-                ...(loading || !csvRows?.length ? { opacity: 0.55, cursor: 'not-allowed' } : {}),
-              }}
-            >
-              {loading ? 'Running…' : 'Run Hunter'}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, cursor: 'pointer', userSelect: 'none', color: onlyStoreVerified ? '#059669' : '#B45309', fontWeight: 600 }}>
+                <input type="checkbox" checked={onlyStoreVerified} onChange={(e) => setOnlyStoreVerified(e.target.checked)} disabled={loading} />
+                {onlyStoreVerified ? 'Verified only' : 'Store all records'}
+              </label>
+              <div style={{ position: 'relative', display: 'inline-block' }} className="tooltip-wrapper">
+                <span
+                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: '50%', background: '#E5E7EB', color: '#6B7280', fontSize: 10, fontWeight: 700, cursor: 'help' }}
+                  title={'Verified only (checked): Only companies where DJI Dock is confirmed via website (site:domain search) or LinkedIn company search are written to the database. Saves the table from noise.\n\nStore all (unchecked): ALL companies from the CSV are written — including those with no website found, no LinkedIn, and no Dock evidence. Useful when you want the full registry in the master table.\n\nNote: Serper enrichment credits are consumed regardless of this setting — the filter only controls what gets persisted to the database.'}
+                >?</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 11, color: '#6B7280', marginBottom: 4 }}>
+                  Source Name <span style={{ color: '#DC2626' }}>*</span>
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <input
+                    type="text"
+                    value={sourceName}
+                    onChange={(e) => { setSourceName(e.target.value); setSourceNameConfirmed(false); }}
+                    disabled={loading || sourceNameConfirmed}
+                    placeholder="e.g. nl_aviation_registry"
+                    style={{ ...sInput, width: 200, background: sourceNameConfirmed ? '#F0FDF4' : '#fff' }}
+                  />
+                  {!sourceNameConfirmed ? (
+                    <button
+                      onClick={() => { if (sourceName.trim()) setSourceNameConfirmed(true); }}
+                      disabled={!sourceName.trim()}
+                      style={{ padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: 4, cursor: sourceName.trim() ? 'pointer' : 'not-allowed', fontSize: 14, background: '#fff' }}
+                      title="Confirm source name"
+                    >✓</button>
+                  ) : (
+                    <button
+                      onClick={() => setSourceNameConfirmed(false)}
+                      style={{ padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: 4, cursor: 'pointer', fontSize: 14, background: '#fff' }}
+                      title="Edit source name"
+                    >✏️</button>
+                  )}
+                </div>
+                <div style={{ fontSize: 10, color: '#9CA3AF', marginTop: 2 }}>e.g. fr_sirene, nl_ilt_oa, dji_dealer, au_casa_reoc</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginLeft: 'auto' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 10, color: '#9CA3AF', marginBottom: 2 }}>Max rows</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={5000}
+                  value={scanLimit}
+                  onChange={(e) => setScanLimit(Math.min(5000, Math.max(1, Number(e.target.value) || 50)))}
+                  disabled={loading}
+                  style={{ ...sInput, width: 68, fontSize: 12, padding: '4px 6px' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 10, color: '#9CA3AF', marginBottom: 2 }}>Delay ms</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={10000}
+                  step={50}
+                  value={delayMs}
+                  onChange={(e) => setDelayMs(Math.min(10000, Math.max(0, Number(e.target.value) || 0)))}
+                  disabled={loading}
+                  style={{ ...sInput, width: 68, fontSize: 12, padding: '4px 6px' }}
+                  title="Pause between companies to reduce Serper rate limits"
+                />
+              </div>
+              <button
+                onClick={() => setShowConfirmDialog(true)}
+                disabled={loading || !csvRows?.length || !sourceNameConfirmed}
+                style={{
+                  ...sRunBtn,
+                  ...(loading || !csvRows?.length || !sourceNameConfirmed ? { opacity: 0.55, cursor: 'not-allowed' } : {}),
+                }}
+              >
+                {loading ? 'Running…' : 'Run Hunter'}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* ── Confirmation Dialog ── */}
+        {showConfirmDialog && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+            <div style={{ background: '#fff', borderRadius: 12, padding: '24px 28px', maxWidth: 480, width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+              <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 700, color: '#111827' }}>
+                {onlyStoreVerified ? 'Run Hunter — Verified Only' : 'Run Hunter — Store All Records'}
+              </h3>
+              {onlyStoreVerified ? (
+                <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }}>
+                  <p style={{ margin: '0 0 10px' }}>
+                    <strong>{Math.min(scanLimit, csvRows?.length ?? 0)}</strong> companies will be scanned.
+                    Only those where DJI Dock is confirmed (via website or LinkedIn search) will be written to the database.
+                  </p>
+                  <p style={{ margin: '0 0 10px', color: '#6B7280', fontSize: 12 }}>
+                    Serper credits will be consumed for enrichment of all rows. Estimated: ~{Math.min(scanLimit, csvRows?.length ?? 0) * 2} credits.
+                  </p>
+                </div>
+              ) : (
+                <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }}>
+                  <p style={{ margin: '0 0 10px' }}>
+                    <strong style={{ color: '#B45309' }}>All {Math.min(scanLimit, csvRows?.length ?? 0)} companies</strong> will be written to the database — including those with no website, no LinkedIn, and no DJI Dock evidence.
+                  </p>
+                  <p style={{ margin: '0 0 10px', padding: '8px 12px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 8, fontSize: 12, color: '#92400E' }}>
+                    This will add up to <strong>{Math.min(scanLimit, csvRows?.length ?? 0)} records</strong> to the master table, most likely with <code>dock_verified = false</code>. Use this when you want the full registry data in the table, not just verified Dock partners.
+                  </p>
+                  <p style={{ margin: 0, color: '#6B7280', fontSize: 12 }}>
+                    Serper credits will be consumed for enrichment. Estimated: ~{Math.min(scanLimit, csvRows?.length ?? 0) * 2} credits.
+                  </p>
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
+                <button
+                  onClick={() => setShowConfirmDialog(false)}
+                  style={{ padding: '8px 16px', border: '1px solid #D1D5DB', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 13, color: '#374151' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => { setShowConfirmDialog(false); runHunter(); }}
+                  style={{ padding: '8px 16px', border: 'none', borderRadius: 8, background: onlyStoreVerified ? '#059669' : '#D97706', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                >
+                  {onlyStoreVerified ? 'Run — Verified Only' : 'Run — Store All'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {error && <div style={sError}>{error}</div>}
         {loading && (
           <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 10, padding: 12, marginBottom: 12 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#374151', marginBottom: 6 }}>
-              <span>Processing records…</span>
-              <span>{Math.round(estimatedProgress)}%</span>
+              <span>
+                {streamTotal > 0
+                  ? `Processing ${streamCurrent} / ${streamTotal}${streamCurrentName ? ` — ${streamCurrentName}` : ''}`
+                  : 'Preparing batch…'}
+              </span>
+              <span>
+                {streamTotal > 0
+                  ? `${Math.round(estimatedProgress)}% · ${streamVerifiedCount} verified`
+                  : `${Math.round(estimatedProgress)}%`}
+              </span>
             </div>
             <div style={{ height: 8, background: '#E5E7EB', borderRadius: 999, overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${estimatedProgress}%`, background: '#2563EB', transition: 'width 300ms ease' }} />
             </div>
             <div style={{ fontSize: 11, color: '#6B7280', marginTop: 6 }}>
-              Target rows: {Math.min(scanLimit, csvRows?.length ?? scanLimit)} · scanned rows will appear once completed.
+              Target rows: {streamTotal || Math.min(scanLimit, csvRows?.length ?? scanLimit)}
+              {streamTotal > 0 && ` · ${streamCurrent} done · ${streamVerifiedCount} dock verified`}
             </div>
           </div>
         )}
@@ -493,23 +675,28 @@ export default function DjiDockHunterPage() {
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
               <Kpi label="Scanned" value={data.total_scanned} />
               <Kpi label="Skipped (already in DB)" value={data.skipped_existing ?? 0} />
-              <Kpi label="Website URL (after enrich)" value={postRunStats.websiteAfter} />
-              <Kpi label="LinkedIn URL (after enrich)" value={postRunStats.linkedinAfter} />
-              <Kpi label="Regex DJI Dock (crawl)" value={data.hit_count} />
-              <Kpi label="→ discovered_companies" value={data.stored_count} />
-              <Kpi label="Internet QA: DJI Dock found" value={data.qa_internet_dock_found ?? 0} />
-              <Kpi label="→ multi_sources_companies_import" value={data.multi_sources_stored ?? 0} />
-            </div>
-            <div style={{ fontSize: 12, color: '#374151', marginBottom: 10 }}>
-              Status: {loading ? 'Running scan…' : 'Idle'} · Processed records: {data.total_scanned}
+              <Kpi label="Website found" value={postRunStats.websiteAfter} />
+              <Kpi label="LinkedIn found" value={postRunStats.linkedinAfter} />
+              <Kpi label="Dock verified" value={data.qa_internet_dock_found ?? 0} />
+              <Kpi label="Written to DB" value={data.multi_sources_stored ?? 0} />
+              {(data as Record<string, unknown>).domain_skipped ? (
+                <Kpi label="Domain skipped (validation)" value={(data as Record<string, unknown>).domain_skipped as number} />
+              ) : null}
+              {(data as Record<string, unknown>).linkedin_cleaned ? (
+                <Kpi label="LinkedIn cleaned" value={(data as Record<string, unknown>).linkedin_cleaned as number} />
+              ) : null}
+              {(data as Record<string, unknown>).skipped_not_verified ? (
+                <Kpi label="Skipped (not verified)" value={(data as Record<string, unknown>).skipped_not_verified as number} />
+              ) : null}
             </div>
             {data.options && (
               <div style={{ fontSize: 11, color: '#6B7280', marginBottom: 10 }}>
                 Batch: <code>{data.options.import_batch}</code>
                 {' · '}
-                enrich={String(data.options.enrich)} · qa_internet={String(data.options.run_qa_internet)} · persist_discovered={String(data.options.persist_discovered)}
-                {' · '}
-                apollo_merge={String(data.options.apollo_merge ?? false)}
+                {'Scanned: '}{data.total_scanned}{' · Enrich: '}{String(data.options.enrich)}{' · QA: '}{String(data.options.run_qa_internet)}
+                {(data as Record<string, unknown>).shared_domains && (Array.isArray((data as Record<string, unknown>).shared_domains) && ((data as Record<string, unknown>).shared_domains as string[]).length > 0) ? (
+                  <>{' · Shared domains blocked: '}{((data as Record<string, unknown>).shared_domains as string[]).join(', ')}</>
+                ) : null}
               </div>
             )}
 
@@ -713,7 +900,9 @@ const sRunBtn: React.CSSProperties = {
 
 const sError: React.CSSProperties = {
   background: '#FEF2F2',
-  border: '1px solid #FECACA',
+  borderWidth: 1,
+  borderStyle: 'solid',
+  borderColor: '#FECACA',
   color: '#991B1B',
   borderRadius: 10,
   padding: '10px 12px',
@@ -833,7 +1022,9 @@ const sBadgeBase: React.CSSProperties = {
   alignItems: 'center',
   padding: '2px 7px',
   borderRadius: 999,
-  border: '1px solid',
+  borderWidth: 1,
+  borderStyle: 'solid',
+  borderColor: '#D1D5DB',
   fontSize: 11,
   fontWeight: 700,
 };

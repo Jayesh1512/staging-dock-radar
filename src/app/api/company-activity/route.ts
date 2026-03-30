@@ -67,10 +67,11 @@ export async function GET(req: NextRequest) {
           publisher
         )
       `)
-      .gte('relevance_score', 25)
+      .gte('relevance_score', 50)
       .eq('is_duplicate', false)
       .is('drop_reason', null)
       .not('company', 'is', null)
+      .neq('status', 'dismissed')
       .order('created_at', { ascending: false });
 
     const { data: scoredRows, error: scoredErr } = await query;
@@ -78,6 +79,11 @@ export async function GET(req: NextRequest) {
     if (!scoredRows || scoredRows.length === 0) {
       return NextResponse.json({ companies: [], stats: { total: 0, rising: 0, new: 0, avgScore: 0, reachable: 0 } });
     }
+
+    // ── DJI Dock keyword check helper (Layer 3) ────────────────────────────
+    const DOCK_KEYWORDS = ['dji dock', 'dock 2', 'dock 3', 'drone-in-a-box'];
+    const textHasDock = (text: string | null | undefined) =>
+      DOCK_KEYWORDS.some(kw => (text ?? '').toLowerCase().includes(kw));
 
     // ── 2. Group by normalized company name ──────────────────────────────────
     const companyMap = new Map<string, {
@@ -91,6 +97,7 @@ export async function GET(req: NextRequest) {
       contacts: Map<string, { name: string; role: string | null; organization: string | null }>;
       scores: number[];
       last_post_at: string | null;
+      hasDock: boolean;
     }>();
 
     for (const row of scoredRows) {
@@ -111,6 +118,7 @@ export async function GET(req: NextRequest) {
           contacts: new Map(),
           scores: [],
           last_post_at: null,
+          hasDock: false,
         };
         companyMap.set(normName, entry);
       }
@@ -138,6 +146,13 @@ export async function GET(req: NextRequest) {
         relevance_score: row.relevance_score as number,
         signal_type: (row.signal_type as string) || 'OTHER',
       });
+
+      // Layer 3: Check DJI Dock keyword in title, snippet, or summary
+      if (!entry.hasDock) {
+        if (textHasDock(article.title) || textHasDock(row.summary as string)) {
+          entry.hasDock = true;
+        }
+      }
 
       // Extract contacts from persons
       const persons = (row.persons as any[]) || [];
@@ -308,22 +323,28 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Sort by post_count desc, then avg_score desc
-    companies.sort((a, b) => b.post_count - a.post_count || b.avg_score - a.avg_score);
+    // Layer 3: Only include companies with at least one DJI Dock mention
+    const dockCompanies = companies.filter(c => {
+      const entry = companyMap.get(c.normalized_name);
+      return entry?.hasDock === true;
+    });
 
-    // Stats
+    // Sort by post_count desc, then avg_score desc
+    dockCompanies.sort((a, b) => b.post_count - a.post_count || b.avg_score - a.avg_score);
+
+    // Stats (based on filtered DJI Dock companies only)
     const stats = {
-      total: companies.length,
-      rising: companies.filter(c => c.trend === 'rising').length,
-      new: companies.filter(c => c.trend === 'new').length,
-      avgScore: companies.length > 0
-        ? Math.round(companies.reduce((s, c) => s + c.avg_score, 0) / companies.length)
+      total: dockCompanies.length,
+      rising: dockCompanies.filter(c => c.trend === 'rising').length,
+      new: dockCompanies.filter(c => c.trend === 'new').length,
+      avgScore: dockCompanies.length > 0
+        ? Math.round(dockCompanies.reduce((s, c) => s + c.avg_score, 0) / dockCompanies.length)
         : 0,
-      reachable: companies.filter(c => c.website || c.linkedin).length,
-      totalArticles: companies.reduce((s, c) => s + c.post_count, 0),
+      reachable: dockCompanies.filter(c => c.website || c.linkedin).length,
+      totalArticles: dockCompanies.reduce((s, c) => s + c.post_count, 0),
     };
 
-    return NextResponse.json({ companies, stats });
+    return NextResponse.json({ companies: dockCompanies, stats });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Company activity query failed';
     console.error('[/api/company-activity]', message);

@@ -84,13 +84,23 @@ export async function runLatestArticlesFlow(config: LatestArticlesScheduleConfig
     merged: merged.deduped.length,
   });
 
-  await scoreChunked(merged.deduped, minScore);
+  const scored = await scoreChunked(merged.deduped, minScore);
 
-  console.log('[latest-articles-flow] Run complete');
+  // Filter to queue-eligible articles (score >= minScore, not dropped, not duplicate)
+  const qualified = scored.filter(r =>
+    r.scored.relevance_score >= minScore &&
+    !r.scored.drop_reason &&
+    !r.scored.is_duplicate
+  );
+
+  console.log('[latest-articles-flow] Run complete', { qualified: qualified.length, totalScored: scored.length });
   return {
     googleCount: google.articles.length,
     linkedinCount: linkedin.articles.length,
     mergedCount: merged.deduped.length,
+    scoredCount: scored.length,
+    qualifiedCount: qualified.length,
+    qualified,
   };
 }
 

@@ -1,0 +1,94 @@
+{
+  "run": {
+    "id": "run_li_202603301202599",
+    "keywords": [
+      "DJI Dock"
+    ],
+    "sources": [
+      "linkedin"
+    ],
+    "regions": [],
+    "filter_days": 1,
+    "min_score": 40,
+    "max_articles": 50,
+    "status": "completed",
+    "articles_fetched": 5,
+    "articles_stored": 5,
+    "dedup_removed": 0,
+    "created_at": "2026-03-30T12:03:53.471Z",
+    "completed_at": "2026-03-30T12:03:53.471Z"
+  },
+  "stats": {
+    "totalFetched": 5,
+    "afterDateFilter": 5,
+    "afterDedup": 5,
+    "stored": 5
+  },
+  "articles": [
+    {
+      "id": "li_run_li_202603301202599_1774872233120_0",
+      "run_id": "run_li_202603301202599",
+      "source": "linkedin",
+      "title": "From 24/7 site monitoring to automated inspections the DJI Dock 3, deployment is seamless and data collection is constant. Built to withstan",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7444332429772992512/",
+      "publisher_url": "https://www.linkedin.com/company/drone-solutions-zw/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7444332429772992512",
+      "snippet": "From 24/7 site monitoring to automated inspections the DJI Dock 3, deployment is seamless and data collection is constant. Built to withstand extreme weather and harsh terrains, it ensures your fleet is always charged, protected, and ready for take-off at a moment's notice. ✅ Fully Autonomous Workflows ✅ Rapid Charging & Deployment ✅ Remote Management via DJI FlightHub 2 Follow Us For More https://lnkd.in/dhQq-xUV hashtag #DroneTechnology hashtag #AerialIntelligence hashtag #DJIEnterprise hashtag #RemoteSensing hashtag #Efficiency hashtag #zimbabwe #dronesolutionszimbabwe#fyp",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-30T11:03:53.120Z",
+      "created_at": "2026-03-30T12:03:53.120Z"
+    },
+    {
+      "id": "li_run_li_202603301202599_1774872233120_1",
+      "run_id": "run_li_202603301202599",
+      "source": "linkedin",
+      "title": "In fire prevention, early detection and fast verification make all the difference. With DJI Dock 3, teams can integrate thermal detection an",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7444322589973377024/",
+      "publisher_url": "https://www.linkedin.com/company/aerosmartuav/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7444322589973377024",
+      "snippet": "In fire prevention, early detection and fast verification make all the difference. With DJI Dock 3, teams can integrate thermal detection and visual confirmation into one streamlined workflow. Key benefits: 🧯 Rapid detection of heat anomalies 🧯 Immediate visual zoom for source verification 🧯 Confirm conditions before deploying ground crews 🧯 Reduced response times across large areas 🧯 Safer, more controlled operations Automated drone deployment combined with thermal intelligence allows public safety teams to respond faster while reducing operational risk. Aerosmart Sales Details Email : sales@aerosmart.ae Website: https://aerosmart.ae hashtag #DJIEnterprise hashtag #FirePrevention hashtag #ThermalDrone hashtag #PublicSafety hashtag #DroneOperations hashtag #Aerosmart",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-30T10:03:53.120Z",
+      "created_at": "2026-03-30T12:03:53.120Z"
+    },
+    {
+      "id": "li_run_li_202603301202599_1774872233120_2",
+      "run_id": "run_li_202603301202599",
+      "source": "linkedin",
+      "title": "Security can’t wait: the DJI Dock 2 delivers. Rapid deployment for YOUR infrastructure means 24/7 protection that NEVER sleeps. Real-time re",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7444179197272702976/",
+      "publisher_url": "https://www.linkedin.com/company/oil-well-security/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7444179197272702976",
+      "snippet": "Security can’t wait: the DJI Dock 2 delivers. Rapid deployment for YOUR infrastructure means 24/7 protection that NEVER sleeps. Real-time response when every second counts. Let’s talk: https://page.",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-30T01:03:53.121Z",
+      "created_at": "2026-03-30T12:03:53.120Z"
+    },
+    {
+      "id": "li_run_li_202603301202599_1774872233120_3",
+      "run_id": "run_li_202603301202599",
+      "source": "linkedin",
+      "title": "Security and lifestyle estates need proactive surveillance that keep up with real-world threats. UDS deliver always-on aerial security power",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7444247044090880000/",
+      "publisher_url": "https://www.linkedin.com/company/uds-uav-drone-solutions/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7444247044090880000",
+      "snippet": "Security and lifestyle estates need proactive surveillance that keep up with real-world threats. UDS deliver always-on aerial security powered by DJI Dock 3 & Matrice 4TD, a docked, remotely operated drone solution built for continuous situational awareness and rapid response. Designed to integrate into your existing security operation, docked drone surveillance act as a true force multiplier, expanding visibility beyond fixed cameras, improving coordinated response, and supporting night/low-visibility operations with thermal AI detection. Contact us: 📞 +27 11 447 7337 📧 info@uavdronesolutions.com 🌐 https://lnkd.in/d4RyCrPW hashtag #UDS hashtag #DJIDock3 hashtag #Matrice4TD hashtag #EstateSecurity hashtag #DroneSurveillance hashtag #ThermalAI hashtag #RapidResponse hashtag #ForceMultiplier",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-30T05:03:53.121Z",
+      "created_at": "2026-03-30T12:03:53.120Z"
+    },
+    {
+      "id": "li_run_li_202603301202599_1774872233120_4",
+      "run_id": "run_li_202603301202599",
+      "source": "linkedin",
+      "title": "Learn more about how hashtag #DJI Dock 3 is powering smarter construction site management! 🚀",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7444247054895226880/",
+      "publisher_url": "https://www.linkedin.com/in/sta27",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7444247054895226880",
+      "snippet": "Learn more about how hashtag #DJI Dock 3 is powering smarter construction site management! 🚀",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-30T07:03:53.121Z",
+      "created_at": "2026-03-30T12:03:53.120Z"
+    }
+  ]
+}

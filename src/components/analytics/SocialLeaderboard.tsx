@@ -368,6 +368,7 @@ export function SocialLeaderboard() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#F9FAFB' }}>
+              <th style={{ ...sTh, width: 30, cursor: 'default' }}></th>
               <th style={sTh}>#</th>
               <th style={{ ...sTh, textAlign: 'left' }}>Company</th>
               <th style={sTh} onClick={() => handleSort('post_count')}>Posts{sortArrow('post_count')}</th>
@@ -377,7 +378,6 @@ export function SocialLeaderboard() {
               <th style={sTh} onClick={() => handleSort('last_post_at')}>Last Post{sortArrow('last_post_at')}</th>
               <th style={sTh} onClick={() => handleSort('contacts')}>Contacts{sortArrow('contacts')}</th>
               <th style={{ ...sTh, cursor: 'default' }}>Stage</th>
-              <th style={{ ...sTh, width: 30 }}></th>
             </tr>
           </thead>
           <tbody>
@@ -396,6 +396,16 @@ export function SocialLeaderboard() {
                     onMouseEnter={e => { if (!isExpanded) e.currentTarget.style.background = '#F9FAFB'; }}
                     onMouseLeave={e => { if (!isExpanded) e.currentTarget.style.background = ''; }}
                   >
+                    <td style={sTd}>
+                      <span style={{
+                        fontSize: 12, color: isExpanded ? '#15803D' : '#9CA3AF',
+                        transition: 'transform 0.15s',
+                        display: 'inline-block',
+                        transform: isExpanded ? 'rotate(90deg)' : 'none',
+                      }}>
+                        &#9654;
+                      </span>
+                    </td>
                     <td style={sTd}><span style={{ fontWeight: 700, color: '#9CA3AF', fontSize: 12 }}>{idx + 1}</span></td>
                     <td style={sTd}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -455,16 +465,6 @@ export function SocialLeaderboard() {
                       })() : (
                         <span style={{ fontSize: 11, color: '#D1D5DB' }}>—</span>
                       )}
-                    </td>
-                    <td style={sTd}>
-                      <span style={{
-                        fontSize: 12, color: isExpanded ? '#15803D' : '#9CA3AF',
-                        transition: 'transform 0.15s',
-                        display: 'inline-block',
-                        transform: isExpanded ? 'rotate(90deg)' : 'none',
-                      }}>
-                        &#9654;
-                      </span>
                     </td>
                   </tr>
 
@@ -533,7 +533,17 @@ export function SocialLeaderboard() {
                                     {art.relevance_score}
                                   </span>
                                   <span style={{ color: '#9CA3AF', minWidth: 50 }}>{formatDate(art.published_at)}</span>
-                                  <span style={{ color: '#374151', flex: 1 }}>{art.title}</span>
+                                  <a
+                                    href={art.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={e => e.stopPropagation()}
+                                    style={{ color: 'var(--dr-blue)', flex: 1, textDecoration: 'none', lineHeight: 1.3, fontWeight: 500 }}
+                                    onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+                                    onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+                                  >
+                                    {art.title}
+                                  </a>
                                   <span style={{
                                     fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 4,
                                     background: art.source === 'linkedin' ? '#DBEAFE' : '#D1FAE5',

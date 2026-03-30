@@ -10,12 +10,18 @@ import {
 } from '@/lib/company-enrichment/apolloSerper';
 import { enrichDjiDockCompanyFromSerperRegex } from '@/lib/dji/djiDockCompanyEnricher';
 import { runDockQaInternetScan, type DockQaInternetResult } from '@/lib/dji/dockQaInternetScan';
+import {
+  buildSharedDomainSet,
+  isDirectoryOrMegaDomain,
+  isValidLinkedIn,
+  validateDomainForQa,
+} from '@/lib/dji/domainValidation';
 import { upsertMultiSourcesFromDockHunter, websiteToNormalizedDomain } from '@/lib/multi-sources-companies-import';
 import { requireSupabase } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300;
+export const maxDuration = 600;
 
 const DEFAULT_SCAN_LIMIT = 50;
 const MAX_SCAN_LIMIT = 500;
@@ -108,10 +114,15 @@ async function mergeApolloWebsiteLinkedin(
   websiteSource: 'csv' | 'serper' | 'apollo';
   linkedinSource: 'csv' | 'serper' | 'apollo' | 'apollo_org_enrich' | 'website_scan';
 }> {
-  let website = csvWebsite ?? serperWebsite;
-  let linkedin = csvLinkedin ?? serperLinkedin;
-  let websiteSource: 'csv' | 'serper' | 'apollo' = csvWebsite ? 'csv' : 'serper';
-  let linkedinSource: 'csv' | 'serper' | 'apollo' | 'apollo_org_enrich' | 'website_scan' = csvLinkedin
+  // If CSV website is a directory/mega-domain, treat it as missing — let Serper/Apollo fill it.
+  const csvWebsiteUsable = csvWebsite && !isDirectoryOrMegaDomain(csvWebsite) ? csvWebsite : null;
+  // If CSV LinkedIn is polluted (e.g. company/facebook), treat as missing.
+  const csvLinkedinUsable = csvLinkedin && isValidLinkedIn(csvLinkedin) ? csvLinkedin : null;
+
+  let website = csvWebsiteUsable ?? serperWebsite;
+  let linkedin = csvLinkedinUsable ?? serperLinkedin;
+  let websiteSource: 'csv' | 'serper' | 'apollo' = csvWebsiteUsable ? 'csv' : 'serper';
+  let linkedinSource: 'csv' | 'serper' | 'apollo' | 'apollo_org_enrich' | 'website_scan' = csvLinkedinUsable
     ? 'csv'
     : serperLinkedin
       ? 'serper'
@@ -226,6 +237,8 @@ type ScanResultRow = {
   stored_to_multi_sources: boolean;
   dock_verified: boolean | null;
   multi_sources_error?: string | null;
+  domain_skip_reason?: string | null;
+  linkedin_cleaned?: boolean;
   error?: string;
   analysis: Awaited<ReturnType<typeof enrichDjiDockCompanyFromSerperRegex>> | null;
 };
@@ -277,6 +290,12 @@ export async function POST(req: Request) {
       enrich?: boolean;
       run_qa_internet?: boolean;
       persist_discovered?: boolean;
+      /** Data source name, e.g. 'nl_aviation_registry', 'fr_sirene' */
+      source_name?: string;
+      /** Original uploaded filename for audit trail */
+      source_file_name?: string;
+      /** When true, only write records where dock is verified (dock_found=true). Default true. */
+      only_store_verified?: boolean;
       /** When non-empty, skip DB registry and run hunter on these rows instead */
       csv_rows?: Record<string, unknown>[];
     };
@@ -295,6 +314,9 @@ export async function POST(req: Request) {
     const runEnrich = body.enrich !== false;
     const runQaInternet = body.run_qa_internet !== false;
     const persistDiscovered = body.persist_discovered !== false;
+    const onlyStoreVerified = body.only_store_verified !== false; // default true
+    const sourceName = body.source_name?.trim() || 'manual_csv';
+    const sourceFileName = body.source_file_name?.trim() || null;
 
     const serperApiKey = process.env.SERPER_API_KEY?.trim();
     if (!serperApiKey) {
@@ -422,160 +444,350 @@ export async function POST(req: Request) {
       skippedExisting = Math.max(0, beforeCount - workRows.length);
     }
 
-    const results: ScanResultRow[] = [];
+    // Build shared-domain set for batch-level directory detection (Layer 3).
+    const sharedDomains = buildSharedDomainSet(
+      workRows.map((r) => ({ website: r.website })),
+      3,
+    );
 
-    for (let i = 0; i < workRows.length; i++) {
-      const row = workRows[i];
-      if (delayMs > 0 && i > 0) await sleep(delayMs);
+    // ── Streaming NDJSON response ──────────────────────────────────────
+    // Each row is written as it completes so the connection stays alive
+    // and the UI can show real progress.
 
-      try {
-        let analysis: Awaited<ReturnType<typeof enrichDjiDockCompanyFromSerperRegex>> | null = null;
-        let nextWebsite = row.website ?? null;
-        let nextLinkedin = row.linkedin ?? null;
-        let nextWebsiteSource: 'csv' | 'serper' | 'apollo' | undefined;
-        let nextLinkedinSource:
-          | 'csv'
-          | 'serper'
-          | 'apollo'
-          | 'apollo_org_enrich'
-          | 'website_scan'
-          | undefined;
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (obj: Record<string, unknown>) => {
+          controller.enqueue(encoder.encode(JSON.stringify(obj) + '\n'));
+        };
 
-        if (runEnrich) {
-          analysis = await enrichDjiDockCompanyFromSerperRegex(
-            {
-              companyName: row.company_name,
-              companyCountry: row.country_code,
-              pages: 1,
-              persistToDiscovered: persistDiscovered,
-            },
-            serperApiKey,
-          );
-          const merged = await mergeApolloWebsiteLinkedin(
-            row.company_name,
-            row.website,
-            row.linkedin,
-            analysis.websiteCandidate ?? null,
-            analysis.linkedin.found ?? null,
-          );
-          nextWebsite = merged.website;
-          nextLinkedin = merged.linkedin;
-          nextWebsiteSource = merged.websiteSource;
-          nextLinkedinSource = merged.linkedinSource;
-        } else {
-          nextWebsite = row.website ?? null;
-          nextLinkedin = row.linkedin ?? null;
-        }
+        send({
+          type: 'start',
+          total: workRows.length,
+          scan_limit: scanLimit,
+          truncated_by_limit: truncatedByLimit,
+          skipped_existing: skippedExisting,
+          csv_rows_raw: csvInput.length > 0 ? csvRowsRaw : undefined,
+          csv_rows_valid: csvInput.length > 0 ? csvRowsValid : undefined,
+          shared_domains: Array.from(sharedDomains),
+          import_batch: importBatch,
+        });
 
-        if (row.registryUuid) {
-          const updatePayload: Record<string, unknown> = { updated_at: new Date().toISOString() };
-          if (!row.website && nextWebsite) updatePayload.website = nextWebsite;
-          if (!row.linkedin && nextLinkedin) updatePayload.linkedin = nextLinkedin;
-          if (Object.keys(updatePayload).length > 1) {
-            await db.from('country_registered_companies').update(updatePayload).eq('id', row.registryUuid);
-          }
-        }
+        const results: ScanResultRow[] = [];
 
-        let qaInternet: DockQaInternetResult | null = null;
-        let storedToMulti = false;
-        let dockVerified: boolean | null = null;
-        let multiErr: string | null = null;
+        for (let i = 0; i < workRows.length; i++) {
+          const row = workRows[i];
+          if (delayMs > 0 && i > 0) await sleep(delayMs);
 
-        if (runQaInternet) {
-          const domain =
-            websiteToNormalizedDomain(nextWebsite ?? undefined) ??
-            websiteToNormalizedDomain(analysis?.websiteCandidate ?? undefined);
-          if (domain) {
-            if (delayMs > 0) await sleep(Math.min(delayMs, 400));
-            qaInternet = await runDockQaInternetScan(domain, nextLinkedin, serperApiKey);
-            const upsert = await upsertMultiSourcesFromDockHunter(db, {
-              displayName: row.display_name,
-              countryCode: row.country_code,
+          try {
+            let analysis: Awaited<ReturnType<typeof enrichDjiDockCompanyFromSerperRegex>> | null = null;
+            let nextWebsite = row.website ?? null;
+            let nextLinkedin = row.linkedin ?? null;
+            let nextWebsiteSource: 'csv' | 'serper' | 'apollo' | undefined;
+            let nextLinkedinSource:
+              | 'csv'
+              | 'serper'
+              | 'apollo'
+              | 'apollo_org_enrich'
+              | 'website_scan'
+              | undefined;
+
+            if (runEnrich) {
+              const csvWebsiteReal = row.website?.trim() && !isDirectoryOrMegaDomain(row.website);
+              const csvLinkedinReal = row.linkedin?.trim() && isValidLinkedIn(row.linkedin);
+              const csvHasBoth = !!csvWebsiteReal && !!csvLinkedinReal;
+              if (csvHasBoth) {
+                nextWebsite = row.website;
+                nextLinkedin = row.linkedin;
+                nextWebsiteSource = 'csv';
+                nextLinkedinSource = 'csv';
+              } else {
+                analysis = await enrichDjiDockCompanyFromSerperRegex(
+                  {
+                    companyName: row.company_name,
+                    companyCountry: row.country_code,
+                    pages: 1,
+                    persistToDiscovered: persistDiscovered,
+                  },
+                  serperApiKey,
+                );
+                const merged = await mergeApolloWebsiteLinkedin(
+                  row.company_name,
+                  row.website,
+                  row.linkedin,
+                  analysis.websiteCandidate ?? null,
+                  analysis.linkedin.found ?? null,
+                );
+                nextWebsite = merged.website;
+                nextLinkedin = merged.linkedin;
+                nextWebsiteSource = merged.websiteSource;
+                nextLinkedinSource = merged.linkedinSource;
+              }
+            } else {
+              nextWebsite = row.website ?? null;
+              nextLinkedin = row.linkedin ?? null;
+            }
+
+            // Clean LinkedIn if polluted by enrichment.
+            let linkedinCleaned = false;
+            if (nextLinkedin && !isValidLinkedIn(nextLinkedin)) {
+              nextLinkedin = null;
+              linkedinCleaned = true;
+            }
+
+            let qaInternet: DockQaInternetResult | null = null;
+            let storedToMulti = false;
+            let dockVerified: boolean | null = null;
+            let multiErr: string | null = null;
+            let domainSkipReason: string | null = null;
+
+            if (runQaInternet) {
+              const domain =
+                websiteToNormalizedDomain(nextWebsite ?? undefined) ??
+                websiteToNormalizedDomain(analysis?.websiteCandidate ?? undefined);
+
+              const domainCheck = validateDomainForQa(nextWebsite, sharedDomains);
+
+              if (domain && domainCheck.valid) {
+                if (delayMs > 0) await sleep(Math.min(delayMs, 400));
+                qaInternet = await runDockQaInternetScan(domain, nextLinkedin, serperApiKey);
+
+                // Decide whether to write: if onlyStoreVerified, skip non-verified.
+                const shouldWrite = !onlyStoreVerified || qaInternet.dock_found;
+                if (shouldWrite) {
+                  const upsert = await upsertMultiSourcesFromDockHunter(db, {
+                    displayName: row.display_name,
+                    countryCode: row.country_code,
+                    website: nextWebsite,
+                    linkedin: nextLinkedin,
+                    importBatch,
+                    sourceName,
+                    sourceFileName,
+                    registryId: row.registryUuid ?? undefined,
+                    csvRowIndex: row.csvRowIndex ?? undefined,
+                    qa: qaInternet,
+                  });
+                  storedToMulti = upsert.ok;
+                  dockVerified = upsert.dockVerified ?? null;
+                  multiErr = upsert.skipped ? null : (upsert.error ?? null);
+                } else {
+                  dockVerified = false;
+                }
+              } else {
+                // No domain found or domain blocked.
+                if (domain && !domainCheck.valid) {
+                  domainSkipReason = `${domainCheck.reason}: ${domainCheck.detail}`;
+                }
+
+                // In "store all" mode, write even without QA. In "verified only", skip.
+                if (!onlyStoreVerified) {
+                  const noQa: DockQaInternetResult = {
+                    dock_found: false,
+                    total_hits: 0,
+                    domain: domain ?? '',
+                    web_mentions: [],
+                    linkedin_mentions: [],
+                    keywords_matched: [],
+                    dock_models_line: null,
+                    error: domain ? domainSkipReason : 'no_domain_found',
+                  };
+                  const upsert = await upsertMultiSourcesFromDockHunter(db, {
+                    displayName: row.display_name,
+                    countryCode: row.country_code,
+                    website: nextWebsite,
+                    linkedin: nextLinkedin,
+                    importBatch,
+                    sourceName,
+                    sourceFileName,
+                    registryId: row.registryUuid ?? undefined,
+                    csvRowIndex: row.csvRowIndex ?? undefined,
+                    qa: noQa,
+                  });
+                  storedToMulti = upsert.ok;
+                  dockVerified = upsert.dockVerified ?? null;
+                  multiErr = upsert.skipped ? null : (upsert.error ?? null);
+                } else {
+                  dockVerified = false;
+                }
+              }
+            }
+
+            const resultRow: ScanResultRow = {
+              registry_id: row.registry_id,
+              company_name: row.company_name,
+              country_code: row.country_code,
+              website_before: row.website ?? null,
+              linkedin_before: row.linkedin ?? null,
+              website_after: nextWebsite,
+              linkedin_after: nextLinkedin,
+              website_source: nextWebsiteSource,
+              linkedin_source: nextLinkedinSource,
+              dji_dock_hit: analysis?.djiDockRegex.anyHit ?? false,
+              stored_to_discovered_company: analysis?.storedToDiscoveredCompany ?? false,
+              serper_top_link: analysis?.topResult?.link ?? null,
+              qa_internet: qaInternet,
+              stored_to_multi_sources: storedToMulti,
+              dock_verified: dockVerified,
+              multi_sources_error: multiErr,
+              domain_skip_reason: domainSkipReason,
+              linkedin_cleaned: linkedinCleaned || undefined,
+              analysis,
+            };
+            results.push(resultRow);
+
+            // Stream progress for each completed row.
+            send({
+              type: 'row',
+              current: i + 1,
+              total: workRows.length,
+              name: row.company_name,
+              dock_verified: dockVerified,
               website: nextWebsite,
               linkedin: nextLinkedin,
-              importBatch,
-              registryId: row.registryUuid ?? undefined,
-              csvRowIndex: row.csvRowIndex ?? undefined,
-              qa: qaInternet,
+              domain_skip: domainSkipReason,
+              linkedin_cleaned: linkedinCleaned || undefined,
+              dock_hit: analysis?.djiDockRegex.anyHit ?? false,
+              qa_dock_found: qaInternet?.dock_found ?? null,
+              stored: storedToMulti,
+              error: null,
             });
-            storedToMulti = upsert.ok;
-            dockVerified = upsert.dockVerified ?? null;
-            multiErr = upsert.skipped ? null : (upsert.error ?? null);
+          } catch (err) {
+            const errRow: ScanResultRow = {
+              registry_id: row.registry_id,
+              company_name: row.company_name,
+              country_code: row.country_code,
+              website_before: row.website ?? null,
+              linkedin_before: row.linkedin ?? null,
+              website_after: row.website ?? null,
+              linkedin_after: row.linkedin ?? null,
+              website_source: undefined,
+              linkedin_source: undefined,
+              dji_dock_hit: false,
+              stored_to_discovered_company: false,
+              serper_top_link: null,
+              qa_internet: null,
+              stored_to_multi_sources: false,
+              dock_verified: null,
+              multi_sources_error: null,
+              error: err instanceof Error ? err.message : 'Unknown error',
+              analysis: null,
+            };
+            results.push(errRow);
+
+            send({
+              type: 'row',
+              current: i + 1,
+              total: workRows.length,
+              name: row.company_name,
+              dock_verified: null,
+              website: null,
+              linkedin: null,
+              domain_skip: null,
+              dock_hit: false,
+              qa_dock_found: null,
+              stored: false,
+              error: errRow.error,
+            });
           }
         }
 
-        results.push({
-          registry_id: row.registry_id,
-          company_name: row.company_name,
-          country_code: row.country_code,
-          website_before: row.website ?? null,
-          linkedin_before: row.linkedin ?? null,
-          website_after: nextWebsite,
-          linkedin_after: nextLinkedin,
-          website_source: nextWebsiteSource,
-          linkedin_source: nextLinkedinSource,
-          dji_dock_hit: analysis?.djiDockRegex.anyHit ?? false,
-          stored_to_discovered_company: analysis?.storedToDiscoveredCompany ?? false,
-          serper_top_link: analysis?.topResult?.link ?? null,
-          qa_internet: qaInternet,
-          stored_to_multi_sources: storedToMulti,
-          dock_verified: dockVerified,
-          multi_sources_error: multiErr,
-          analysis,
-        });
-      } catch (err) {
-        results.push({
-          registry_id: row.registry_id,
-          company_name: row.company_name,
-          country_code: row.country_code,
-          website_before: row.website ?? null,
-          linkedin_before: row.linkedin ?? null,
-          website_after: row.website ?? null,
-          linkedin_after: row.linkedin ?? null,
-          website_source: undefined,
-          linkedin_source: undefined,
-          dji_dock_hit: false,
-          stored_to_discovered_company: false,
-          serper_top_link: null,
-          qa_internet: null,
-          stored_to_multi_sources: false,
-          dock_verified: null,
-          multi_sources_error: null,
-          error: err instanceof Error ? err.message : 'Unknown error',
-          analysis: null,
-        });
-      }
-    }
+        // Final summary line.
+        const hitCount = results.filter(r => r.dji_dock_hit).length;
+        const linkedinFoundCount = results.filter(r => r.linkedin_after).length;
+        const multiStored = results.filter(r => r.stored_to_multi_sources).length;
+        const qaHits = results.filter(r => r.qa_internet?.dock_found).length;
+        const domainSkippedCount = results.filter(r => r.domain_skip_reason).length;
+        const linkedinCleanedCount = results.filter(r => r.linkedin_cleaned).length;
+        const skippedNotVerified = onlyStoreVerified
+          ? results.filter(r => !r.stored_to_multi_sources && !r.error).length
+          : 0;
 
-    const hitCount = results.filter(r => r.dji_dock_hit).length;
-    const storedCount = results.filter(r => r.stored_to_discovered_company).length;
-    const linkedinFoundCount = results.filter(r => r.linkedin_after).length;
-    const multiStored = results.filter(r => r.stored_to_multi_sources).length;
-    const qaHits = results.filter(r => r.qa_internet?.dock_found).length;
+        // ── Save results to Supabase Storage ──────────────────────────────
+        let storageUrl: string | null = null;
+        try {
+          const storageBucket = 'csv-company-pipeline';
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const objectKey = `dock-hunter/${importBatch}/results-${timestamp}.json`;
+          const payload = JSON.stringify({
+            import_batch: importBatch,
+            source_name: sourceName,
+            source_file_name: sourceFileName,
+            scanned_at: new Date().toISOString(),
+            total_scanned: results.length,
+            skipped_existing: skippedExisting,
+            multi_sources_stored: multiStored,
+            qa_internet_dock_found: qaHits,
+            domain_skipped: domainSkippedCount,
+            linkedin_cleaned: linkedinCleanedCount,
+            skipped_not_verified: skippedNotVerified,
+            only_store_verified: onlyStoreVerified,
+            shared_domains: Array.from(sharedDomains),
+            results: results.map(r => ({
+              company_name: r.company_name,
+              country_code: r.country_code,
+              website_after: r.website_after,
+              linkedin_after: r.linkedin_after,
+              dock_verified: r.dock_verified,
+              domain_skip_reason: r.domain_skip_reason,
+              error: r.error,
+            })),
+          }, null, 2);
 
-    return NextResponse.json({
-      source: csvInput.length > 0 ? 'csv' : 'registry',
-      total_scanned: results.length,
-      scan_limit: scanLimit,
-      truncated_by_limit: truncatedByLimit,
-      skipped_existing: skippedExisting,
-      csv_rows_raw: csvInput.length > 0 ? csvRowsRaw : undefined,
-      csv_rows_valid: csvInput.length > 0 ? csvRowsValid : undefined,
-      delay_ms: delayMs,
-      hit_count: hitCount,
-      stored_count: storedCount,
-      linkedin_found_count: linkedinFoundCount,
-      qa_filter_applied: qaFilterApplied,
-      qa_internet_dock_found: qaHits,
-      multi_sources_stored: multiStored,
-      options: {
-        enrich: runEnrich,
-        run_qa_internet: runQaInternet,
-        persist_discovered: persistDiscovered,
-        import_batch: importBatch,
-        apollo_merge: hasApolloKey(),
+          const { error: uploadErr } = await db.storage
+            .from(storageBucket)
+            .upload(objectKey, payload, { contentType: 'application/json', upsert: true });
+
+          if (!uploadErr) {
+            storageUrl = `${storageBucket}/${objectKey}`;
+            send({ type: 'log', data: `Results saved to storage: ${storageUrl}` });
+          } else {
+            send({ type: 'log', data: `Storage upload failed: ${uploadErr.message}` });
+          }
+        } catch (storageErr) {
+          // Non-fatal — don't block the response.
+          send({ type: 'log', data: `Storage upload error: ${storageErr instanceof Error ? storageErr.message : 'unknown'}` });
+        }
+
+        send({
+          type: 'done',
+          source: csvInput.length > 0 ? 'csv' : 'registry',
+          total_scanned: results.length,
+          scan_limit: scanLimit,
+          truncated_by_limit: truncatedByLimit,
+          skipped_existing: skippedExisting,
+          csv_rows_raw: csvInput.length > 0 ? csvRowsRaw : undefined,
+          csv_rows_valid: csvInput.length > 0 ? csvRowsValid : undefined,
+          delay_ms: delayMs,
+          hit_count: hitCount,
+          linkedin_found_count: linkedinFoundCount,
+          qa_internet_dock_found: qaHits,
+          multi_sources_stored: multiStored,
+          domain_skipped: domainSkippedCount,
+          linkedin_cleaned: linkedinCleanedCount,
+          skipped_not_verified: skippedNotVerified,
+          shared_domains: Array.from(sharedDomains),
+          options: {
+            enrich: runEnrich,
+            run_qa_internet: runQaInternet,
+            persist_discovered: persistDiscovered,
+            only_store_verified: onlyStoreVerified,
+            import_batch: importBatch,
+            apollo_merge: hasApolloKey(),
+          },
+          storage_url: storageUrl,
+          results,
+        });
+
+        controller.close();
       },
-      results,
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'application/x-ndjson',
+        'Transfer-Encoding': 'chunked',
+        'Cache-Control': 'no-cache',
+      },
     });
   } catch (err) {
     const message = err instanceof Error

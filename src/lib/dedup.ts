@@ -149,9 +149,11 @@ export function gateTwoDedup(articles: ArticleWithScore[]): ArticleWithScore[] {
 
       const a = kept.scored.summary ?? '';
       const b = candidate.scored.summary ?? '';
-      if (!a || !b) return false;
 
-      return jaccardWords(a, b) >= DEFAULTS.titleSimilarity;
+      // Check summary similarity OR title similarity (catches same-content posts with different LLM summaries)
+      const summaryMatch = a && b && jaccardWords(a, b) >= DEFAULTS.titleSimilarity;
+      const titleMatch = jaccardWords(kept.article.title, candidate.article.title) >= DEFAULTS.titleSimilarity;
+      return summaryMatch || titleMatch;
     });
 
     if (isDup) {

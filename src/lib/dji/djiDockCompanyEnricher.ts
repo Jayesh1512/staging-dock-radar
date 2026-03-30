@@ -366,74 +366,10 @@ export async function enrichDjiDockCompanyFromSerperRegex(
     };
   }
 
-  // ── Store to discovered_companies (only when hit && persistToDiscovered) ──
-  const db = requireSupabase();
-  const now = new Date().toISOString();
-
-  const djiDockSignal = 'DJI DOCK';
-  const { data: existing } = await db
-    .from('discovered_companies')
-    .select('display_name, website, countries, signal_types, mention_count, linkedin')
-    .eq('normalized_name', normalizedCompanyName)
-    .maybeSingle();
-
-  const existingCountries = (existing?.countries as unknown as string[] | null) ?? [];
-  const existingSignals = (existing?.signal_types as unknown as string[] | null) ?? [];
-
-  const nextCountries = unionArray(existingCountries, [canonicalCountryName]);
-  const nextSignals = unionArray(existingSignals, [djiDockSignal]);
-  const nextMentionCount = (existing?.mention_count ?? 0) + 1;
-
-  if (existing) {
-    const websiteToKeep = existing.website ?? (rootUrl ?? topUrl);
-    const linkedinToKeep = (existing as { linkedin?: string | null } | null)?.linkedin ?? linkedinFound;
-    const { error: updateErr } = await db.from('discovered_companies')
-      .update({
-        display_name: existing.display_name ?? companyName,
-        website: websiteToKeep,
-        linkedin: linkedinToKeep,
-        countries: nextCountries,
-        signal_types: nextSignals,
-        mention_count: nextMentionCount,
-        last_seen_at: now,
-        enriched_at: now,
-        enriched_by: 'dji_dock_regex_scrape',
-        updated_at: now,
-        source: 'dji_dock_regex_scrape',
-      })
-      .eq('normalized_name', normalizedCompanyName);
-
-    if (updateErr) throw updateErr;
-  } else {
-    const { error: insertErr } = await db.from('discovered_companies')
-      .insert({
-        normalized_name: normalizedCompanyName,
-        display_name: companyName,
-        // Best-effort default: treat as operator unless we know better.
-        types: ['operator'],
-        website: rootUrl ?? topUrl,
-        linkedin: linkedinFound,
-        countries: [canonicalCountryName],
-        industries: [],
-        signal_types: [djiDockSignal],
-        mention_count: 1,
-        first_seen_at: now,
-        last_seen_at: now,
-        enriched_at: now,
-        enriched_by: 'dji_dock_regex_scrape',
-        created_at: now,
-        updated_at: now,
-        source: 'dji_dock_regex_scrape',
-      });
-
-    if (insertErr) throw insertErr;
-  }
-
-  const { data: stored } = await db
-    .from('discovered_companies')
-    .select('normalized_name, display_name, website, countries, signal_types, mention_count, linkedin')
-    .eq('normalized_name', normalizedCompanyName)
-    .maybeSingle();
+  // ── No longer writing to discovered_companies ──
+  // All persistence goes through upsertMultiSourcesFromDockHunter → multi_sources_companies_import
+  // The enrichment data (website, linkedin, dock signals) is passed back to the caller
+  // which handles the upsert into the master table.
 
   return {
     companyName,
@@ -452,18 +388,8 @@ export async function enrichDjiDockCompanyFromSerperRegex(
     },
     linkedin: { found: linkedinFound, source: linkedinSource },
     websiteCandidate: pickWebsiteCandidate(rootUrl, topUrl),
-    storedToDiscoveredCompany: true,
-    discoveredCompany: stored
-      ? {
-        normalized_name: stored.normalized_name as string,
-        display_name: stored.display_name as string,
-        website: (stored.website as string | null) ?? null,
-        countries: (stored.countries as unknown as string[] | null) ?? [],
-        signal_types: (stored.signal_types as unknown as string[] | null) ?? [],
-        mention_count: (stored.mention_count as number | null) ?? nextMentionCount,
-        linkedin: (stored.linkedin as string | null) ?? null,
-      }
-      : undefined,
+    storedToDiscoveredCompany: false,
+    discoveredCompany: undefined,
   };
 }
 

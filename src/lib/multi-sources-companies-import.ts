@@ -58,7 +58,11 @@ export async function upsertMultiSourcesFromDockHunter(
     website: string | null;
     linkedin: string | null;
     importBatch: string;
-    /** When set, links to country_registered_companies.id */
+    /** Data source name, e.g. 'nl_aviation_registry', 'fr_sirene' */
+    sourceName: string;
+    /** Original uploaded filename for audit trail */
+    sourceFileName?: string | null;
+    /** When set, stored as registry reference in source_refs */
     registryId?: string | null;
     /** When set (CSV hunter), stored in source_refs instead of registry id */
     csvRowIndex?: number | null;
@@ -93,7 +97,7 @@ export async function upsertMultiSourcesFromDockHunter(
         : [];
 
   const newEntry: VerificationEntry = {
-    method: 'serper',
+    method: 'serper_dock_verify',
     hits: params.qa.total_hits,
     url: params.qa.web_mentions[0]?.url ?? params.qa.linkedin_mentions[0]?.url ?? null,
     relevance: params.qa.dock_found ? 'direct' : 'mention_only',
@@ -101,8 +105,8 @@ export async function upsertMultiSourcesFromDockHunter(
     keywords_matched: kw,
     post_date: null,
     note: params.qa.error
-      ? `QA: ${params.qa.error}`
-      : 'Internet QA: site:domain "DJI Dock" + optional LinkedIn company search',
+      ? `error: ${params.qa.error}`
+      : `site:${params.qa.domain} → ${params.qa.total_hits} hits`,
   };
 
   const prevVer = (existing?.verifications as VerificationEntry[] | null) ?? [];
@@ -116,33 +120,32 @@ export async function upsertMultiSourcesFromDockHunter(
   if (params.qa.dock_found) {
     dockVerified = true;
   } else if (priorEvidence) {
+    // Preserve prior evidence — don't downgrade
     dockVerified = existing?.dock_verified ?? true;
   } else {
     dockVerified = false;
   }
 
+  // source_types = data origin (e.g. 'nl_aviation_registry', 'fr_sirene')
   const sourceTypes = unionStrings(existing?.source_types as string[] | undefined, [
-    params.csvRowIndex != null ? 'dji_dock_hunter_csv' : 'country_registry',
-    'dock_hunter_qa',
+    params.sourceName,
   ]);
+
+  // source_refs = audit trail (file name, row index, registry IDs)
+  const refEntry: Record<string, unknown> = {};
+  if (params.sourceFileName) refEntry.file = params.sourceFileName;
+  if (params.csvRowIndex != null) refEntry.row_index = params.csvRowIndex;
+  if (params.registryId) refEntry.registry_id = params.registryId;
+  refEntry.import_batch = params.importBatch;
 
   const sourceRefs = mergeSourceRefs(
     existing?.source_refs as Record<string, unknown> | undefined,
-    params.registryId
-      ? { country_registered_company_id: params.registryId }
-      : params.csvRowIndex != null
-        ? {
-            dji_dock_hunter_csv: {
-              row_index: params.csvRowIndex,
-              import_batch: params.importBatch,
-            },
-          }
-        : {},
+    { [params.sourceName]: refEntry },
   );
 
   const enrichmentMethods = unionStrings(
     existing?.enrichment_methods as string[] | undefined,
-    ['serper_qa'],
+    ['serper_dock_verify'],
   );
 
   const nextWebsite = (existing?.website as string | null | undefined) ?? params.website ?? null;
@@ -150,11 +153,8 @@ export async function upsertMultiSourcesFromDockHunter(
 
   const dockModels = recomputeDockModelsFromVerifications(mergedVerifications);
 
-  // Policy: only persist positive/retained evidence rows.
-  // If computed dock_verified is false, skip DB write entirely.
-  if (dockVerified === false) {
-    return { ok: false, dockVerified: false, skipped: true };
-  }
+  // Write ALL records — dock_verified true, false, or null.
+  // All uploaded data goes into the master table. Cleanup via dock_qa_status later.
 
   const row = {
     normalized_name: normalizedName,

@@ -1,0 +1,185 @@
+{
+  "run": {
+    "id": "run_li_202603292342419",
+    "keywords": [
+      "DJI Dock"
+    ],
+    "sources": [
+      "linkedin"
+    ],
+    "regions": [],
+    "filter_days": 3,
+    "min_score": 40,
+    "max_articles": 50,
+    "status": "completed",
+    "articles_fetched": 27,
+    "articles_stored": 12,
+    "dedup_removed": 0,
+    "created_at": "2026-03-29T23:43:39.226Z",
+    "completed_at": "2026-03-29T23:43:39.226Z"
+  },
+  "stats": {
+    "totalFetched": 27,
+    "afterDateFilter": 12,
+    "afterDedup": 12,
+    "stored": 12
+  },
+  "articles": [
+    {
+      "id": "li_run_li_202603292342419_1774827818834_0",
+      "run_id": "run_li_202603292342419",
+      "source": "linkedin",
+      "title": "Meet&Greet with the European DJI Distributors for the DJI Dock Advanced Certificate🎓 *** Advanced FlightHub2 Feature Knowledge Advanced Liv",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443261120167149568/",
+      "publisher_url": "https://www.linkedin.com/in/carsten-fischer-b09801301",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443261120167149568",
+      "snippet": "Meet&Greet with the European DJI Distributors for the DJI Dock Advanced Certificate🎓 *** Advanced FlightHub2 Feature Knowledge Advanced Live stream Feature Knowledge Advanced Data Security Feature Knowledge Advanced Air Space Knowledge *** Thx DJI for this informative & powerfull Training ! hashtag #DJIDock hashtag #FH2 hashtag #DJIDockDAC hashtag #DJIEnterprise",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T23:43:38.834Z",
+      "created_at": "2026-03-29T23:43:38.834Z"
+    },
+    {
+      "id": "li_run_li_202603292342419_1774827818834_3",
+      "run_id": "run_li_202603292342419",
+      "source": "linkedin",
+      "title": "In Babanango Game Reserve, it’s more than land, it’s life. With DJI Dock 3, drones launch instantly when alerts are triggered, giving ranger",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443311784083574785/",
+      "publisher_url": "https://www.linkedin.com/company/dji/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443311784083574785",
+      "snippet": "In Babanango Game Reserve, it’s more than land, it’s life. With DJI Dock 3, drones launch instantly when alerts are triggered, giving rangers real-time visibility day and night. Every second counts in protecting wildlife. Find out how 👉 https://brnw.ch/21x16Rq Special thanks to OPTRON (Pty) Ltd hashtag #djienterprise hashtag #djidock3 hashtag #wildlifeconservation hashtag #thermalimaging hashtag #conservation",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T23:43:38.834Z",
+      "created_at": "2026-03-29T23:43:38.834Z"
+    },
+    {
+      "id": "li_run_li_202603292342419_1774827818834_6",
+      "run_id": "run_li_202603292342419",
+      "source": "linkedin",
+      "title": "⚓ Autonomous Port Surveillance with DJI Dock 3 & Matrice 4TD Ports operate across vast areas and require continuous monitoring. The DJI Dock",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443152360903856129/",
+      "publisher_url": "https://www.linkedin.com/company/dynatech-innovations/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443152360903856129",
+      "snippet": "⚓ Autonomous Port Surveillance with DJI Dock 3 & Matrice 4TD Ports operate across vast areas and require continuous monitoring. The DJI Dock 3 paired with Matrice 4TD enables fully automated drone operations for smarter and safer port management. 🚢 Vessel & ship inspection 📦 Container yard monitoring 🌙 Night vision & thermal detection 🚨 Emergency response support 📡 Automated patrol missions with DJI FlightHub 2 From routine inspections to real time incident response, autonomous drones help ports improve situational awareness, safety, and operational efficiency. 📩 Get in touch with Dynatech Innovations for product demo, deployment, pricing, and expert training. 🔗 https://lnkd.in/gpRDJKJy 📧 sales@dynatech.ae 📱 +971 56 654 1303 hashtag #DJIEnterprise hashtag #DynatechInnovations hashtag #DJIDock3 hashtag #Matrice4TD hashtag #SmartPorts hashtag #PortSecurity hashtag #PortOperations hashtag #MaritimeIndustry hashtag #MaritimeTechnology hashtag #DroneInspection hashtag #DroneAutomat",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T23:43:38.834Z",
+      "created_at": "2026-03-29T23:43:38.834Z"
+    },
+    {
+      "id": "li_run_li_202603292342419_1774827818834_8",
+      "run_id": "run_li_202603292342419",
+      "source": "linkedin",
+      "title": "Protecting wildlife across vast landscapes requires speed and visibility 🦒 With DJI Dock 3, rangers can deploy drones instantly, monitor la",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443462044793774081/",
+      "publisher_url": "https://www.linkedin.com/company/dji/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443462044793774081",
+      "snippet": "Protecting wildlife across vast landscapes requires speed and visibility 🦒 With DJI Dock 3, rangers can deploy drones instantly, monitor large areas, and use thermal imaging to detect animals day and night. The result? Faster response and stronger wildlife protection. Watch the full video 👉 https://brnw.ch/21x17Bh hashtag #djienterprise hashtag #djidock3 hashtag #conservation hashtag #southafrica",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-28T23:43:38.834Z",
+      "created_at": "2026-03-29T23:43:38.834Z"
+    },
+    {
+      "id": "li_run_li_202603292342419_1774827818834_12",
+      "run_id": "run_li_202603292342419",
+      "source": "linkedin",
+      "title": "Managing a mega construction site requires constant visibility and coordination. At one of South Korea’s major semiconductor projects, SK hy",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443116500602740736/",
+      "publisher_url": "https://www.linkedin.com/in/yan-zhang-b737ba133",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443116500602740736",
+      "snippet": "Managing a mega construction site requires constant visibility and coordination. At one of South Korea’s major semiconductor projects, SK hynix uses DJI Dock 3 with DJI FlightHub 2 to transform site management workflows.",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T23:43:38.834Z",
+      "created_at": "2026-03-29T23:43:38.834Z"
+    },
+    {
+      "id": "li_run_li_202603292342419_1774827818834_16",
+      "run_id": "run_li_202603292342419",
+      "source": "linkedin",
+      "title": "Transforming bridge construction in Germany with automated BVLOS drone-in-a-box operations — piloted remotely from Spain. Skyports Drone Ser",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443975249613783040/",
+      "publisher_url": "https://www.linkedin.com/company/heliguy/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443975249613783040",
+      "snippet": "Transforming bridge construction in Germany with automated BVLOS drone-in-a-box operations — piloted remotely from Spain. Skyports Drone Services is conducting routine surveys using DJI Dock 2 — supplied by heliguy™ — to help HOCHTIEF accurately track progress on the Rheinbrücke Leverkusen project on the River Rhine near Cologne. Operations are managed from Skyports’ Remote Operations Centre in Madrid — removing the need for on-site pilots and improving flexibility and efficiency. Regular flights provide accurate, up-to-date 2D and 3D data, helping teams identify any issues early and reduce the risk of delays or overruns. heliguy™ is proud to support Skyports — which operates a global Drone Operations Hub in the UK — with training, DJI Dock supply, and ongoing support. A powerful example of automated and remote drone-in-a-box deployment in action. Full story: https://lnkd.in/eBmhECcM hashtag #drones hashtag #BVLOS hashtag #automated hashtag #droneinabox hashtag #DJIDock hashtag #DJIEnt",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-29T11:43:38.834Z",
+      "created_at": "2026-03-29T23:43:38.834Z"
+    },
+    {
+      "id": "li_run_li_202603292342419_1774827818834_17",
+      "run_id": "run_li_202603292342419",
+      "source": "linkedin",
+      "title": "Security isn't just a gate guard: it’s 24/7 autonomous response. The DJI Dock 2 is the backbone of YOUR protection: delivering rapid respons",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443816898368270336/",
+      "publisher_url": "https://www.linkedin.com/company/oil-well-security/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443816898368270336",
+      "snippet": "Security isn't just a gate guard: it’s 24/7 autonomous response. The DJI Dock 2 is the backbone of YOUR protection: delivering rapid response when it counts. Secure YOUR assets: https://lnkd.in/gDZpAzJ4 hashtag #OilWellSecurity hashtag #DJIDock2 hashtag #Security",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-29T00:43:38.834Z",
+      "created_at": "2026-03-29T23:43:38.834Z"
+    },
+    {
+      "id": "li_run_li_202603292342419_1774827818834_18",
+      "run_id": "run_li_202603292342419",
+      "source": "linkedin",
+      "title": "How fast can your drone respond, without human intervention? Traditional workflows rely on manual dispatch, which can slow down response tim",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443567588518932480/",
+      "publisher_url": "https://www.linkedin.com/company/dji/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443567588518932480",
+      "snippet": "How fast can your drone respond, without human intervention? Traditional workflows rely on manual dispatch, which can slow down response times and limit situational awareness. With DJI Dock 3 and DJI FlightHub 2, teams can enable Drone as First Responder (DFR) with auto-dispatch. This workflow allows teams to: 🚨 Trigger drone missions instantly from alerts 🚨 Connect with systems like VMS, CAD, or SCADA 🚨 Deploy drones automatically without manual input 🚨 Gain real-time aerial visibility during incidents 🚨 Build scalable and repeatable response workflows In this video, you’ll learn: 1️⃣ How to connect your systems to FlightHub 2 2️⃣ How Auto-dispatch works in real scenarios 3️⃣ How to enable instant drone response 4️⃣ How to reduce manual intervention in operations From detection to action, this is how response workflows are evolving. Watch here 👉 https://brnw.ch/21x12jN hashtag #djienterprise hashtag #djidock3 hashtag #publicsafety hashtag #emergencyresponse hashtag #securityoper",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-28T23:43:38.834Z",
+      "created_at": "2026-03-29T23:43:38.834Z"
+    },
+    {
+      "id": "li_run_li_202603292342419_1774827818834_22",
+      "run_id": "run_li_202603292342419",
+      "source": "linkedin",
+      "title": "Imagine a security guard who never sleeps and sees EVERYTHING from hundreds of feet up: that is exactly what the DJI Dock 2 brings to YOUR o",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443092346809896960/",
+      "publisher_url": "https://www.linkedin.com/company/oil-well-security/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443092346809896960",
+      "snippet": "Imagine a security guard who never sleeps and sees EVERYTHING from hundreds of feet up: that is exactly what the DJI Dock 2 brings to YOUR oilfield. Traditional security is NOT enough for critical energy infrastructure. It is slow, prone to error, and gaps are expensive. At Oil Well Security, we combine veteran expertise with autonomous tech to keep your assets safe 24/7. The DJI Dock 2 is the ultimate on-site eye. It is rugged, weather-sealed, and fully autonomous: it handles the patrols while YOU focus on your business. This is about peace of mind: knowing your site is covered every second. We know the challenges of remote security because we’ve lived them. This tech is NOT a luxury anymore: it is a necessity for the modern energy sector. Stop leaving your security to chance. Let's talk about securing YOUR future and keeping your community safe. Visit https://lnkd.in/gDZpAzJ4 for a consultation. hashtag #OilWellSecurity hashtag #DJIDock2 hashtag #Surveillance hashtag #EnergySecurity ",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T23:43:38.834Z",
+      "created_at": "2026-03-29T23:43:38.834Z"
+    },
+    {
+      "id": "li_run_li_202603292342419_1774827818834_23",
+      "run_id": "run_li_202603292342419",
+      "source": "linkedin",
+      "title": "In wildlife conservation, timing is critical 🦁🐆 At Babanango Game Reserve in South Africa, DJI Dock 3 enables instant drone deployment whe",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443281103647338496/",
+      "publisher_url": "https://www.linkedin.com/company/dji/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443281103647338496",
+      "snippet": "In wildlife conservation, timing is critical 🦁🐆 At Babanango Game Reserve in South Africa, DJI Dock 3 enables instant drone deployment when alerts are triggered, providing real-time aerial visibility through thermal imaging, both day and night. The result? Faster response and stronger protection for wildlife across vast landscapes. Watch the full video here 👉 https://brnw.ch/21x16zd Special thanks to OPTRON (Pty) Ltd hashtag #djienterprise hashtag #djidock3 hashtag #wildlifeconservation hashtag #thermalimaging hashtag #droneasfirstresponder",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-27T23:43:38.834Z",
+      "created_at": "2026-03-29T23:43:38.834Z"
+    },
+    {
+      "id": "li_run_li_202603292342419_1774827818834_24",
+      "run_id": "run_li_202603292342419",
+      "source": "linkedin",
+      "title": "Excited about this — integrating the MetScan methane scanning payload to fully automated DJI Dock systems is going to support a dramatic sca",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443286921021341696/",
+      "publisher_url": "https://www.linkedin.com/in/elimoselle",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443286921021341696",
+      "snippet": "Excited about this — integrating the MetScan methane scanning payload to fully automated DJI Dock systems is going to support a dramatic scaling of Methane Monitoring & Quantification for drones. We have tested the MetScan on M400 in Indonesia — works amazingly well. AIRINS is the absolute category leader here.",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-28T23:43:38.834Z",
+      "created_at": "2026-03-29T23:43:38.834Z"
+    },
+    {
+      "id": "li_run_li_202603292342419_1774827818834_26",
+      "run_id": "run_li_202603292342419",
+      "source": "linkedin",
+      "title": "Tecnologia que transforma operação em eficiência real 🚁⚙️ A DJI Dock 3 representa um novo nível de automação em missões com drones. Com dec",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7443605859856773121/",
+      "publisher_url": "https://www.linkedin.com/in/thiago-souza-",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7443605859856773121",
+      "snippet": "Tecnologia que transforma operação em eficiência real 🚁⚙️ A DJI Dock 3 representa um novo nível de automação em missões com drones. Com decolagem, pouso e recarga totalmente autônomos, ela permite operações contínuas, mesmo em locais remotos — reduzindo custos, tempo e exposição humana. Na prática, isso significa: ✔️ Monitoramento inteligente e em tempo real ✔️ Coleta de dados com muito mais frequência e precisão ✔️ Operações remotas com mínima intervenção humana ✔️ Maior segurança em áreas de difícil acesso Para quem trabalha com topografia, inspeções ou monitoramento ambiental, soluções como essa deixam de ser tendência e passam a ser necessidade. O futuro não é mais sobre operar drones… é sobre gerenciar sistemas autônomos. hashtag #Tecnologia hashtag #Drones hashtag #Inovação hashtag #Topografia hashtag #Automação hashtag #cpe hashtag #DJI hashtag #DOCK hashtag #dock3 hashtag #matrice4 hashtag #matrice4D",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-28T23:43:38.834Z",
+      "created_at": "2026-03-29T23:43:38.834Z"
+    }
+  ]
+}

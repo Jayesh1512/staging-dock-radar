@@ -5,6 +5,7 @@ import { HitListData, DspHitListEntry } from '@/lib/types';
 import { toast } from 'sonner';
 import PipelineBoard from '@/components/pipeline/PipelineBoard';
 import MultiSourceIntelligence from '@/components/partner-dashboard/MultiSourceIntelligence';
+import MultiSourceIntelligenceV2 from '@/components/partner-dashboard/MultiSourceIntelligenceV2';
 import { PipelineProvider, usePipeline, generateColor } from '@/components/pipeline/PipelineContext';
 import type { PipelineCardData } from '@/components/pipeline/PipelineCard';
 
@@ -208,12 +209,24 @@ const PartnerDashboardInner: React.FC = () => {
   const [selectedShow, setSelectedShow] = useState('active');
   const [dismissedSet, setDismissedSet] = useState<Set<string>>(new Set());
 
-  // ─── Multi-Source Intelligence KPI count (composite priority = 2+ sources OR high) ──
+  // ─── Multi-Source Intelligence KPI count (old: source_candidates) ──
   const [multiSourceCount, setMultiSourceCount] = useState<number | null>(null);
   useEffect(() => {
     fetch('/api/source-candidates/grouped?country=FR')
       .then(r => r.json())
       .then(d => { if (d.stats) setMultiSourceCount(d.stats.composite_priority_matches); })
+      .catch(() => {});
+  }, []);
+
+  // ─── Multi-Source V2 KPI count (new: multi_sources_companies_import, verified) ──
+  const [multiSourceV2Count, setMultiSourceV2Count] = useState<number | null>(null);
+  useEffect(() => {
+    // Sum FR + NL verified counts
+    Promise.all([
+      fetch('/api/partners/multi-source?country=FR&verified=true').then(r => r.json()),
+      fetch('/api/partners/multi-source?country=NL&verified=true').then(r => r.json()),
+    ])
+      .then(([fr, nl]) => setMultiSourceV2Count((fr.total ?? 0) + (nl.total ?? 0)))
       .catch(() => {});
   }, []);
   const [justAdded, setJustAdded] = useState<Set<string>>(new Set());
@@ -501,8 +514,8 @@ const PartnerDashboardInner: React.FC = () => {
         {[
           { label: 'FLYTBASE PARTNERS', value: partners.length, tab: 0 },
           { label: 'POTENTIAL PARTNERS: SOCIAL INTELLIGENCE', value: newDsps.length,  tab: 1 },
-          { label: 'POTENTIAL PARTNERS: MULTI-SOURCE INTELLIGENCE', value: multiSourceCount ?? '...', tab: 2 },
-          { label: 'PIPELINE',           value: activePipelineCount, tab: 3 },
+          { label: 'POTENTIAL PARTNERS: MULTI-SOURCE INTELLIGENCE', value: multiSourceV2Count ?? '...', tab: 2 },
+          { label: 'PIPELINE',           value: activePipelineCount, tab: 4 },
         ].map(({ label, value, tab }) => (
           <div
             key={label}
@@ -524,8 +537,8 @@ const PartnerDashboardInner: React.FC = () => {
         {[
           { label: 'FlytBase Partners', tab: 0 },
           { label: `Social Intelligence (${newDsps.length})`, tab: 1 },
-          { label: `Multi-Source Intelligence (${multiSourceCount ?? '...'})`, tab: 2 },
-          { label: `Pipeline (${activePipelineCount})`, tab: 3 },
+          { label: `Multi-Source Intelligence (${multiSourceV2Count ?? '...'})`, tab: 2 },
+          { label: `Pipeline (${activePipelineCount})`, tab: 4 },
         ].map(({ label, tab }) => (
           <button
             key={tab}
@@ -1132,15 +1145,22 @@ const PartnerDashboardInner: React.FC = () => {
         </div>
       )}
 
-      {/* ── Tab 3: Multi-Source Intelligence ── */}
+      {/* ── Tab 3: Multi-Source Intelligence V2 (new table) ── */}
       {activeTab === 2 && (
+        <div style={sCard}>
+          <MultiSourceIntelligenceV2 />
+        </div>
+      )}
+
+      {/* ── Tab 3 (hidden): Multi-Source Intelligence V1 (old table, for reference) ── */}
+      {activeTab === 3 && (
         <div style={sCard}>
           <MultiSourceIntelligence />
         </div>
       )}
 
-      {/* ── Tab 4: Pipeline ── */}
-      {activeTab === 3 && (
+      {/* ── Tab 5: Pipeline ── */}
+      {activeTab === 4 && (
         <PipelineBoard />
       )}
     </div>
