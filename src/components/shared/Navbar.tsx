@@ -331,6 +331,16 @@ export function Navbar({
                   <div style={menuSubtitle}>Company + country | Serper | regex scrape</div>
                 </Link>
 
+                <Link
+                  role="menuitem"
+                  href="/utilities/company-enrichment"
+                  onClick={() => setToolsOpen(false)}
+                  style={{ ...menuItemStyle(pathname === '/utilities/company-enrichment', '#047857'), textDecoration: 'none', display: 'block' }}
+                >
+                  <div>Company Enrichment</div>
+                  <div style={menuSubtitle}>Preview next 5 companies for enrichment</div>
+                </Link>
+
                 <div style={{ width: '100%' }} title="Test company enrichment lookups">
                   <EnrichmentTestAgent mode="menuItem" />
                 </div>
