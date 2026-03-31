@@ -13,6 +13,8 @@ type ClassifiedCompany = {
   category: string;
   confidence: number;
   reason: string;
+  email_subject: string | null;
+  email_body: string | null;
   error: string | null;
 };
 
@@ -23,6 +25,8 @@ export default function ClassifyDryRunPage() {
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(20);
   const [hasRun, setHasRun] = useState(false);
+  const [expandedEmail, setExpandedEmail] = useState<Record<number, boolean>>({});
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
   function getHostname(url: string): string {
     try {
@@ -32,11 +36,23 @@ export default function ClassifyDryRunPage() {
     }
   }
 
+  const toggleEmail = useCallback((idx: number) => {
+    setExpandedEmail((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  }, []);
+
+  const copyEmail = useCallback(async (idx: number, subject: string, body: string) => {
+    const text = `Subject: ${subject}\n\n${body}`;
+    await navigator.clipboard.writeText(text);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 2000);
+  }, []);
+
   const runClassification = useCallback(async () => {
     setLoading(true);
     setError(null);
     setResults([]);
     setHasRun(true);
+    setExpandedEmail({});
     try {
       const res = await fetch(`/api/utilities/company-enrichment/classify-batch?limit=${limit}`, {
         method: 'POST',
@@ -96,11 +112,12 @@ export default function ClassifyDryRunPage() {
   const buyerCount = results.filter((r) => r.category === 'buyer').length;
   const thirdPartyCount = results.filter((r) => r.category === '3rd_party').length;
   const errorCount = results.filter((r) => r.category === 'error').length;
+  const emailCount = results.filter((r) => r.email_subject).length;
 
   return (
     <div className="min-h-screen" style={{ background: '#0F1117' }}>
       <Navbar />
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '28px 32px 64px' }}>
+      <main style={{ maxWidth: 1400, margin: '0 auto', padding: '28px 32px 64px' }}>
         {/* Header */}
         <div
           style={{
@@ -122,10 +139,10 @@ export default function ClassifyDryRunPage() {
                 letterSpacing: -0.3,
               }}
             >
-              🇫🇷 France — Classify Dry Run
+              🇫🇷 France — Classify & Outreach Dry Run
             </h1>
             <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4, lineHeight: 1.5 }}>
-              Classify verified French companies (<code style={{ background: '#1F2937', padding: '1px 6px', borderRadius: 4, fontSize: 12, color: '#93C5FD' }}>dock_verified = true</code>) as DSP, Buyer, or 3rd Party using the LLM.
+              Classify verified French companies (<code style={{ background: '#1F2937', padding: '1px 6px', borderRadius: 4, fontSize: 12, color: '#93C5FD' }}>dock_verified = true</code>) and generate personalised outreach emails.
             </p>
           </div>
 
@@ -208,6 +225,7 @@ export default function ClassifyDryRunPage() {
               { label: 'DSP', count: dspCount, bg: 'rgba(22, 163, 74, 0.12)', color: '#4ADE80', border: 'rgba(22, 163, 74, 0.3)' },
               { label: 'Buyer', count: buyerCount, bg: 'rgba(59, 130, 246, 0.12)', color: '#60A5FA', border: 'rgba(59, 130, 246, 0.3)' },
               { label: '3rd Party', count: thirdPartyCount, bg: 'rgba(107, 114, 128, 0.12)', color: '#9CA3AF', border: 'rgba(107, 114, 128, 0.3)' },
+              { label: '✉ Emails', count: emailCount, bg: 'rgba(168, 85, 247, 0.12)', color: '#C084FC', border: 'rgba(168, 85, 247, 0.3)' },
               ...(errorCount > 0
                 ? [{ label: 'Errors', count: errorCount, bg: 'rgba(239, 68, 68, 0.12)', color: '#FCA5A5', border: 'rgba(239, 68, 68, 0.3)' }]
                 : []),
@@ -253,7 +271,7 @@ export default function ClassifyDryRunPage() {
               <div style={{ fontSize: 40, marginBottom: 12 }}>🔬</div>
               <div style={{ fontWeight: 700 }}>Click &quot;Run Classification&quot; to start the dry run</div>
               <div style={{ fontSize: 12, marginTop: 6, color: '#4B5563' }}>
-                This will fetch French companies with dock_verified = true and classify each one
+                This will fetch French companies with dock_verified = true, classify each one, and generate outreach emails
               </div>
             </div>
           ) : loading ? (
@@ -266,9 +284,9 @@ export default function ClassifyDryRunPage() {
               }}
             >
               <div style={{ fontSize: 32, marginBottom: 12, animation: 'spin 1.5s linear infinite' }}>⚙️</div>
-              <div style={{ fontWeight: 700 }}>Classifying companies…</div>
+              <div style={{ fontWeight: 700 }}>Classifying companies & generating emails…</div>
               <div style={{ fontSize: 12, marginTop: 6, color: '#6B7280' }}>
-                Each company is sent to the LLM sequentially. This may take a minute.
+                Each company gets 2 LLM calls (classify + email). This may take a few minutes.
               </div>
             </div>
           ) : results.length === 0 ? (
@@ -294,91 +312,195 @@ export default function ClassifyDryRunPage() {
                     <th style={thStyle}>Website</th>
                     <th style={thStyle}>LinkedIn</th>
                     <th style={thStyle}>Evidence</th>
-                    <th style={{ ...thStyle, maxWidth: 280 }}>Reason</th>
+                    <th style={{ ...thStyle, minWidth: 200 }}>Reason</th>
+                    <th style={thStyle}>Email</th>
                   </tr>
                 </thead>
                 <tbody>
                   {results.map((r, i) => {
                     const rowBg = i % 2 === 0 ? '#1A1D27' : '#1E2130';
+                    const isExpanded = expandedEmail[i] ?? false;
+                    const hasEmail = !!(r.email_subject && r.email_body);
+
                     return (
-                      <tr key={`${r.display_name}-${i}`} style={{ background: rowBg, borderBottom: '1px solid #2D314222' }}>
-                        <td style={tdStyle}>
-                          <span style={{ color: '#4B5563', fontWeight: 800 }}>{i + 1}</span>
-                        </td>
-                        <td style={{ ...tdStyle, fontWeight: 800, color: '#F3F4F6', maxWidth: 220 }}>
-                          {r.display_name}
-                        </td>
-                        <td style={tdStyle}>{categoryBadge(r.category, r.confidence)}</td>
-                        <td style={tdStyle}>
-                          <span style={{ color: '#D1D5DB', fontWeight: 700 }}>
-                            {r.role ?? '—'}
-                          </span>
-                        </td>
-                        <td style={tdStyle}>
-                          {r.website ? (
-                            <a
-                              href={r.website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                color: '#818CF8',
-                                textDecoration: 'none',
-                                fontWeight: 700,
-                                borderBottom: '1px solid rgba(129, 140, 248, 0.3)',
-                              }}
-                            >
-                              {getHostname(r.website)} ↗
-                            </a>
-                          ) : (
-                            <span style={{ color: '#4B5563' }}>—</span>
-                          )}
-                        </td>
-                        <td style={tdStyle}>
-                          {r.linkedin ? (
-                            <a
-                              href={r.linkedin}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                color: '#60A5FA',
-                                textDecoration: 'none',
-                                fontWeight: 700,
-                                borderBottom: '1px solid rgba(96, 165, 250, 0.3)',
-                              }}
-                            >
-                              LinkedIn ↗
-                            </a>
-                          ) : (
-                            <span style={{ color: '#4B5563' }}>—</span>
-                          )}
-                        </td>
-                        <td style={tdStyle}>
-                          {r.evidence_url ? (
-                            <a
-                              href={r.evidence_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                color: '#34D399',
-                                textDecoration: 'none',
-                                fontWeight: 700,
-                                borderBottom: '1px solid rgba(52, 211, 153, 0.3)',
-                              }}
-                            >
-                              Evidence ↗
-                            </a>
-                          ) : (
-                            <span style={{ color: '#4B5563' }}>—</span>
-                          )}
-                        </td>
-                        <td style={{ ...tdStyle, whiteSpace: 'normal', minWidth: 240, color: '#9CA3AF', fontWeight: 600, lineHeight: 1.4 }}>
-                          {r.error ? (
-                            <span style={{ color: '#FCA5A5' }}>⚠ {r.error}</span>
-                          ) : (
-                            r.reason
-                          )}
-                        </td>
-                      </tr>
+                      <React.Fragment key={`${r.display_name}-${i}`}>
+                        <tr style={{ background: rowBg, borderBottom: isExpanded ? 'none' : '1px solid #2D314222' }}>
+                          <td style={tdStyle}>
+                            <span style={{ color: '#4B5563', fontWeight: 800 }}>{i + 1}</span>
+                          </td>
+                          <td style={{ ...tdStyle, fontWeight: 800, color: '#F3F4F6', maxWidth: 200 }}>
+                            {r.display_name}
+                          </td>
+                          <td style={tdStyle}>{categoryBadge(r.category, r.confidence)}</td>
+                          <td style={tdStyle}>
+                            <span style={{ color: '#D1D5DB', fontWeight: 700 }}>
+                              {r.role ?? '—'}
+                            </span>
+                          </td>
+                          <td style={tdStyle}>
+                            {r.website ? (
+                              <a
+                                href={r.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  color: '#818CF8',
+                                  textDecoration: 'none',
+                                  fontWeight: 700,
+                                  borderBottom: '1px solid rgba(129, 140, 248, 0.3)',
+                                }}
+                              >
+                                {getHostname(r.website)} ↗
+                              </a>
+                            ) : (
+                              <span style={{ color: '#4B5563' }}>—</span>
+                            )}
+                          </td>
+                          <td style={tdStyle}>
+                            {r.linkedin ? (
+                              <a
+                                href={r.linkedin}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  color: '#60A5FA',
+                                  textDecoration: 'none',
+                                  fontWeight: 700,
+                                  borderBottom: '1px solid rgba(96, 165, 250, 0.3)',
+                                }}
+                              >
+                                LinkedIn ↗
+                              </a>
+                            ) : (
+                              <span style={{ color: '#4B5563' }}>—</span>
+                            )}
+                          </td>
+                          <td style={tdStyle}>
+                            {r.evidence_url ? (
+                              <a
+                                href={r.evidence_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  color: '#34D399',
+                                  textDecoration: 'none',
+                                  fontWeight: 700,
+                                  borderBottom: '1px solid rgba(52, 211, 153, 0.3)',
+                                }}
+                              >
+                                Evidence ↗
+                              </a>
+                            ) : (
+                              <span style={{ color: '#4B5563' }}>—</span>
+                            )}
+                          </td>
+                          <td style={{ ...tdStyle, whiteSpace: 'normal', minWidth: 200, color: '#9CA3AF', fontWeight: 600, lineHeight: 1.4 }}>
+                            {r.error ? (
+                              <span style={{ color: '#FCA5A5' }}>⚠ {r.error}</span>
+                            ) : (
+                              r.reason
+                            )}
+                          </td>
+                          <td style={tdStyle}>
+                            {hasEmail ? (
+                              <button
+                                onClick={() => toggleEmail(i)}
+                                style={{
+                                  padding: '4px 12px',
+                                  borderRadius: 8,
+                                  fontSize: 11,
+                                  fontWeight: 800,
+                                  cursor: 'pointer',
+                                  border: isExpanded ? '1px solid #A78BFA' : '1px solid #374151',
+                                  background: isExpanded
+                                    ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.08) 100%)'
+                                    : '#1F2937',
+                                  color: isExpanded ? '#C084FC' : '#9CA3AF',
+                                  whiteSpace: 'nowrap',
+                                  transition: 'all 0.15s ease',
+                                }}
+                              >
+                                {isExpanded ? '▾ Hide' : '✉ View'}
+                              </button>
+                            ) : (
+                              <span style={{ color: '#4B5563', fontSize: 11 }}>—</span>
+                            )}
+                          </td>
+                        </tr>
+
+                        {/* Expanded email row */}
+                        {isExpanded && hasEmail && (
+                          <tr style={{ background: rowBg }}>
+                            <td colSpan={9} style={{ padding: 0 }}>
+                              <div
+                                style={{
+                                  margin: '0 14px 14px',
+                                  background: '#141620',
+                                  border: '1px solid #2D3142',
+                                  borderRadius: 12,
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                {/* Email header */}
+                                <div
+                                  style={{
+                                    padding: '12px 18px',
+                                    borderBottom: '1px solid #2D3142',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.06) 0%, rgba(99, 102, 241, 0.03) 100%)',
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <span style={{ fontSize: 16 }}>✉</span>
+                                    <div>
+                                      <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                        Subject
+                                      </div>
+                                      <div style={{ fontSize: 13, color: '#E5E7EB', fontWeight: 800, marginTop: 1 }}>
+                                        {r.email_subject}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => copyEmail(i, r.email_subject!, r.email_body!)}
+                                    style={{
+                                      padding: '5px 14px',
+                                      borderRadius: 8,
+                                      fontSize: 11,
+                                      fontWeight: 800,
+                                      cursor: 'pointer',
+                                      border: copiedIdx === i ? '1px solid #4ADE80' : '1px solid #374151',
+                                      background: copiedIdx === i ? 'rgba(74, 222, 128, 0.1)' : '#1F2937',
+                                      color: copiedIdx === i ? '#4ADE80' : '#D1D5DB',
+                                      transition: 'all 0.2s ease',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {copiedIdx === i ? '✓ Copied!' : '📋 Copy'}
+                                  </button>
+                                </div>
+
+                                {/* Email body */}
+                                <div
+                                  style={{
+                                    padding: '16px 18px',
+                                    fontSize: 13,
+                                    color: '#D1D5DB',
+                                    lineHeight: 1.7,
+                                    fontWeight: 500,
+                                    whiteSpace: 'pre-line',
+                                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                  }}
+                                >
+                                  {r.email_body}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
