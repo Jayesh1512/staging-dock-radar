@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import puppeteer, { Browser, Page, Protocol } from 'puppeteer';
+import puppeteer, { Browser, Page } from 'puppeteer';
 
 export type BrowserTask<T> = (page: Page, browser: Browser) => Promise<T>;
 
@@ -68,7 +68,7 @@ export async function loadServiceCookies(page: Page, service: string) {
   }
 
   const raw = fs.readFileSync(cookiesPath, 'utf8');
-  const cookies: Protocol.Network.CookieParam[] = JSON.parse(raw);
+  const cookies = JSON.parse(raw) as Parameters<Page['setCookie']>;
   await page.setCookie(...cookies);
 }
 

@@ -8,6 +8,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as cheerio from "cheerio";
+import type { Element } from "domhandler";
 
 const URL =
   "https://moduliweb.enac.gov.it/applicazioni/SAPR/APR_Lista_Unificata.asp";
@@ -49,7 +50,7 @@ function parseOperatoreCell(html: string | undefined): {
   return { operator, email };
 }
 
-function isCancelledRow($tr: cheerio.Cheerio): boolean {
+function isCancelledRow($tr: cheerio.Cheerio<Element>): boolean {
   const st = ($tr.attr("style") || "").toLowerCase();
   return st.includes("color:red") || st.includes("color: red");
 }

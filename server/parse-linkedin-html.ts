@@ -11,35 +11,35 @@ type LinkedInPost = {
 
 function extractPostsFromHtml(html: string): LinkedInPost[] {
   const dom = new JSDOM(html);
-  const { document } = dom.window;
+  const document = dom.window.document as Document;
 
-  const articleNodes = document.querySelectorAll<HTMLElement>("article");
+  const articleNodes = document.querySelectorAll("article");
   const extracted: LinkedInPost[] = [];
 
   articleNodes.forEach((article) => {
     const textEl =
-      article.querySelector<HTMLElement>('[data-test-id="feed-update-text"], span.break-words, div.break-words');
+      article.querySelector('[data-test-id="feed-update-text"], span.break-words, div.break-words') as HTMLElement | null;
     const postContent = textEl?.textContent?.trim() ?? "";
     if (!postContent) return;
 
     const authorEl =
-      article.querySelector<HTMLElement>('a[href*="/in/"][data-field="actor-link"]') ??
-      article.querySelector<HTMLElement>(
+      (article.querySelector('a[href*="/in/"][data-field="actor-link"]') as HTMLElement | null) ??
+      (article.querySelector(
         "span.update-components-actor__name, span.feed-shared-actor__name"
-      );
+      ) as HTMLElement | null);
     const authorName = authorEl?.textContent?.trim() ?? null;
 
     const timeEl =
-      article.querySelector<HTMLElement>("time") ??
-      article.querySelector<HTMLElement>(
+      (article.querySelector("time") as HTMLElement | null) ??
+      (article.querySelector(
         'span.update-components-actor__sub-description span[aria-hidden="true"]'
-      );
+      ) as HTMLElement | null);
     const publishedAt = timeEl?.textContent?.trim() ?? null;
 
     let postUrl: string | null = null;
     const permalink =
-      article.querySelector<HTMLAnchorElement>('a[href*="activity"]') ??
-      article.querySelector<HTMLAnchorElement>('a[href*="/feed/update/"]');
+      (article.querySelector('a[href*="activity"]') as HTMLAnchorElement | null) ??
+      (article.querySelector('a[href*="/feed/update/"]') as HTMLAnchorElement | null);
     if (permalink?.href) {
       postUrl = permalink.href.split("?")[0];
     }

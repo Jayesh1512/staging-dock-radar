@@ -83,6 +83,7 @@ export async function POST(req: Request) {
     // Step 1+2: Search broadly and match every candidate.
     // If `targetCount` is null, we return all records we can fetch within safety caps.
     const contacts: ApolloCompanyContact[] = [];
+    const discoveredByName = new Map<string, ApolloCompanyContact>();
     let candidatesTried = 0;
     let peopleDiscovered = 0;
     let emailMatches = 0;
@@ -115,6 +116,16 @@ export async function POST(req: Request) {
       for (const { person, matched } of matchedBatch) {
         candidatesTried++;
         if (matched.email) emailMatches++;
+        const normalizedName = person.name.trim().toLowerCase();
+        if (normalizedName && !discoveredByName.has(normalizedName)) {
+          discoveredByName.set(normalizedName, {
+            name: person.name,
+            title: person.title ?? '',
+            linkedinUrl: person.linkedinUrl ?? null,
+            email: null,
+            apolloPersonId: person.id,
+          });
+        }
         if (!includeWithoutEmail && !matched.email) continue;
         contacts.push({
           name: person.name,
@@ -133,6 +144,27 @@ export async function POST(req: Request) {
         total: 0,
         contacts: [],
         message: 'No people found in Apollo for this company/domain.',
+      });
+    }
+
+    // Fallback behavior: if enrichment found no usable contacts,
+    // return discovered people names from Apollo people search.
+    if (contacts.length === 0 && discoveredByName.size > 0) {
+      return NextResponse.json({
+        companyName,
+        companyDomain,
+        total: discoveredByName.size,
+        contacts: [...discoveredByName.values()],
+        candidatesTried,
+        peopleDiscovered,
+        emailMatches,
+        pagesScanned: page - 1,
+        includeWithoutEmail: true,
+        fallbackUsed: 'people_names_only',
+        message: 'No emails found; returning people names discovered at this company.',
+        timedOut: Date.now() >= hardDeadline,
+        maxSeconds,
+        maxCandidates,
       });
     }
 

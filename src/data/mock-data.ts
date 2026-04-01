@@ -198,6 +198,7 @@ const scoredArticles: ScoredArticle[] = [
     reviewed_at: null,
     dismissed_at: null,
     slack_sent_at: null,
+    enriched_at: null,
     created_at: '2026-03-15T14:31:00Z',
   },
   {
@@ -222,6 +223,7 @@ const scoredArticles: ScoredArticle[] = [
     reviewed_at: null,
     dismissed_at: null,
     slack_sent_at: null,
+    enriched_at: null,
     created_at: '2026-03-15T14:31:05Z',
   },
   {
@@ -246,6 +248,7 @@ const scoredArticles: ScoredArticle[] = [
     reviewed_at: null,
     dismissed_at: null,
     slack_sent_at: null,
+    enriched_at: null,
     created_at: '2026-03-15T14:31:10Z',
   },
   {
@@ -275,6 +278,7 @@ const scoredArticles: ScoredArticle[] = [
     reviewed_at: null,
     dismissed_at: null,
     slack_sent_at: null,
+    enriched_at: null,
     created_at: '2026-03-14T10:16:00Z',
   },
   {
@@ -299,6 +303,7 @@ const scoredArticles: ScoredArticle[] = [
     reviewed_at: null,
     dismissed_at: null,
     slack_sent_at: null,
+    enriched_at: null,
     created_at: '2026-03-14T10:16:05Z',
   },
   {
@@ -323,6 +328,7 @@ const scoredArticles: ScoredArticle[] = [
     reviewed_at: null,
     dismissed_at: null,
     slack_sent_at: null,
+    enriched_at: null,
     created_at: '2026-03-14T10:16:10Z',
   },
   {
@@ -347,6 +353,7 @@ const scoredArticles: ScoredArticle[] = [
     reviewed_at: null,
     dismissed_at: null,
     slack_sent_at: null,
+    enriched_at: null,
     created_at: '2026-03-15T14:31:15Z',
   },
   // Reviewed articles
@@ -372,6 +379,7 @@ const scoredArticles: ScoredArticle[] = [
     reviewed_at: '2026-03-14T11:00:00Z',
     dismissed_at: null,
     slack_sent_at: '2026-03-14T11:00:00Z',
+    enriched_at: null,
     created_at: '2026-03-14T10:16:15Z',
   },
   {
@@ -397,6 +405,7 @@ const scoredArticles: ScoredArticle[] = [
     reviewed_at: '2026-03-14T12:00:00Z',
     dismissed_at: null,
     slack_sent_at: '2026-03-14T12:00:00Z',
+    enriched_at: null,
     created_at: '2026-03-14T10:16:20Z',
   },
   // Dropped articles
@@ -422,6 +431,7 @@ const scoredArticles: ScoredArticle[] = [
     reviewed_at: null,
     dismissed_at: '2026-03-14T10:17:00Z',
     slack_sent_at: null,
+    enriched_at: null,
     created_at: '2026-03-14T10:16:25Z',
   },
   {
@@ -446,6 +456,7 @@ const scoredArticles: ScoredArticle[] = [
     reviewed_at: null,
     dismissed_at: '2026-03-14T10:17:05Z',
     slack_sent_at: null,
+    enriched_at: null,
     created_at: '2026-03-14T10:16:30Z',
   },
 ];

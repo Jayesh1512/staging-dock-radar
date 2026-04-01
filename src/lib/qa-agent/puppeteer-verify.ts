@@ -80,14 +80,14 @@ export async function runPuppeteerVerify(
 
     // Filter articles for this company that match DJI Dock keywords
     const companyArticles = articles.filter(a => {
-      const authorSlug = a.source_url?.match(/company\/([^/?]+)/)?.[1]?.toLowerCase();
+      const authorSlug = a.publisher_url?.match(/company\/([^/?]+)/)?.[1]?.toLowerCase();
       return authorSlug === slug;
     });
 
     const matches: DockPostMatch[] = [];
 
     for (const article of companyArticles) {
-      const text = `${article.title ?? ''} ${article.body ?? ''}`;
+      const text = `${article.title ?? ''} ${article.snippet ?? ''}`;
 
       // Check for DJI Dock keywords
       if (!RE_DJI_DOCK.test(text)) continue;

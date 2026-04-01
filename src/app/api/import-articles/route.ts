@@ -3,6 +3,7 @@ import { deduplicateWithinRun } from '@/lib/dedup';
 import { insertRun, insertArticles } from '@/lib/db';
 import { validateArticles, formatValidationErrors } from '@/lib/article-validation';
 import type { ArticleSource, PipelineStats, Run } from '@/lib/types';
+import type { RawArticle } from '@/lib/google-news-rss';
 
 /**
  * POST /api/import-articles
@@ -92,7 +93,18 @@ export async function POST(req: Request) {
     const totalFetched = validated.length;
 
     // ── Step 1: Cross-article dedup (within this run only) ────────────────────
-    const { deduplicated, removedCount } = deduplicateWithinRun(validated);
+    const dedupInput: RawArticle[] = validated.map((a) => ({
+      title: a.title,
+      url: a.url,
+      normalized_url: a.normalized_url,
+      snippet: a.snippet,
+      publisher: a.publisher,
+      published_at: a.published_at,
+      source: 'google_news',
+      keyword: a.keyword ?? 'import',
+      region: 'global',
+    }));
+    const { deduplicated, removedCount } = deduplicateWithinRun(dedupInput);
 
     // ── Step 2: Cap at maxArticles ───────────────────────────────────────────
     const capped = deduplicated.slice(0, maxArticles);
@@ -128,7 +140,7 @@ export async function POST(req: Request) {
     // ── Step 4: Persist to Supabase ──────────────────────────────────────────
     const run: Run = {
       id: runId,
-      keywords: [source === 'comet_crawler' ? 'comet_import' : source] || [],
+      keywords: [source === 'comet_crawler' ? 'comet_import' : source],
       sources: [source as ArticleSource],
       regions: [],
       filter_days: 0, // Not applicable for imports

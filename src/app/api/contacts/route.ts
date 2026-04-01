@@ -89,7 +89,11 @@ export async function POST(req: Request) {
       const domain = domainByOrg.get(p.organization) ?? null;
 
       // Apollo People Match → email + LinkedIn (1 credit if email found)
-      const apollo = await apolloMatchPerson(p.name, p.organization, domain);
+      const apollo = await apolloMatchPerson({
+        fullName: p.name,
+        orgName: p.organization,
+        domain,
+      });
 
       if (apollo.email) {
         contacts.push({

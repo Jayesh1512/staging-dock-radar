@@ -89,10 +89,7 @@ async function fetchLinkedInPosts(
     await pause(1800, 2200);
 
     const effectiveScrolls = quick ? Math.min(Math.max(0, scrollSeconds), 6) : Math.max(0, scrollSeconds);
-    await scrollPage(page, effectiveScrolls, quick ? 450 : 1600, {
-      jitterMs: quick ? 320 : 1400,
-      settleMs: 0,
-    });
+    await scrollPage(page, effectiveScrolls, quick ? 450 : 1600);
     await pause(1400, 2600);
 
     // Expand truncated text (prefer known LinkedIn toggles; avoid generic "…more" links)

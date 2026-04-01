@@ -51,7 +51,7 @@ export default function CsvCompanyPipelinePage() {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<unknown>(null);
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
 
   async function run() {
     setLoading(true);
@@ -70,8 +70,12 @@ export default function CsvCompanyPipelinePage() {
           delay_ms: delayMs,
         }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error ?? `HTTP ${res.status}`);
+      const json = (await res.json()) as Record<string, unknown>;
+      if (!res.ok) {
+        const errorMessage =
+          typeof json.error === "string" ? json.error : `HTTP ${res.status}`;
+        throw new Error(errorMessage);
+      }
       setData(json);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

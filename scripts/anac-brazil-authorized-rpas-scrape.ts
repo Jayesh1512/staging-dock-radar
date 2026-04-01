@@ -12,6 +12,7 @@ import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as cheerio from "cheerio";
+import type { Element } from "domhandler";
 
 const SOURCES = {
   /** Full list (authoritative) */
@@ -38,7 +39,7 @@ function escapeCsvField(s: string): string {
   return t;
 }
 
-function cellText($: cheerio.CheerioAPI, td: cheerio.Element): string {
+function cellText($: cheerio.CheerioAPI, td: Element): string {
   return $(td)
     .text()
     .replace(/\u00a0/g, " ")
@@ -47,7 +48,7 @@ function cellText($: cheerio.CheerioAPI, td: cheerio.Element): string {
 }
 
 /** Preserves line breaks as " | " so model lists stay readable */
-function cellTextMultiline($: cheerio.CheerioAPI, td: cheerio.Element): string {
+function cellTextMultiline($: cheerio.CheerioAPI, td: Element): string {
   const raw = $(td).html() ?? "";
   const plain = raw
     .replace(/<br\s*\/?>/gi, " | ")
@@ -55,7 +56,7 @@ function cellTextMultiline($: cheerio.CheerioAPI, td: cheerio.Element): string {
   return plain.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function cellDadsRefs($: cheerio.CheerioAPI, td: cheerio.Element): {
+function cellDadsRefs($: cheerio.CheerioAPI, td: Element): {
   label: string;
   urls: string;
 } {
@@ -75,7 +76,7 @@ function cellDadsRefs($: cheerio.CheerioAPI, td: cheerio.Element): {
   return { label, urls: [...new Set(hrefs)].join(" | ") };
 }
 
-function isHeaderRow($: cheerio.CheerioAPI, tr: cheerio.Element): boolean {
+function isHeaderRow($: cheerio.CheerioAPI, tr: Element): boolean {
   const t = $(tr).text().toLowerCase();
   return (
     t.includes("detentor") ||
