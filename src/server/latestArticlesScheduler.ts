@@ -18,18 +18,17 @@ function formatSlackArticle(r: ArticleWithScore): string {
   const location = city && country ? `${city}, ${country}` : city || country || '—';
   const signal = s.signal_type || 'OTHER';
   const date = a.published_at
-    ? new Date(a.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    ? new Date(a.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })
     : '—';
-  const summary = s.summary ? `> ${s.summary.slice(0, 200)}` : '';
+  // Use English summary as headline (title may be non-English from LinkedIn)
+  const headline = s.summary ? s.summary.slice(0, 150) : a.title.slice(0, 120);
 
   return [
-    `*${a.title.slice(0, 120)}*`,
+    `*${headline}*`,
     ``,
     `*Company:* ${company}`,
     `*Location:* ${location}`,
     `*Signal:* ${signal} · *Source:* ${source} · *Date:* ${date}`,
-    summary ? `` : null,
-    summary || null,
     ``,
     `<${url}|View Article ↗>`,
   ].filter(line => line !== null).join('\n');
@@ -129,8 +128,8 @@ function buildDigestHtml(
   nextRunAt: string,
 ): string {
   const now = new Date();
-  const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+  const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' });
+  const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short', timeZone: 'Asia/Kolkata' });
 
   const articles = result.qualified
     .sort((a, b) => b.scored.relevance_score - a.scored.relevance_score);
@@ -144,7 +143,7 @@ function buildDigestHtml(
     const sourceColor = a.source === 'linkedin' ? '#1D4ED8' : '#059669';
     const scoreBg = s.relevance_score >= 75 ? '#D1FAE5' : s.relevance_score >= 50 ? '#DBEAFE' : '#FEF3C7';
     const scoreColor = s.relevance_score >= 75 ? '#059669' : s.relevance_score >= 50 ? '#1D4ED8' : '#D97706';
-    const pubDate = a.published_at ? new Date(a.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—';
+    const pubDate = a.published_at ? new Date(a.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' }) : '—';
     const title = a.title.length > 90 ? a.title.slice(0, 87) + '…' : a.title;
     const company = s.company || '—';
     const country = s.country || '—';
@@ -241,7 +240,7 @@ function buildDigestHtml(
 
   <!-- Footer -->
   <div style="text-align:center;padding:12px;font-size:11px;color:#9CA3AF;">
-    Next scheduled run: ${new Date(nextRunAt).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+    Next scheduled run: ${new Date(nextRunAt).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
     · Keyword: DJI Dock · Regions: ${CORE_8_REGIONS.length}
     <br>Dock Radar · FlytBase
   </div>

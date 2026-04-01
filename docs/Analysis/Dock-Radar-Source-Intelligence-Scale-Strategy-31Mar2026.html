@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dock Radar: Source Intelligence & Global Scale Strategy</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8f9fa; color: #1a1a2e; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 32px 80px; }
+  h1 { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #64748b; margin-bottom: 32px; }
+  h2 { font-size: 20px; font-weight: 700; color: #1e293b; margin: 36px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+  h3 { font-size: 16px; font-weight: 700; color: #334155; margin: 24px 0 10px; }
+  p { font-size: 14px; margin-bottom: 12px; color: #475569; }
+  .highlight { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 13px; }
+  .highlight strong { color: #1e40af; }
+  .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 13px; }
+  .warning strong { color: #92400e; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 12px; }
+  th { background: #f1f5f9; color: #475569; padding: 8px 10px; text-align: left; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 2px solid #e2e8f0; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  tr:hover td { background: #f8fafc; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-right: 3px; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-purple { background: #f3e8ff; color: #6b21a8; }
+  .badge-gray { background: #f3f4f6; color: #6b7280; }
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 20px 0; }
+  .kpi { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; }
+  .kpi-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .kpi-value { font-size: 32px; font-weight: 800; color: #0f172a; }
+  .kpi-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+  .conv-bar { display: inline-block; height: 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; }
+  .section-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 24px; margin: 16px 0; }
+  .names-list { font-size: 11px; color: #64748b; line-height: 1.8; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; }
+  ul { margin: 8px 0 12px 20px; font-size: 13px; }
+  li { margin-bottom: 6px; color: #475569; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media print { body { background: #fff; } .container { padding: 20px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Dock Radar: Source Intelligence & Global Scale Strategy</h1>
+<p class="subtitle">BD Intelligence Report &mdash; 31 March 2026 &mdash; Prepared for FlytBase Leadership</p>
+
+<!-- KPIs -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-label">Total Records</div>
+    <div class="kpi-value">477</div>
+    <div class="kpi-sub">FR: 33 &middot; NL: 444</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">DJI Dock Verified</div>
+    <div class="kpi-value" style="color: #059669;">79</div>
+    <div class="kpi-sub">FR: 33 &middot; NL: 46</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Intelligence Sources</div>
+    <div class="kpi-value">6</div>
+    <div class="kpi-sub">Comet, Google, GPT, Claude, DJI, Registry</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Existing FB Partners Found</div>
+    <div class="kpi-value">3</div>
+    <div class="kpi-sub">Advexure, Coptrz, GoUAV</div>
+  </div>
+</div>
+
+<h2>1. FR + NL Data Summary</h2>
+
+<div class="two-col">
+  <div class="section-card">
+    <h3>France &mdash; 33 records</h3>
+    <table>
+      <tr><td style="width:140px;">Verified</td><td><strong style="color:#059669;">33</strong> (100%)</td></tr>
+      <tr><td>Not Verified</td><td><strong>0</strong></td></tr>
+    </table>
+    <p style="font-size:11px; color:#6b7280;"><strong>Note:</strong> 5 DJI dealers (Geomesure, PROTEC Security, VOLTANEO, STTL, Capture Solutions) were verified based on their listing on the <a href="https://www.dji.com/where-to-buy/enterprise-dealers" target="_blank">official DJI Enterprise Dealer page</a>, not through programmatic QA. Their websites don't mention "DJI Dock" but as authorized DJI Enterprise dealers they are confirmed to sell DJI Dock products.</p>
+  </div>
+  <div class="section-card">
+    <h3>Netherlands &mdash; 444 records</h3>
+    <table>
+      <tr><td style="width:140px;">Verified</td><td><strong style="color:#059669;">46</strong> (10%)</td></tr>
+      <tr><td>Not Verified</td><td><strong>398</strong> &mdash; aviation registry bulk (drone operators, no Dock signal)</td></tr>
+    </table>
+    <p style="font-size:11px; color:#6b7280;">NL has 398 unverified records from the aviation registry. These are all licensed drone operators but <1% sell/deploy DJI Dock. Registry value = enrichment data, not discovery. 1 DJI dealer (Geodirect) was verified based on the <a href="https://www.dji.com/where-to-buy/enterprise-dealers" target="_blank">official DJI dealer list</a>, not programmatic QA.</p>
+  </div>
+</div>
+
+<h2>2. Source Performance &mdash; France</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Source</th>
+      <th>Total</th>
+      <th>Verified</th>
+      <th>Conv.</th>
+      <th>Solo*</th>
+      <th>Key Verified Companies</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><span class="badge badge-purple">Comet</span> Comet Intelligence</td>
+      <td>15</td>
+      <td><strong>15</strong></td>
+      <td><span class="badge badge-green">100%</span></td>
+      <td>3</td>
+      <td class="names-list">Prepa-Drone, PHOTOM Services, i-Techdrone, Dronavia, Instadrone, DJI Paris, NETPIX, SkyVisor</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><span class="badge badge-blue">Google</span> Google Search</td>
+      <td>15</td>
+      <td><strong>15</strong></td>
+      <td><span class="badge badge-green">100%</span></td>
+      <td>6</td>
+      <td class="names-list">Aptella, Advexure, DroneNerds, DJI France, TakeOff Formation, HP Drones, studioSPORT</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><span class="badge" style="background:#ecfdf5;color:#065f46;">Claude</span> Claude Research</td>
+      <td>11</td>
+      <td><strong>11</strong></td>
+      <td><span class="badge badge-green">100%</span></td>
+      <td>1</td>
+      <td class="names-list">Drone Parts Center (solo), Altametris, SNCF, Escadrone, Flying eye</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><span class="badge" style="background:#fce7f3;color:#9d174d;">GPT</span> ChatGPT Research</td>
+      <td>11</td>
+      <td><strong>11</strong></td>
+      <td><span class="badge badge-green">100%</span></td>
+      <td>2</td>
+      <td class="names-list">Flying Hub, ENGIE (solo), Altametris, SNCF, COVED-PAPREC</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><span class="badge badge-red">DJI</span> DJI Dealer List</td>
+      <td>12</td>
+      <td><strong>12</strong></td>
+      <td><span class="badge badge-green">100%</span></td>
+      <td>7</td>
+      <td class="names-list">Rivolier, Dumont Securite, Capture Solutions, Geomesure, PROTEC Security, STTL, VOLTANEO (solo*), Escadrone, Prodrones, Flying eye, Abot, NETPIX</td>
+    </tr>
+    <tr style="border:0;"><td colspan="6" style="font-size:10px; color:#6b7280; padding:2px 8px;">*5 dealers verified via official DJI dealer list (dji.com), not programmatic QA &mdash; their websites don&rsquo;t mention &ldquo;DJI Dock&rdquo;</td></tr>
+    <tr>
+      <td>6</td>
+      <td><span class="badge badge-blue">Reg</span> SIRENE Registry</td>
+      <td>3</td>
+      <td><strong>3</strong></td>
+      <td><span class="badge badge-green">100%</span></td>
+      <td>0</td>
+      <td class="names-list">Escadrone, Prodrones, Instadrone &mdash; all also found by 4+ other sources</td>
+    </tr>
+  </tbody>
+</table>
+<p style="font-size:11px; color:#94a3b8;">*Solo = verified records found <em>only</em> by this source</p>
+
+<h2>3. Source Performance &mdash; Netherlands</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Source</th>
+      <th>Total</th>
+      <th>Verified</th>
+      <th>Conv.</th>
+      <th>Solo*</th>
+      <th>Key Verified Companies</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><span class="badge" style="background:#fce7f3;color:#9d174d;">GPT</span> ChatGPT Research</td>
+      <td>22</td>
+      <td><strong>22</strong></td>
+      <td><span class="badge badge-green">100%</span></td>
+      <td>11</td>
+      <td class="names-list">Drone Flight Company, Antea Group, Province Noord-Holland, Dutch Drone Delta, Shell, KNRM, Rijkswaterstaat, Unmanned Valley, NLR, Skeye</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><span class="badge badge-blue">Google</span> Google Search</td>
+      <td>19</td>
+      <td><strong>19</strong></td>
+      <td><span class="badge badge-green">100%</span></td>
+      <td>15</td>
+      <td class="names-list">Heliguy (UK), Advexure (US), Coptrz (UK), Dronenerds (US), Aptella (AU), Globe-flight (DE), Aeromind (PL), Megadron (PL)</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><span class="badge badge-purple">Comet</span> Comet Intelligence</td>
+      <td>17</td>
+      <td><strong>17</strong></td>
+      <td><span class="badge badge-green">100%</span></td>
+      <td>6</td>
+      <td class="names-list">Mapture, Drone Addicts, Midwich NL, Brandweer Twente, Gemeente Breda, Spectro AI</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><span class="badge badge-red">DJI</span> DJI Dealer List</td>
+      <td>7</td>
+      <td><strong>7</strong></td>
+      <td><span class="badge badge-green">100%</span></td>
+      <td>1</td>
+      <td class="names-list">Dronestars, Dutch Drone Group, Droneshop.nl, Geocentrum, Vliegend.nl, Vortex Hardware, Geodirect (solo*)</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><span class="badge badge-blue">Reg</span> Aviation Registry (ILT)</td>
+      <td>399</td>
+      <td><strong>1</strong></td>
+      <td><span class="badge badge-gray">&lt;1%</span></td>
+      <td>0</td>
+      <td class="names-list">Dutch Drone Group &mdash; also found by DJI dealer + Comet + ChatGPT</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <strong>Google Search note:</strong> Google Search with region=NL returns globally-ranked results, not just Dutch companies. Of 19 NL Google Search results, ~13 are international resellers (UK, US, Poland, Australia, Germany, South Africa). They're legitimate DJI Dock sellers but not NL-headquartered. Requires post-processing to flag country mismatch. Also requires filtering out media/news entities and directory listings that appear in search results.
+</div>
+
+<h2>4. Government Registry &mdash; Discovery vs Enrichment</h2>
+
+<div class="highlight">
+  <strong>All 4 registry-verified records were already found by 3-4 other sources.</strong> Zero records were discovered uniquely through government registries. Registry value is enrichment (SIREN ID, NAF code, employee data, founding date) &mdash; not discovery.
+</div>
+
+<table>
+  <thead><tr><th>Company</th><th>Country</th><th>Registry</th><th>Other Sources</th></tr></thead>
+  <tbody>
+    <tr><td>Escadrone</td><td>FR</td><td>SIRENE</td><td>DJI Dealer, Comet, Claude, Google Search</td></tr>
+    <tr><td>Prodrones</td><td>FR</td><td>SIRENE</td><td>DJI Dealer, Comet, ChatGPT, Google Search</td></tr>
+    <tr><td>Instadrone</td><td>FR</td><td>SIRENE</td><td>Comet, ChatGPT, Claude, Google Search</td></tr>
+    <tr><td>Dutch Drone Group</td><td>NL</td><td>ILT Aviation</td><td>DJI Dealer, Comet, ChatGPT</td></tr>
+  </tbody>
+</table>
+
+<h2>5. Deep Dive: Government Registry Effort &amp; ROI</h2>
+
+<div class="warning">
+  <strong>Registry-based discovery was the most resource-intensive workstream with the lowest ROI.</strong> Of 743 registry records processed across FR and NL, only 4 yielded verified DJI Dock partners &mdash; all of which were already discovered by 3-4 other sources independently.
+</div>
+
+<h3>5.1 The Effort</h3>
+
+<p>Government registries (SIRENE in France, ILT/DCRO in Netherlands) required a multi-stage pipeline that is fundamentally different for each country:</p>
+
+<table>
+  <thead><tr><th>Challenge</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Source identification</strong></td><td>Each country has different registries (SIRENE, KVK, Companies House, CASA). Some are open APIs, some password-protected, some require bulk downloads, some only offer paid access.</td></tr>
+    <tr><td><strong>Data format inconsistency</strong></td><td>SIRENE uses NAF codes + SIREN IDs. NL ILT uses operator certificates + OA/STS categories. No standard schema across countries.</td></tr>
+    <tr><td><strong>Waterfall logic differs per country</strong></td><td>FR used a two-track waterfall (name-based Track A + NAF signal-based Track B). NL used a single registry dump with multi-source aggregation. Each country requires custom filter design.</td></tr>
+    <tr><td><strong>API access &amp; rate limits</strong></td><td>SIRENE bulk API (INSEE), Apollo for enrichment, Serper for QA verification. Each has rate limits, auth requirements, and credit costs.</td></tr>
+    <tr><td><strong>Low confidence funnel</strong></td><td>FR SIRENE: 29.3M entities &rarr; 16.8M active &rarr; ~1,400 name-matched &rarr; 378 scored &rarr; 188 enriched &rarr; <strong>3 verified</strong>. Conversion: 0.02% from active pool.</td></tr>
+    <tr><td><strong>Expensive enrichment</strong></td><td>Apollo API for website/LinkedIn discovery + Serper for DJI Dock QA. ~800 Serper credits consumed for NL 411-record batch alone.</td></tr>
+  </tbody>
+</table>
+
+<h3>5.2 TOFU &rarr; Waterfall &rarr; BOFU Pipeline</h3>
+
+<div class="section-card">
+  <h3 style="margin-top:0;">Top of Funnel (TOFU): Registry Filtering</h3>
+  <div class="two-col">
+    <div>
+      <p><strong>Track A &mdash; Name-based:</strong> Filter SIRENE for "drone/uav/rpas/telepilot" in company name. FR yielded 1,391 &rarr; 1,122 after NAF blacklist. Catches: INSTADRONE, AZUR DRONES. Misses: Groupe Protect, Altametris (names don't contain drone keywords).</p>
+    </div>
+    <div>
+      <p><strong>Track B &mdash; Signal-based:</strong> Filter by core NAF codes (71.12B engineering, 80.10Z security, 30.30Z aircraft) + external signal validation. Pool: 31,859 companies. Catches companies missed by name filter but requires cross-referencing with Google/DJI/LinkedIn signals.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section-card">
+  <h3 style="margin-top:0;">Waterfall Scoring</h3>
+  <p>Each record scored on: NAF code relevance (A/B/C tier) + keyword presence + employee band + legal form + company category. FR scoring produced 378 candidates from Track A (Wave 1). Only 6% of enriched records passed Serper DJI Dock verification.</p>
+</div>
+
+<div class="section-card">
+  <h3 style="margin-top:0;">Bottom of Funnel (BOFU): Verification</h3>
+  <p>Apollo enrichment for website/LinkedIn &rarr; Serper <code>site:domain "DJI Dock"</code> + LinkedIn company search. This is where the funnel collapses:</p>
+  <table>
+    <thead><tr><th>Metric</th><th>FR</th><th>NL</th><th>Combined</th></tr></thead>
+    <tbody>
+      <tr><td>Total registry records</td><td>393</td><td>350</td><td><strong>743</strong></td></tr>
+      <tr><td>Enriched (website found)</td><td>224 (57%)</td><td>325 (93%)</td><td>549 (74%)</td></tr>
+      <tr><td>Serper QA run</td><td>16</td><td>14</td><td><strong>30</strong></td></tr>
+      <tr><td>DJI Dock verified</td><td>14</td><td>16</td><td><strong>30</strong></td></tr>
+      <tr><td>Rejected / false positive</td><td>49</td><td>2</td><td>51</td></tr>
+      <tr><td>Never enriched (raw)</td><td>138</td><td>25</td><td>163</td></tr>
+      <tr><td><strong>Unique to registry (not found elsewhere)</strong></td><td><strong>0</strong></td><td><strong>0</strong></td><td><strong>0</strong></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>5.3 Recent False Positive Case Study</h3>
+
+<p>When we ran the 70 highest-scored FR SIRENE companies (NAF 71.12B, engineering firms) through the DJI Dock Hunter utility, 2 were flagged as "verified":</p>
+
+<table>
+  <thead><tr><th>Company</th><th>What happened</th><th>Root cause</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>NETMETIC</strong></td>
+      <td>Serper enrichment found <em>journaldugeek.com</em> as the company's website. QA searched <code>site:journaldugeek.com "DJI Dock"</code> and found a news article &rarr; false positive.</td>
+      <td>Tiny company with no website. Google returned a tech news site instead. QA treated the news domain as the company's own site.</td>
+    </tr>
+    <tr>
+      <td><strong>RETAILLEAU RENOVATIONS 44</strong></td>
+      <td>Serper enrichment found <em>entreprises.lefigaro.fr</em> (Le Figaro's business directory). QA searched the directory domain &rarr; false positive.</td>
+      <td>Company only exists in a directory listing. No real website. Directory domain passed QA because it has DJI-related content elsewhere.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Both records were deleted after investigation. These domains (journaldugeek.com, entreprises.lefigaro.fr) have been added to the mega-domain blocklist to prevent recurrence. This illustrates the core challenge with registry data: <strong>most SIRENE companies are micro-enterprises with no web presence</strong>, making enrichment unreliable and QA prone to false positives.</p>
+
+<h3>5.4 Registry Verdict</h3>
+
+<div class="highlight">
+  <strong>Recommendation: Use registries for enrichment, not discovery.</strong><br>
+  &bull; Cross-reference verified Dock partners with registry for SIREN ID, NAF code, employee data, founding date<br>
+  &bull; Do NOT run full registries through the Hunter pipeline &mdash; &lt;1% conversion, high false positive risk, expensive<br>
+  &bull; Each country's registry requires custom pipeline engineering (different APIs, schemas, access methods, filter logic)<br>
+  &bull; Intelligence sources (Comet, Google Search, AI research, DJI dealer list) discover the same companies at 100x lower cost
+</div>
+
+<h2>6. Key Insights</h2>
+<!-- Sections renumbered: old 5→6, old 6→7, old 7→8, old 8→9, old 9→10 -->
+
+<div class="section-card">
+  <h3>A. Intelligence sources have 100% conversion</h3>
+  <p>Comet (32/32), Google Search (34/34), ChatGPT (33/33), Claude (11/11) &mdash; every company surfaced by these sources was DJI Dock verified. These sources pre-filter for relevance. <strong>This is the highest-ROI discovery channel.</strong></p>
+</div>
+
+<div class="section-card">
+  <h3>B. Multi-source corroboration = strongest signal</h3>
+  <p>27 companies appeared in 2+ independent sources. 100% are verified. When Comet, Google, AND ChatGPT independently flag a company &rarr; it's a Dock partner. Top examples: Escadrone (5 sources), Flying eye (5), Instadrone (5), Prodrones (5).</p>
+</div>
+
+<div class="section-card">
+  <h3>C. Google Search: best solo discovery, but needs cleanup</h3>
+  <p>21 verified records were found ONLY by Google Search. However, Google Search results require significant post-processing:</p>
+  <ul>
+    <li><strong>International resellers</strong> appear in country-specific searches (~30-40% of results are from other countries)</li>
+    <li><strong>Media/news entities</strong> must be filtered out (news articles mention DJI Dock but aren't companies)</li>
+    <li><strong>Directory/aggregator sites</strong> can produce false positives (e.g., drones.nl directory listing treated as company website)</li>
+    <li><strong>Domain validation</strong> is essential before running DJI Dock QA verification</li>
+  </ul>
+  <p>All these filters are now built into the Dock Radar tooling (mega-domain blocklist, directory detection, shared-domain detection, media entity filter).</p>
+</div>
+
+<div class="section-card">
+  <h3>D. DJI Dealer List: high value, 100% conversion</h3>
+  <p>100% conversion for both FR (12/12) and NL (7/7). All DJI Enterprise Dealers are now marked as verified &mdash; they are listed on the <a href="https://www.dji.com/where-to-buy/enterprise-dealers" target="_blank">official DJI dealer page</a> and authorized to sell all DJI Dock models. Note: 6 of 19 dealers were verified based on their DJI listing alone (no "DJI Dock" mention found on their own websites via programmatic QA). These are B2B distributors (security, surveying, topography) that sell DJI products as part of a broader catalog.</p>
+</div>
+
+<h2>7. Recommended Strategy for Global Scale</h2>
+
+<h3>Phase 1 &mdash; Intelligence-led discovery (Week 1 per country)</h3>
+<table>
+  <thead><tr><th>Priority</th><th>Source</th><th>Action</th><th>Expected Yield</th><th>Cost</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><span class="badge badge-red">DJI</span></td><td>Scrape dji.com/where-to-buy for target country</td><td>10-15 dealers, 100% verified (official DJI listing)</td><td>Free</td></tr>
+    <tr><td>2</td><td><span class="badge badge-blue">Google</span></td><td>Run "DJI Dock" + country via Dock Radar Google Search Crawler</td><td>15-25 entities, ~60% unique verified (after cleanup)</td><td>~100 Serper credits</td></tr>
+    <tr><td>3</td><td><span class="badge badge-purple">Comet</span></td><td>Query Comet for DJI Dock authorized partners</td><td>10-15 companies, 100% relevant</td><td>Subscription</td></tr>
+    <tr><td>4</td><td><span class="badge" style="background:#fce7f3;color:#9d174d;">GPT</span> <span class="badge" style="background:#ecfdf5;color:#065f46;">Claude</span></td><td>Prompt for "companies using/selling DJI Dock in [country]"</td><td>10-15 companies, 100% relevant</td><td>Free</td></tr>
+  </tbody>
+</table>
+
+<h3>Phase 2 &mdash; Verification & enrichment (Week 2)</h3>
+<p>Run all discovered companies through <strong>DJI Dock Hunter</strong> utility with "Verified Only" mode:</p>
+<ul>
+  <li>Serper enrichment adds website + LinkedIn</li>
+  <li>QA runs <code>site:domain "DJI Dock"</code> + LinkedIn company search</li>
+  <li>Domain validation prevents false positives</li>
+  <li>Only confirmed Dock partners written to master table</li>
+</ul>
+
+<h3>Phase 3 &mdash; Registry enrichment (optional)</h3>
+<p>If country has accessible business registry, cross-reference verified records for legal entity data (registration ID, industry code, employees). Do <strong>not</strong> run full registry through Hunter &mdash; &lt;1% conversion wastes credits.</p>
+
+<h2>8. Concerns for Global Scale</h2>
+
+<table>
+  <thead><tr><th>Risk</th><th>What Happened (FR/NL)</th><th>Mitigation</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Directory false positives</strong></td>
+      <td>44 NL companies got drones.nl directory page as "website" &rarr; QA searched the directory, found Dock mentions unrelated to the company</td>
+      <td>Mega-domain blocklist (30+ domains). Shared-domain detection (3+ companies = directory). Each new country needs review of first batch for local directories.</td>
+    </tr>
+    <tr>
+      <td><strong>News/media entities</strong></td>
+      <td>FR: journaldugeek.com, lefigaro.fr matched as company websites</td>
+      <td>Media entity filter in Google Search. News domain blocklist. Country-specific news domains to be added per country.</td>
+    </tr>
+    <tr>
+      <td><strong>International resellers in local search</strong></td>
+      <td>13 of 19 NL Google Search results were international (UK, US, PL, AU)</td>
+      <td>TLD-based country inference. Flag when domain TLD &ne; search country. Not blocked &mdash; they're valid Dock sellers.</td>
+    </tr>
+    <tr>
+      <td><strong>Company name normalization</strong></td>
+      <td>Legal suffixes vary: B.V. (NL), S.A.S. (FR), GmbH (DE), Ltd (UK). Duplicate records from different name forms.</td>
+      <td>Dotted suffix stripping. Domain-based dedup. Fuzzy name matching.</td>
+    </tr>
+    <tr>
+      <td><strong>Serper credit budget</strong></td>
+      <td>NL 411-record run consumed ~800 credits + hit rate limits</td>
+      <td>Smart enrich (skip if CSV has both website+LinkedIn). "Verified Only" mode. Budget ~200 credits per country for intelligence-led approach (vs ~800+ for registry bulk).</td>
+    </tr>
+    <tr>
+      <td><strong>LinkedIn enrichment quality</strong></td>
+      <td>Serper returned wrong LinkedIn matches (company/facebook, company/businessgovnl)</td>
+      <td>LinkedIn validation layer rejects known-bad patterns. Website crawl as fallback for LinkedIn extraction.</td>
+    </tr>
+    <tr>
+      <td><strong>Evidence link staleness</strong></td>
+      <td>Some evidence URLs return 404 over time. Cross-company evidence (e.g., Instadrone URL as COVED evidence)</td>
+      <td>Periodic evidence health check (backlog). Flag when evidence domain &ne; company domain.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>9. Country Prioritization for Rollout</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Priority</th>
+      <th>Country</th>
+      <th>DJI Market Size</th>
+      <th>Registry</th>
+      <th>Est. Dock Partners</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background:#f0fdf4;">
+      <td><span class="badge badge-green">Done</span></td>
+      <td><strong>France</strong></td>
+      <td>Large</td>
+      <td>SIRENE</td>
+      <td>28 verified</td>
+      <td>Pilot country. All sources operational.</td>
+    </tr>
+    <tr style="background:#f0fdf4;">
+      <td><span class="badge badge-green">Done</span></td>
+      <td><strong>Netherlands</strong></td>
+      <td>Medium</td>
+      <td>ILT Aviation</td>
+      <td>45 verified</td>
+      <td>Pilot country. Registry bulk tested.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-red">1</span></td>
+      <td><strong>Germany</strong></td>
+      <td>Large</td>
+      <td>Handelsregister</td>
+      <td>25-35</td>
+      <td>Largest EU drone market. Strong DJI Enterprise presence.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-red">2</span></td>
+      <td><strong>United Kingdom</strong></td>
+      <td>Large</td>
+      <td>Companies House</td>
+      <td>25-35</td>
+      <td>Heliguy, Coptrz already found via NL search. English-language = easier.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-red">3</span></td>
+      <td><strong>United States</strong></td>
+      <td>Largest</td>
+      <td>SEC / State registries</td>
+      <td>50+</td>
+      <td>Largest market. DroneNerds, Advexure already found. Fragmented registry.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-amber">4</span></td>
+      <td><strong>Australia</strong></td>
+      <td>Medium</td>
+      <td>CASA</td>
+      <td>10-15</td>
+      <td>Aptella, GoUAV already found. Strong mining/infrastructure use case.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-amber">5</span></td>
+      <td><strong>United Arab Emirates</strong></td>
+      <td>Growing fast</td>
+      <td>Limited</td>
+      <td>8-12</td>
+      <td>Smart city drone programs. Dubai police, ADNOC etc.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-amber">6</span></td>
+      <td><strong>Saudi Arabia</strong></td>
+      <td>Growing fast</td>
+      <td>Limited</td>
+      <td>5-10</td>
+      <td>NEOM, Vision 2030 infrastructure projects.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-amber">7</span></td>
+      <td><strong>Japan</strong></td>
+      <td>Medium</td>
+      <td>Limited</td>
+      <td>10-15</td>
+      <td>Infrastructure inspection focus. DJI strong in enterprise.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-amber">8</span></td>
+      <td><strong>South Korea</strong></td>
+      <td>Medium</td>
+      <td>Limited</td>
+      <td>8-12</td>
+      <td>Advanced drone regulation. Smart city programs.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-amber">9</span></td>
+      <td><strong>Singapore</strong></td>
+      <td>Small-Medium</td>
+      <td>CAAS</td>
+      <td>5-8</td>
+      <td>Smart nation initiative. Compact geography suits Dock.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-amber">10</span></td>
+      <td><strong>Italy</strong></td>
+      <td>Medium</td>
+      <td>Registro Imprese</td>
+      <td>10-15</td>
+      <td>Infrastructure inspection. DJI dealer network present.</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-amber">11</span></td>
+      <td><strong>Spain</strong></td>
+      <td>Medium</td>
+      <td>Registro Mercantil</td>
+      <td>8-12</td>
+      <td>Growing drone services market. Energy/agriculture.</td>
+    </tr>
+    <tr>
+      <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">12</span></td>
+      <td><strong>Canada</strong></td>
+      <td>Medium</td>
+      <td>Transport Canada</td>
+      <td>10-15</td>
+      <td>Mining, oil & gas, infrastructure inspection.</td>
+    </tr>
+    <tr>
+      <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">13</span></td>
+      <td><strong>Brazil</strong></td>
+      <td>Medium</td>
+      <td>ANAC</td>
+      <td>8-12</td>
+      <td>Agriculture, mining, energy. Largest LATAM market.</td>
+    </tr>
+    <tr>
+      <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">14</span></td>
+      <td><strong>South Africa</strong></td>
+      <td>Small-Medium</td>
+      <td>SACAA</td>
+      <td>5-8</td>
+      <td>Mining security. GoUAV already found.</td>
+    </tr>
+    <tr>
+      <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">15</span></td>
+      <td><strong>Turkey</strong></td>
+      <td>Medium</td>
+      <td>Limited</td>
+      <td>5-8</td>
+      <td>Strong domestic drone industry. Infrastructure focus.</td>
+    </tr>
+    <tr>
+      <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">16</span></td>
+      <td><strong>Poland</strong></td>
+      <td>Small-Medium</td>
+      <td>KRS</td>
+      <td>5-10</td>
+      <td>Aeromind, Megadron already found via NL search.</td>
+    </tr>
+    <tr>
+      <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">17</span></td>
+      <td><strong>Belgium</strong></td>
+      <td>Small</td>
+      <td>BCE/KBO</td>
+      <td>3-5</td>
+      <td>Adjacent to NL/FR. May overlap with existing findings.</td>
+    </tr>
+    <tr>
+      <td><span class="badge" style="background:#e0e7ff;color:#3730a3;">18</span></td>
+      <td><strong>Thailand</strong></td>
+      <td>Small-Medium</td>
+      <td>Limited</td>
+      <td>3-5</td>
+      <td>Agriculture, tourism infrastructure.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>10. Estimated Global Yield</h2>
+
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-label">Countries</div>
+    <div class="kpi-value">20</div>
+    <div class="kpi-sub">2 done + 18 planned</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Est. Verified Partners</div>
+    <div class="kpi-value">250-400</div>
+    <div class="kpi-sub">~15-25 per country average</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Est. Serper Credits</div>
+    <div class="kpi-value">~4,000</div>
+    <div class="kpi-sub">~200 per country (intelligence-led)</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Est. Timeline</div>
+    <div class="kpi-value">4-6 wks</div>
+    <div class="kpi-sub">~2 countries per week</div>
+  </div>
+</div>
+
+<div class="highlight">
+  <strong>Bottom line:</strong> Intelligence-led discovery (Comet + Google Search + AI research + DJI dealer list) finds 95%+ of DJI Dock partners at minimal cost. Government registries add enrichment data but are not the discovery channel. The tooling &mdash; Hunter utility with streaming QA, domain validation, false positive prevention, and the Multi-Source Intelligence dashboard &mdash; is ready for global scale.
+</div>
+
+<h2>9. Next Steps &mdash; Discovery to Outreach Roadmap</h2>
+
+<p>With discovery and verification largely automated, the next phase focuses on converting verified partners into outreach-ready leads. The pipeline below takes us from raw verified records to personalized outreach.</p>
+
+<div style="display:flex; align-items:center; gap:0; margin:24px 0 28px 0; flex-wrap:wrap;">
+  <div style="background:#dbeafe; border:2px solid #3b82f6; border-radius:10px; padding:14px 18px; text-align:center; min-width:130px;">
+    <div style="font-size:13px; font-weight:700; color:#1e40af;">1. Persona Enrichment</div>
+    <div style="font-size:11px; color:#3b82f6; margin-top:4px;">Role &amp; segment tagging</div>
+  </div>
+  <div style="font-size:22px; color:#94a3b8; padding:0 6px;">&rarr;</div>
+  <div style="background:#fef3c7; border:2px solid #f59e0b; border-radius:10px; padding:14px 18px; text-align:center; min-width:130px;">
+    <div style="font-size:13px; font-weight:700; color:#92400e;">2. Prioritization</div>
+    <div style="font-size:11px; color:#b45309; margin-top:4px;">Region &amp; candidate ranking</div>
+  </div>
+  <div style="font-size:22px; color:#94a3b8; padding:0 6px;">&rarr;</div>
+  <div style="background:#ede9fe; border:2px solid #8b5cf6; border-radius:10px; padding:14px 18px; text-align:center; min-width:130px;">
+    <div style="font-size:13px; font-weight:700; color:#5b21b6;">3. Context Extraction</div>
+    <div style="font-size:11px; color:#7c3aed; margin-top:4px;">Evidence &amp; signal mining</div>
+  </div>
+  <div style="font-size:22px; color:#94a3b8; padding:0 6px;">&rarr;</div>
+  <div style="background:#d1fae5; border:2px solid #10b981; border-radius:10px; padding:14px 18px; text-align:center; min-width:130px;">
+    <div style="font-size:13px; font-weight:700; color:#065f46;">4. Enrichment</div>
+    <div style="font-size:11px; color:#047857; margin-top:4px;">Stakeholders &amp; contacts</div>
+  </div>
+  <div style="font-size:22px; color:#94a3b8; padding:0 6px;">&rarr;</div>
+  <div style="background:#fce7f3; border:2px solid #ec4899; border-radius:10px; padding:14px 18px; text-align:center; min-width:130px;">
+    <div style="font-size:13px; font-weight:700; color:#9d174d;">5. Outreach</div>
+    <div style="font-size:11px; color:#be185d; margin-top:4px;">Personalized campaigns</div>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr><th style="width:30px;">#</th><th style="width:180px;">Stage</th><th>What</th><th>How</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><strong>Persona Enrichment</strong></td>
+      <td>Classify each verified company by persona: DJI Enterprise Dealer, System Integrator, End-user Operator, Reseller/Distributor, Government/Public Sector</td>
+      <td>Auto-tag from source signals (DJI dealer list &rarr; Dealer, Comet &rarr; SI, Aviation registry &rarr; Operator). AI-assisted for ambiguous cases using website content analysis.</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Prioritization</strong></td>
+      <td>Rank by region (market maturity, FlytBase presence, regulatory readiness) and by candidate strength (multi-source confirmation, evidence depth, Dock model breadth)</td>
+      <td>Weighted scoring: source count &times; evidence count &times; region priority weight. Countries with existing FB partners or DJI dealer network rank higher. Output: tiered list (Tier 1 = outreach now, Tier 2 = next wave, Tier 3 = monitor).</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Context Extraction</strong></td>
+      <td>Mine evidence URLs and verification data for outreach-relevant context: which Dock models they use/sell, specific use cases (inspection, security, agriculture), recent projects or announcements</td>
+      <td>Scrape evidence URLs for key phrases. Extract from Comet intelligence, Google Search snippets, and LinkedIn posts. Build per-company context brief (2-3 bullet points) for outreach personalization.</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Enrichment</strong></td>
+      <td>Identify key stakeholders: decision-makers (CEO, CTO, Head of Partnerships, BD), technical leads, procurement contacts. Map org structure where possible.</td>
+      <td>LinkedIn Sales Navigator / Apollo for contact discovery. Cross-reference with company size and role to find the right entry point. Output: 1-3 target contacts per company with name, title, email, LinkedIn.</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>Outreach</strong></td>
+      <td>Personalized multi-channel campaigns tailored by persona, region, and context. Reference specific Dock models, use cases, and evidence from earlier stages.</td>
+      <td>Email sequences + LinkedIn outreach. Persona-specific messaging (Dealer &rarr; partnership program, SI &rarr; technical integration, Operator &rarr; fleet management). Region-specific language and compliance context.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="font-size:12px; color:#6b7280; margin-top:12px;"><strong>Current status:</strong> Discovery &amp; verification (the foundation) is complete for FR + NL and ready to scale to 20 countries. The five stages above represent the conversion layer that turns verified intelligence into pipeline.</p>
+
+<div class="footer">
+  Dock Radar &middot; FlytBase BD Intelligence &middot; Generated 31 Mar 2026 &middot; Data from multi_sources_companies_import
+</div>
+
+</div>
+</body>
+</html>

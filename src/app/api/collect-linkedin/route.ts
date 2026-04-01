@@ -118,7 +118,7 @@ async function fetchLinkedInPosts(
     const html = await page.content();
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const safeKeyword = keyword.replace(/[^\w-]+/g, "_").slice(0, 50) || "linkedin";
-    const dataDir = path.join(process.cwd(), "data");
+    const dataDir = path.join(process.cwd(), "data", "Linkedin Data");
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
     const htmlPath = path.join(dataDir, `linkedin-search-${safeKeyword}-${timestamp}.html`);
     fs.writeFileSync(htmlPath, html, "utf8");
@@ -453,10 +453,10 @@ export async function POST(req: NextRequest) {
     };
 
     // Persist to JSON file (audit/debug) and DB (for downstream pipeline)
-    const dataDir = path.join(process.cwd(), "data");
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    const liDataDir = path.join(process.cwd(), "data", "Linkedin Data");
+    if (!fs.existsSync(liDataDir)) fs.mkdirSync(liDataDir, { recursive: true });
     const jsonPath = path.join(
-      dataDir,
+      liDataDir,
       `linkedin-collect-${new Date().toISOString().replace(/[:.]/g, "-")}.json`
     );
     fs.writeFileSync(

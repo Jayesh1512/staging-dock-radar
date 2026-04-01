@@ -45,12 +45,23 @@ Create a CSV file named dji_dock_[ISO code]_comet.csv with these columns:
 company_name, country, role, dock_models, dock_count, website, linkedin_url, evidence_url_1, source_type_1, evidence_url_2, source_type_2, confidence, notes
 
 Where:
-- role = one of: Government End-User, Enterprise End-User, Authorized Dealer, Software Platform, DFR Service Provider, Reseller, Distributor, System Integrator, Academia/Research
-- dock_models = Dock 1, Dock 2, Dock 3, or combination found in evidence
+- role = one of: End-Users (Buyer)
+Government/Public Safety: Public agencies (police, fire, municipalities) deploying DJI Dock
+Enterprise End-User: Corporations and industrial operators using DJI Dock in-house purely for their own internal asset inspection, security, mapping, etc
+
+- System Integrator (SI): Technologists who package DJI Dock with other infrastructure (like private 5G, CCTV, or mobile trailers) into custom, turnkey solutions for clients. Independent tech companies building fleet management, AI analytics, or UTM applications that plug into DJI Dock.
+- Drone Service Provider (DSP): Professional aviation operators who fly missions or manage DJI Dock fleets on behalf of other businesses as a hired service.
+
+- Authorized Dealer: Official, DJI-certified retailers who physically sell, install, and support Dock hardware for regional customers.
+- Distributor / Reseller: B2B supply-chain wholesale partners or online storefronts moving drone hardware at volume.
+- Others: Example Academia / Research / Anyone experimenting with autonomous drone technology rather than commercializing it.
+
+- dock_models = Dock 1, Dock 2, Dock 3, or combination found in evidence. No generic DJI drone or general drone
 - dock_count = number of docks deployed if mentioned, otherwise "Unknown"
 - evidence_url_1 = clickable URL proving DJI Dock involvement (MANDATORY — no URL, no row)
 - source_type_1 = what type of source (Company Website, DJI Case Study, Industry Article, LinkedIn Post, Government Record, Social Media Post)
 - confidence = High (2+ sources), Medium (1 source)
+- notes = detailed latest contextual information their DJI dock activity (involvement, experiment, deployment, etc) to use for initiate email conversation
 
 ## RULES
 

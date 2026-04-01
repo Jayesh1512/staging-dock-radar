@@ -55,6 +55,7 @@ interface MultiSourceCompany {
   matches_priority: boolean;
   import_batch: string | null;
   source_refs: Record<string, unknown> | null;
+  is_fb_partner: boolean;
 }
 
 interface ApiResponse {
@@ -70,6 +71,7 @@ interface ApiResponse {
     with_website: number;
     with_linkedin: number;
     priority_matches: number;
+    fb_partners: number;
   };
   source_breakdown: Record<string, number>;
   companies: MultiSourceCompany[];
@@ -117,6 +119,21 @@ export async function GET(req: NextRequest) {
     };
     const allRows = (rows ?? []) as unknown as Row[];
 
+    // Load FlytBase partners for matching
+    const { data: fbPartners } = await db.from('flytbase_partners').select('name, website');
+    const fbPartnerNames = new Set<string>();
+    const fbPartnerDomains = new Set<string>();
+    for (const p of (fbPartners ?? []) as { name: string; website: string | null }[]) {
+      fbPartnerNames.add(p.name.toLowerCase().trim());
+      if (p.website) {
+        try {
+          fbPartnerDomains.add(
+            new URL(p.website.startsWith('http') ? p.website : `https://${p.website}`).hostname.replace(/^www\./i, '').toLowerCase(),
+          );
+        } catch { /* skip */ }
+      }
+    }
+
     // Build companies
     const companies: MultiSourceCompany[] = allRows.map((r, idx) => {
       const verifications = (r.verifications ?? []) as VerificationEntry[];
@@ -132,10 +149,20 @@ export async function GET(req: NextRequest) {
       const hasEvidence = evidenceUrls.length > 0;
       const matchesPriority = sourceCount >= 2 && hasEvidence;
 
+      // Check if this company is an existing FlytBase partner
+      const displayName = r.display_name || r.company_name || r.normalized_name;
+      let isFbPartner = fbPartnerNames.has(displayName.toLowerCase().trim());
+      if (!isFbPartner && r.website) {
+        try {
+          const domain = new URL(r.website).hostname.replace(/^www\./i, '').toLowerCase();
+          isFbPartner = fbPartnerDomains.has(domain);
+        } catch { /* skip */ }
+      }
+
       return {
         rank: idx + 1,
         normalized_name: r.normalized_name,
-        display_name: r.display_name || r.company_name || r.normalized_name,
+        display_name: displayName,
         website: r.website,
         linkedin: r.linkedin,
         country_code: r.country_code,
@@ -150,6 +177,7 @@ export async function GET(req: NextRequest) {
         matches_priority: matchesPriority,
         import_batch: r.import_batch,
         source_refs: r.source_refs as Record<string, unknown> | null,
+        is_fb_partner: isFbPartner,
       };
     });
 
@@ -176,6 +204,7 @@ export async function GET(req: NextRequest) {
     const withWebsite = allRows.filter((r) => r.website?.trim()).length;
     const withLinkedin = allRows.filter((r) => r.linkedin?.trim()).length;
     const priorityMatches = companies.filter((c) => c.matches_priority).length;
+    const fbPartnerCount = companies.filter((c) => c.is_fb_partner).length;
 
     // Source breakdown
     const sourceBreakdown: Record<string, number> = {};
@@ -198,6 +227,7 @@ export async function GET(req: NextRequest) {
         with_website: withWebsite,
         with_linkedin: withLinkedin,
         priority_matches: priorityMatches,
+        fb_partners: fbPartnerCount,
       },
       source_breakdown: sourceBreakdown,
       companies,

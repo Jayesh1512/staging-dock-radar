@@ -170,9 +170,18 @@ const SAMPLE_DATA: LeaderboardCompany[] = [
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+/** Get date string in IST (YYYY-MM-DD) for calendar-day comparison */
+function toISTDate(date: Date): string {
+  return date.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // en-CA gives YYYY-MM-DD
+}
+
 function daysAgo(dateStr: string | null): string {
   if (!dateStr) return '—';
-  const d = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+  const articleDate = toISTDate(new Date(dateStr));
+  const todayDate = toISTDate(new Date());
+  // Compare calendar days in IST
+  const diffMs = new Date(todayDate).getTime() - new Date(articleDate).getTime();
+  const d = Math.round(diffMs / 86400000);
   if (d === 0) return 'today';
   if (d === 1) return '1d ago';
   return `${d}d ago`;
@@ -180,7 +189,7 @@ function daysAgo(dateStr: string | null): string {
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' });
 }
 
 function sourceLabel(s: string): string {
@@ -227,6 +236,7 @@ export function SocialLeaderboard() {
   const [trendFilter, setTrendFilter] = useState('all');
   const [countryFilter, setCountryFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
+  const [partnerFilter, setPartnerFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('post_count');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -259,6 +269,8 @@ export function SocialLeaderboard() {
     if (trendFilter !== 'all' && c.trend !== trendFilter) return false;
     if (countryFilter !== 'all' && !c.countries.includes(countryFilter)) return false;
     if (sourceFilter !== 'all' && !c.sources.includes(sourceFilter)) return false;
+    if (partnerFilter === 'partner' && c.stage !== 'partner') return false;
+    if (partnerFilter === 'new' && c.stage === 'partner') return false;
     if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
@@ -354,6 +366,12 @@ export function SocialLeaderboard() {
           <option value="linkedin">LinkedIn</option>
           <option value="google_news">Google News</option>
         </select>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--dr-text-muted)', marginLeft: 8 }}>FB Partner:</span>
+        <select value={partnerFilter} onChange={e => setPartnerFilter(e.target.value)} style={sSelect}>
+          <option value="all">All</option>
+          <option value="partner">Partner</option>
+          <option value="new">New</option>
+        </select>
         <input
           type="text"
           placeholder="Search company..."
@@ -371,13 +389,13 @@ export function SocialLeaderboard() {
               <th style={{ ...sTh, width: 30, cursor: 'default' }}></th>
               <th style={sTh}>#</th>
               <th style={{ ...sTh, textAlign: 'left' }}>Company</th>
+              <th style={{ ...sTh, cursor: 'default' }}>FB Partner?</th>
               <th style={sTh} onClick={() => handleSort('post_count')}>Posts{sortArrow('post_count')}</th>
               <th style={sTh} onClick={() => handleSort('avg_score')}>Avg Score{sortArrow('avg_score')}</th>
               <th style={{ ...sTh, cursor: 'default' }}>Trend</th>
               <th style={{ ...sTh, cursor: 'default' }}>Sources</th>
               <th style={sTh} onClick={() => handleSort('last_post_at')}>Last Post{sortArrow('last_post_at')}</th>
               <th style={sTh} onClick={() => handleSort('contacts')}>Contacts{sortArrow('contacts')}</th>
-              <th style={{ ...sTh, cursor: 'default' }}>Stage</th>
             </tr>
           </thead>
           <tbody>
@@ -417,6 +435,13 @@ export function SocialLeaderboard() {
                         </div>
                       </div>
                     </td>
+                    <td style={{ ...sTd, textAlign: 'center' }}>
+                      {company.stage === 'partner' ? (
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#059669' }}>Partner</span>
+                      ) : (
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#D97706' }}>New</span>
+                      )}
+                    </td>
                     <td style={{ ...sTd, textAlign: 'center', fontWeight: 700, fontSize: 14 }}>{company.post_count}</td>
                     <td style={{ ...sTd, textAlign: 'center' }}>
                       <span style={{
@@ -450,21 +475,6 @@ export function SocialLeaderboard() {
                       <span style={{ fontSize: 12, color: company.contacts.length > 0 ? '#374151' : '#D1D5DB' }}>
                         {company.contacts.length}
                       </span>
-                    </td>
-                    <td style={sTd}>
-                      {company.stage ? (() => {
-                        const st = STAGE_STYLES[company.stage];
-                        return st ? (
-                          <span style={{
-                            display: 'inline-block', fontSize: 10, fontWeight: 600, padding: '2px 7px',
-                            borderRadius: 4, background: st.bg, color: st.color,
-                          }}>
-                            {st.label}
-                          </span>
-                        ) : null;
-                      })() : (
-                        <span style={{ fontSize: 11, color: '#D1D5DB' }}>—</span>
-                      )}
                     </td>
                   </tr>
 
