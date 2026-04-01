@@ -21,7 +21,7 @@ import { requireSupabase } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 600;
+export const maxDuration = 300;
 
 const DEFAULT_SCAN_LIMIT = 50;
 const MAX_SCAN_LIMIT = 500;

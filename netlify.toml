@@ -1,5 +1,14 @@
 [build]
   command = "npm run build"
 
+[build.environment]
+  NEXT_TELEMETRY_DISABLED = "1"
+  NPM_FLAGS = "--no-optional"
+  NPM_CONFIG_AUDIT = "false"
+  NPM_CONFIG_FUND = "false"
+
+[functions]
+  node_bundler = "esbuild"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
