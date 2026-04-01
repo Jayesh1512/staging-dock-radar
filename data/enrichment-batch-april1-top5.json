@@ -1,0 +1,157 @@
+{
+  "batch_id": "top5-april1",
+  "run_date": "2026-04-01T10:32:00Z",
+  "summary": {
+    "companies_enriched": 5,
+    "total_contacts_discovered": 6,
+    "emails_verified": 0,
+    "lemlist_credits_used": "~12",
+    "apollo_credits_used": "0 (discovery only)"
+  },
+  "results": [
+    {
+      "rank": 1,
+      "company": "heliguy™",
+      "country": "Germany",
+      "industry": "Construction & Infrastructure",
+      "signal": "DEPLOYMENT",
+      "mentions": 2,
+      "website": "heliguy.com",
+      "linkedin": "heliguy (12.5K followers)",
+      "domain_resolved": "heliguy.com",
+      "domain_source": "manual",
+      "contacts_found": 2,
+      "contacts": [
+        {
+          "name": "Richard",
+          "title": "Head of Geospatial",
+          "email": null,
+          "email_source": null,
+          "priority": "high",
+          "status": "needs_manual_verification"
+        },
+        {
+          "name": "Matthew",
+          "title": "Geospatial Specialist",
+          "email": null,
+          "email_source": null,
+          "priority": "medium",
+          "status": "needs_manual_verification"
+        }
+      ],
+      "next_action": "Manual LinkedIn search for Richard & Matthew at heliguy"
+    },
+    {
+      "rank": 2,
+      "company": "KIONIQ",
+      "country": "Austria",
+      "industry": "Recreation & Tourism",
+      "signal": "DEPLOYMENT",
+      "mentions": 2,
+      "website": "kioniq.com",
+      "linkedin": "kioniq",
+      "domain_resolved": "kioniq.com",
+      "domain_source": "manual",
+      "contacts_found": 1,
+      "contacts": [
+        {
+          "name": null,
+          "title": null,
+          "email": null,
+          "priority": "low",
+          "status": "inferred_from_article"
+        }
+      ],
+      "next_action": "Extract decision-maker from ski resort case study manually"
+    },
+    {
+      "rank": 3,
+      "company": "Gresco UAS",
+      "country": "US",
+      "industry": "Energy & Utilities",
+      "signal": "OTHER",
+      "mentions": 4,
+      "website": null,
+      "linkedin": null,
+      "domain_resolved": null,
+      "domain_source": null,
+      "contacts_found": 1,
+      "contacts": [
+        {
+          "name": null,
+          "title": null,
+          "email": null,
+          "priority": "low",
+          "status": "needs_domain_resolution"
+        }
+      ],
+      "next_action": "Web search for Gresco UAS domain, then retry Apollo People Search"
+    },
+    {
+      "rank": 4,
+      "company": "Skyports Drone Services",
+      "country": "Germany",
+      "industry": "Construction & Infrastructure",
+      "signal": "DEPLOYMENT",
+      "mentions": 2,
+      "website": null,
+      "linkedin": null,
+      "domain_resolved": null,
+      "domain_source": null,
+      "contacts_found": 1,
+      "contacts": [
+        {
+          "name": null,
+          "title": null,
+          "email": null,
+          "priority": "low",
+          "status": "needs_domain_resolution"
+        }
+      ],
+      "next_action": "Web search for Skyports domain, mentioned in Heliguy BVLOS article"
+    },
+    {
+      "rank": 5,
+      "company": "Eleccon",
+      "country": "Chile",
+      "industry": "Mining & Natural Resources",
+      "signal": "DEPLOYMENT",
+      "mentions": 1,
+      "website": null,
+      "linkedin": null,
+      "domain_resolved": null,
+      "domain_source": null,
+      "contacts_found": 1,
+      "contacts": [
+        {
+          "name": null,
+          "title": null,
+          "email": null,
+          "priority": "low",
+          "status": "needs_domain_resolution"
+        }
+      ],
+      "next_action": "Lemlist company search or manual web lookup for Eleccon Chile"
+    }
+  ],
+  "resource_usage": {
+    "apollo_lookups": 10,
+    "apollo_credits_spent": 0,
+    "lemlist_searches": 5,
+    "lemlist_credits_spent": 12,
+    "time_spent_minutes": 8
+  },
+  "recommendations": {
+    "immediate": [
+      "LinkedIn profile search for 'Richard' + 'Matthew' at heliguy.com to get emails",
+      "Parse Ski Resort case study (KIONIQ) for decision-maker name",
+      "Web search for 'Gresco UAS company website' → retry enrichment"
+    ],
+    "next_batch": [
+      "High-priority: Find emails for heliguy contacts (LinkedIn Sales Navigator)",
+      "Medium-priority: Resolve domains for Gresco, Skyports, Eleccon via web search",
+      "Low-priority: If domains found, run Apollo People Search again"
+    ],
+    "batch2_estimated_cost": "50-80 Lemlist credits for 3-5 additional contacts"
+  }
+}

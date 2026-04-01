@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>France Outreach Pipeline — From Intelligence to Inbox</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 40px 20px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 { font-size: 28px; color: #fff; text-align: center; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 40px; }
+
+  /* Pipeline visual */
+  .pipeline { display: flex; align-items: stretch; gap: 0; margin: 0 0 48px 0; position: relative; }
+  .stage { flex: 1; position: relative; text-align: center; padding: 24px 14px 20px; }
+  .stage-inner { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px 12px 16px; height: 100%; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
+  .stage-inner:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.25); }
+  .stage-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; margin-bottom: 10px; }
+  .stage-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 6px; letter-spacing: 0.3px; }
+  .stage-desc { font-size: 11px; color: #94a3b8; line-height: 1.5; }
+  .stage-metric { margin-top: auto; padding-top: 12px; font-size: 22px; font-weight: 800; }
+  .stage-metric-label { font-size: 10px; color: #64748b; margin-top: 2px; }
+  .arrow { position: absolute; right: -14px; top: 50%; transform: translateY(-50%); z-index: 2; font-size: 20px; color: #475569; }
+
+  .s1 .stage-num { background: #3b82f6; color: #fff; }
+  .s1 .stage-metric { color: #3b82f6; }
+  .s2 .stage-num { background: #8b5cf6; color: #fff; }
+  .s2 .stage-metric { color: #8b5cf6; }
+  .s3 .stage-num { background: #f59e0b; color: #fff; }
+  .s3 .stage-metric { color: #f59e0b; }
+  .s4 .stage-num { background: #10b981; color: #fff; }
+  .s4 .stage-metric { color: #10b981; }
+  .s5 .stage-num { background: #ef4444; color: #fff; }
+  .s5 .stage-metric { color: #ef4444; }
+  .s6 .stage-num { background: #ec4899; color: #fff; }
+  .s6 .stage-metric { color: #ec4899; }
+
+  /* Funnel summary */
+  .funnel { display: flex; justify-content: center; gap: 12px; margin: 0 0 48px; flex-wrap: wrap; }
+  .funnel-step { text-align: center; padding: 10px 16px; }
+  .funnel-num { font-size: 32px; font-weight: 800; }
+  .funnel-label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+  .funnel-arrow { font-size: 24px; color: #334155; align-self: center; }
+
+  /* Results grid */
+  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
+  .result-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; }
+  .result-card h3 { font-size: 14px; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .badge-t1 { background: #059669; color: #fff; }
+  .badge-t2 { background: #d97706; color: #fff; }
+  .badge-si { background: #3b82f6; color: #fff; }
+  .badge-dsp { background: #10b981; color: #fff; }
+  .badge-buyer { background: #f59e0b; color: #000; }
+  .badge-dealer { background: #8b5cf6; color: #fff; }
+  .result-table { width: 100%; font-size: 12px; }
+  .result-table td { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .result-table td:first-child { color: #94a3b8; width: 50%; }
+  .result-table td:last-child { color: #e2e8f0; font-weight: 500; }
+  .check { color: #10b981; }
+  .cross { color: #ef4444; }
+
+  /* Relationship web */
+  .relationships { background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.2); border-radius: 12px; padding: 20px; margin-bottom: 40px; }
+  .relationships h3 { color: #fbbf24; font-size: 14px; margin-bottom: 12px; }
+  .rel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .rel-pair { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .rel-company { background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 6px; color: #fff; font-weight: 600; }
+  .rel-arrow { color: #fbbf24; font-size: 14px; }
+  .rel-desc { color: #94a3b8; font-size: 11px; }
+
+  /* What's next */
+  .next-steps { background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px; padding: 20px; margin-bottom: 40px; }
+  .next-steps h3 { color: #60a5fa; font-size: 14px; margin-bottom: 12px; }
+  .next-steps ul { list-style: none; padding: 0; }
+  .next-steps li { padding: 6px 0; font-size: 13px; color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .next-steps li:last-child { border: 0; }
+  .next-steps li::before { content: "~"; margin-right: 8px; color: #60a5fa; }
+
+  .footer { text-align: center; color: #475569; font-size: 11px; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>France Outreach Pipeline</h1>
+<p class="subtitle">From multi-source intelligence to personalized inbox &mdash; 31 March 2026</p>
+
+<!-- Pipeline stages -->
+<div class="pipeline">
+  <div class="stage s1">
+    <div class="stage-inner">
+      <div class="stage-num">1</div>
+      <div class="stage-title">Discovery &amp; Verification</div>
+      <div class="stage-desc">6 intelligence sources cross-referenced. DJI Dock verified via Serper + LinkedIn QA.</div>
+      <div class="stage-metric">33</div>
+      <div class="stage-metric-label">verified companies</div>
+    </div>
+    <div class="arrow">&rarr;</div>
+  </div>
+  <div class="stage s2">
+    <div class="stage-inner">
+      <div class="stage-num">2</div>
+      <div class="stage-title">Qualify &amp; Exclude</div>
+      <div class="stage-desc">Remove FB partners + DJI entities only. Drop NETPIX (site down). Keep international dealers + training.</div>
+      <div class="stage-metric">28</div>
+      <div class="stage-metric-label">outreach targets</div>
+    </div>
+    <div class="arrow">&rarr;</div>
+  </div>
+  <div class="stage s3">
+    <div class="stage-inner">
+      <div class="stage-num">3</div>
+      <div class="stage-title">Persona &amp; Tier</div>
+      <div class="stage-desc">Classified as SI, DSP, Buyer, Dealer. Tiered by source strength + persona.</div>
+      <div class="stage-metric">15 + 13</div>
+      <div class="stage-metric-label">tier 1 + tier 2</div>
+    </div>
+    <div class="arrow">&rarr;</div>
+  </div>
+  <div class="stage s4">
+    <div class="stage-inner">
+      <div class="stage-num">4</div>
+      <div class="stage-title">Context Extraction</div>
+      <div class="stage-desc">Scraped evidence URLs. Extracted verticals, use cases, personalized hooks.</div>
+      <div class="stage-metric">28</div>
+      <div class="stage-metric-label">context briefs</div>
+    </div>
+    <div class="arrow">&rarr;</div>
+  </div>
+  <div class="stage s5">
+    <div class="stage-inner">
+      <div class="stage-num">5</div>
+      <div class="stage-title">Stakeholder Enrich</div>
+      <div class="stage-desc">Apollo Search + Reveal for decision-makers. Name, title, verified email.</div>
+      <div class="stage-metric">26</div>
+      <div class="stage-metric-label">contacts with email</div>
+    </div>
+    <div class="arrow">&rarr;</div>
+  </div>
+  <div class="stage s6">
+    <div class="stage-inner">
+      <div class="stage-num">6</div>
+      <div class="stage-title">Personalized Email</div>
+      <div class="stage-desc">4 templates by persona. Cold email best practices researched and applied &mdash; zero boilerplate, 3 sentences max, curiosity-driven subjects, bespoke per company.</div>
+      <div class="stage-metric">26</div>
+      <div class="stage-metric-label">emails ready</div>
+    </div>
+  </div>
+</div>
+
+<!-- Funnel -->
+<div class="funnel">
+  <div class="funnel-step"><div class="funnel-num" style="color:#3b82f6;">477</div><div class="funnel-label">Total FR+NL records</div></div>
+  <div class="funnel-arrow">&rarr;</div>
+  <div class="funnel-step"><div class="funnel-num" style="color:#8b5cf6;">33</div><div class="funnel-label">FR verified</div></div>
+  <div class="funnel-arrow">&rarr;</div>
+  <div class="funnel-step"><div class="funnel-num" style="color:#f59e0b;">28</div><div class="funnel-label">Qualified targets</div></div>
+  <div class="funnel-arrow">&rarr;</div>
+  <div class="funnel-step"><div class="funnel-num" style="color:#10b981;">26</div><div class="funnel-label">With email</div></div>
+  <div class="funnel-arrow">&rarr;</div>
+  <div class="funnel-step"><div class="funnel-num" style="color:#ec4899;">26</div><div class="funnel-label">Emails drafted</div></div>
+</div>
+
+<!-- Results by persona -->
+<div class="results">
+  <div class="result-card">
+    <h3><span class="badge badge-si">SI</span> System Integrators</h3>
+    <table class="result-table">
+      <tr><td>Altametris</td><td>Pascal Baran, CEO <span class="check">&#10003;</span></td></tr>
+      <tr><td>Dronavia</td><td>Ludovic Pelletey, CEO/R&amp;D <span class="check">&#10003;</span></td></tr>
+      <tr><td>i-Techdrone</td><td>Loic Richard, CEO <span class="check">&#10003;</span></td></tr>
+      <tr><td>Instadrone</td><td>Emmanuel Girault, G&eacute;rant <span class="check">&#10003;</span></td></tr>
+      <tr><td>Prepa-Drone</td><td>contact@ (training co.) <span class="check">&#10003;</span></td></tr>
+      <tr><td>SkyVisor</td><td>Paul Fontaine, CEO <span class="check">&#10003;</span></td></tr>
+    </table>
+  </div>
+  <div class="result-card">
+    <h3><span class="badge badge-dsp">DSP</span> Drone Service Providers</h3>
+    <table class="result-table">
+      <tr><td>Escadrone</td><td>Nicolas Hebert, President <span class="check">&#10003;</span></td></tr>
+      <tr><td>Flying eye</td><td>Simon Leroy, Co-CEO <span class="check">&#10003;</span></td></tr>
+      <tr><td>Prodrones</td><td>Antoine Coulombel, Innovation <span class="check">&#10003;</span></td></tr>
+      <tr><td>Abot</td><td>Tom Berteau, Sales <span class="check">&#10003;</span></td></tr>
+      <tr><td>NETPIX</td><td>Damien Maury, Operations <span class="check">&#10003;</span></td></tr>
+      <tr><td>Rivolier</td><td>Sothara Sieng, DG <span class="check">&#10003;</span></td></tr>
+      <tr><td>DUMONT SECURITE</td><td>Sylvain Ziegler, Sales <span class="check">&#10003;</span></td></tr>
+      <tr><td>Geomesure</td><td>Lilian Degand, GM <span class="check">&#10003;</span></td></tr>
+      <tr><td>VOLTANEO</td><td>Pierre Hubert, Founder <span class="check">&#10003;</span></td></tr>
+      <tr><td>Capture Solutions</td><td>Jonathan Choinard, Co-founder <span class="check">&#10003;</span></td></tr>
+      <tr><td>STTL</td><td>Dorian Branche, Manager <span class="check">&#10003;</span></td></tr>
+    </table>
+  </div>
+  <div class="result-card">
+    <h3><span class="badge badge-buyer">BUYER</span> Enterprise End-Users</h3>
+    <table class="result-table">
+      <tr><td>COVED &ndash; PAPREC</td><td>Vincent Grosjean, Innovation <span class="check">&#10003;</span></td></tr>
+      <tr><td>ENGIE</td><td>Yee Tang, R&amp;I <span class="check">&#10003;</span></td></tr>
+      <tr><td>PHOTOM Services</td><td>Clemence Daude, Innovation <span class="check">&#10003;</span></td></tr>
+      <tr><td>SNCF R&eacute;seau</td><td>Alexis Hubaut + 2 backups <span class="cross">LI only</span></td></tr>
+    </table>
+  </div>
+  <div class="result-card">
+    <h3><span class="badge badge-dealer">DEALER</span> Authorized Dealers</h3>
+    <table class="result-table">
+      <tr><td>studioSPORT</td><td>Johan Kraft, E-commerce <span class="check">&#10003;</span></td></tr>
+      <tr><td>HP Drones</td><td>Hanniel Pontes, CEO <span class="check">&#10003;</span></td></tr>
+      <tr><td>Telepilote.store</td><td>No contact yet <span class="cross">gap</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- Relationship intelligence -->
+<div class="relationships">
+  <h3>Relationship Intelligence &mdash; Outreach Sequencing</h3>
+  <div class="rel-grid">
+    <div class="rel-pair">
+      <span class="rel-company">Instadrone</span>
+      <span class="rel-arrow">&harr;</span>
+      <span class="rel-company">COVED-PAPREC</span>
+      <span class="rel-desc">deployed Dock 3</span>
+    </div>
+    <div class="rel-pair">
+      <span class="rel-company">Altametris</span>
+      <span class="rel-arrow">&harr;</span>
+      <span class="rel-company">SNCF R&eacute;seau</span>
+      <span class="rel-desc">subsidiary</span>
+    </div>
+    <div class="rel-pair">
+      <span class="rel-company">Flying eye</span>
+      <span class="rel-arrow">&harr;</span>
+      <span class="rel-company">ENGIE</span>
+      <span class="rel-desc">BVLOS demo partner</span>
+    </div>
+    <div class="rel-pair">
+      <span class="rel-company">SkyVisor</span>
+      <span class="rel-arrow">&harr;</span>
+      <span class="rel-company">PHOTOM Services</span>
+      <span class="rel-desc">shared evidence</span>
+    </div>
+  </div>
+  <p style="font-size:11px; color:#94a3b8; margin-top:12px;">Strategy: Contact SI/DSP first (Tier 1). Approach connected buyers (Tier 2) after SI engagement &mdash; or in parallel with independent intro messaging.</p>
+</div>
+
+<!-- What's next -->
+<div class="next-steps">
+  <h3>What&rsquo;s Next</h3>
+  <ul>
+    <li>Email templates follow cold outreach best practices: no boilerplate, 2&ndash;3 sentences, curiosity-driven subject lines (no brand in subject), one pointed question as CTA, fully bespoke per company</li>
+    <li>BD team reviews email copy, fills [Sender Name], adjusts hooks for tone/language</li>
+    <li>Decision: English or French emails for FR market (French recommended for higher reply rates)</li>
+    <li>Send Tier 1 (17 SI + DSP) first, monitor responses for 1 week</li>
+    <li>Send Tier 2 (7 Buyers + Dealers) in week 2, refined based on Tier 1 learnings</li>
+    <li>Fill 2 remaining gaps: SNCF R&eacute;seau (LinkedIn outreach), Telepilote.store (manual lookup)</li>
+    <li>Integrate contact + email into Multi-Source Intelligence V2 dashboard</li>
+    <li>Scale to next countries: DE, UK, AU, US via Google Search Campaign</li>
+  </ul>
+</div>
+
+<div class="footer">
+  Dock Radar &middot; FlytBase BD Intelligence &middot; 31 March 2026<br>
+  Pipeline: 6 sources &rarr; 33 verified &rarr; 24 qualified &rarr; 23 emails &mdash; built in one session
+</div>
+
+</div>
+</body>
+</html>

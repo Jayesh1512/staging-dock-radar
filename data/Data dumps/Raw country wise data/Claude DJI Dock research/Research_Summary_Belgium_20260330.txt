@@ -1,0 +1,207 @@
+DJI DOCK RESEARCH - BELGIUM
+Research Completed: 2026-03-30
+Prepared for: FlytBase Business Development Team
+
+================================================================================
+EXECUTIVE SUMMARY
+================================================================================
+
+Total Verified Entities: 9
+- High Confidence (2+ sources): 6 entities
+- Medium Confidence (1 source): 1 entity
+- Low Confidence (website only): 2 entities
+
+Key Finding: Belgium's first mobile DJI Dock 3 deployment (Pick-Hub) launched by DroneLand
+in May 2025 at DronePort Sint-Truiden, featuring 2 DJI Dock 3 units mounted on a vehicle.
+
+================================================================================
+SEARCH METHODOLOGY
+================================================================================
+
+Searches Executed:
+1. "DJI Dock" Belgium
+2. "DJI Dock" België OR Belgique
+3. "DJI Dock 2" Belgium
+4. "DJI Dock 3" Belgium
+5. "DJI Dock" site:.be
+6. "DJI Dock" Belgium site:enterprise-insights.dji.com
+7. "DJI Dock" Belgium site:linkedin.com
+8. Dock 2 OR Dock 3 DJI Belgium drone
+9. "DJI Dock" Belgium dealer OR reseller OR distributor
+10. "DJI Dock" België OR Belgique verkoper distributeur revendeur
+11. "DJI Dock" Brussels OR Bruxelles OR Antwerp OR Antwerpen
+12. "DJI Dock" Belgium security inspection energy
+13. Additional targeted searches for entity verification
+
+Total Web Searches: 18+
+
+================================================================================
+VERIFIED ENTITIES - HIGH CONFIDENCE (2+ sources)
+================================================================================
+
+1. DRONELAND
+   Role: System Integrator / End-User
+   Location: Almere, Netherlands (with Belgium operations)
+   Evidence:
+   - Press release: DronePort announcement (May 2025)
+   - Company website mentions DJI Dock
+   - LinkedIn presence
+   DJI Dock Connection: Operates Belgium's first fully mobile DJI Dock 3 hub
+   (Pick-Hub) with 2 units. Partnership with Van Mossel for distribution.
+   Contact: https://en.droneland.nl/
+
+2. DRONE PARTS CENTER
+   Role: Authorized Dealer
+   Location: Nivelles, Belgium (Rue Albert Einstein 20, 1400 Nivelles)
+   Evidence:
+   - Product listing for DJI Dock 2 and Dock 3
+   - LinkedIn company page
+   - Multiple content pages on website
+   DJI Dock Connection: Specializes in DJI Enterprise products. Offers DJI
+   Dock 2 and Dock 3. Largest stock of DJI spare parts in Benelux region.
+   Contact: sales@drone-parts-center.com | +32 67 88 37 37
+
+3. DROPRISE
+   Role: Authorized Dealer
+   Location: Oostende, Belgium (Wetenschapspark 1)
+   Evidence:
+   - Dedicated DJI Dock 3 product page
+   - Enterprise docking station category on website
+   - LinkedIn company page
+   DJI Dock Connection: Authorized DJI Enterprise reseller and official DJI
+   Dock partner for Benelux. Offers hardware, software, integrations, training.
+   Contact: info@droprise.be | +32 59 24 20 50
+
+4. DRONEPORT
+   Role: Academia/Research + Infrastructure
+   Location: Sint-Truiden (Brustem), Belgium
+   Evidence:
+   - Press release about DroneLand's DJI Dock 3 deployment
+   - Industrial park website
+   - LinkedIn presence
+   DJI Dock Connection: Hosts DroneLand's DJI Dock 3 Pick-Hub. Industrial
+   park specializing in drone innovation and testing.
+   Contact: https://droneport.eu/
+
+5. DRONE DEPOT (DroneDepot)
+   Role: Reseller
+   Location: Affligem, Belgium (Halle-Vilvoorde region)
+   Evidence:
+   - DJI Dock product listing on website
+   - Multiple product category pages
+   - Market listings confirming location
+   DJI Dock Connection: Belgian DJI specialist offering DJI Dock for
+   autonomous operations.
+   Contact: https://www.dronedepot.be/
+
+6. KONINGDRONE
+   Role: Reseller
+   Location: Benelux region
+   Evidence:
+   - DJI Dock 2 product page on website
+   - Matrice 4TD compatibility pages
+   - Professional drone equipment selection
+   DJI Dock Connection: Online specialist selling DJI Dock 2 with enterprise
+   solutions across Belgium and Europe.
+   Contact: https://koningdrone.be/
+
+================================================================================
+VERIFIED ENTITIES - MEDIUM CONFIDENCE (1 source)
+================================================================================
+
+7. VAN MOSSEL
+   Role: Distributor (Partnership)
+   Location: Multiple locations across Benelux
+   Evidence:
+   - Partnership announcement with DroneLand for DJI Dock 3 Pick-Hub
+   DJI Dock Connection: Partnered with DroneLand to distribute DJI Dock 3
+   solutions in Belgium through their large automotive distribution network.
+   Contact: https://www.vanmossel.com/en
+
+================================================================================
+VERIFIED ENTITIES - LOW CONFIDENCE (Website only, no specific Dock evidence)
+================================================================================
+
+8. NAVITRONICS
+   Role: Reseller
+   Location: Rotselaar, Belgium (Ambachtstraat 7 A, 3110 Rotselaar)
+   Evidence: Website presence as DJI specialist
+   Status: Generic DJI reseller. No specific DJI Dock evidence found.
+   Contact: info@navitronics.be | +32478487685
+
+9. GIGA PC SERVICES
+   Role: Reseller
+   Location: Beauraing, Belgium (Allée du Nondeux 18, 5570 Beauraing)
+   Evidence: Website presence, DJI drone sales since 2013
+   Status: Recreational DJI drone specialist. No specific DJI Dock evidence found.
+   Contact: +32 822 54 10
+
+================================================================================
+KEY FINDINGS & INSIGHTS
+================================================================================
+
+Market Status:
+- Belgium has emerging DJI Dock market with professional deployment infrastructure
+- Pick-Hub (DroneLand's mobile DJI Dock 3) represents first commercial fully
+  mobile deployment in Belgium (May 2025)
+- Both Dock 2 and Dock 3 models available through dealers
+
+Primary Use Cases Identified:
+- Infrastructure inspection
+- Emergency response & rescue operations
+- Temporary security at events/construction sites
+- Agricultural monitoring
+- Drone surveillance
+
+Distribution Channels:
+- Direct sales through authorized dealers (Droprise, Drone Parts Center)
+- Online retailers (Drone Depot, Koningdrone)
+- Strategic partnerships (DroneLand & Van Mossel)
+- Regional system integrators
+
+Notable Market Gaps:
+- No government end-user deployments identified in Belgium
+- Limited information on software platform providers specific to Belgium
+- DFR (Dedicated Friendly Registry) service providers not clearly identified
+
+Regional Context:
+- Droprise operates across entire Benelux (Belgium, Netherlands, Luxembourg)
+- DronePort serves as innovation hub for drone technology in Belgium
+- German/Czech case studies exist (EU regulations compliance)
+- Energy sector interest documented (Endesa case study in Spain)
+
+================================================================================
+RESEARCH LIMITATIONS
+================================================================================
+
+1. Belgian .be domain search returned no results (5th search)
+2. No Belgian government municipal deployments found despite regulations support
+3. Jan De Nul Group (major Belgian contractor) shows employee interest but no
+   Dock deployment evidence
+4. Belgian prison autonomous drone deployment mentioned but not confirmed
+   as DJI Dock specific
+5. Citymesh/SENSE emergency system mentioned but limited details available
+
+================================================================================
+RECOMMENDATION FOR FLYTBASE
+================================================================================
+
+Priority Outreach Targets (High Confidence):
+1. DroneLand - Strategic partner for system integration & market expansion
+2. Droprise - Established authorized dealer, Benelux coverage
+3. Drone Parts Center - DJI specialist with enterprise focus, Nivelles location
+4. DronePort - Innovation hub, access to growing market
+
+Secondary Outreach (Medium-High Confidence):
+5. Drone Depot - Growing retail presence
+6. Koningdrone - Online specialist with Belgium/Europe reach
+7. Van Mossel - Large logistics/distribution network
+
+Government/Enterprise Outreach:
+- Identify Belgian municipalities for infrastructure inspection projects
+- Energy sector companies for power plant monitoring
+- Emergency services coordination (police, fire, rescue)
+
+================================================================================
+END OF RESEARCH SUMMARY
+================================================================================

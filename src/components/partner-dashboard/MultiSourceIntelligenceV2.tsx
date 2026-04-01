@@ -33,6 +33,7 @@ interface MultiSourceCompany {
   matches_priority: boolean;
   import_batch: string | null;
   source_refs: Record<string, unknown> | null;
+  is_fb_partner: boolean;
 }
 
 interface ApiResponse {
@@ -117,6 +118,7 @@ export default function MultiSourceIntelligenceV2() {
   const [includeUnverified, setIncludeUnverified] = useState(false);
   const [priorityOnly, setPriorityOnly] = useState(false);
   const [activeSources, setActiveSources] = useState<Set<string>>(new Set());
+  const [fbPartnerFilter, setFbPartnerFilter] = useState<'all' | 'existing' | 'new'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [page, setPage] = useState(0);
@@ -219,6 +221,11 @@ export default function MultiSourceIntelligenceV2() {
     if (activeSources.size > 0) {
       list = list.filter((c) => c.source_types.some((st) => activeSources.has(st)));
     }
+    if (fbPartnerFilter === 'existing') {
+      list = list.filter((c) => c.is_fb_partner);
+    } else if (fbPartnerFilter === 'new') {
+      list = list.filter((c) => !c.is_fb_partner);
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(
@@ -230,7 +237,7 @@ export default function MultiSourceIntelligenceV2() {
       );
     }
     return list;
-  }, [mergedData, priorityOnly, activeSources, searchQuery]);
+  }, [mergedData, priorityOnly, activeSources, fbPartnerFilter, searchQuery]);
 
   const pagedFiltered = useMemo(() => {
     const start = page * PAGE_SIZE;
@@ -367,6 +374,17 @@ export default function MultiSourceIntelligenceV2() {
           )}
         </div>
 
+        {/* FB Partner filter */}
+        <select
+          value={fbPartnerFilter}
+          onChange={(e) => { setFbPartnerFilter(e.target.value as 'all' | 'existing' | 'new'); setPage(0); }}
+          style={sFilterSelect}
+        >
+          <option value="all">All partners</option>
+          <option value="existing">FB Partner</option>
+          <option value="new">New (not FB)</option>
+        </select>
+
         {/* Search */}
         <div style={{ position: 'relative', marginLeft: 'auto' }}>
           <input
@@ -423,6 +441,7 @@ export default function MultiSourceIntelligenceV2() {
                 <th style={{ ...sTH, width: 24 }}></th>
                 <th style={sTH}>Company</th>
                 <th style={{ ...sTH, width: 32 }}>CC</th>
+                <th style={{ ...sTH, width: 30 }}>FB</th>
                 <th style={{ ...sTH, width: 80 }}>Sources</th>
                 <th style={{ ...sTH, width: 70 }}>Dock</th>
                 <th style={sTH}>Website</th>
@@ -433,7 +452,7 @@ export default function MultiSourceIntelligenceV2() {
             </thead>
             <tbody>
               {pagedFiltered.length === 0 && (
-                <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>No companies match the current filters</td></tr>
+                <tr><td colSpan={10} style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>No companies match the current filters</td></tr>
               )}
               {pagedFiltered.map((c) => {
                 const isExpanded = expandedRows[c.normalized_name + c.country_code];
@@ -467,6 +486,9 @@ export default function MultiSourceIntelligenceV2() {
                         {c.dock_verified === false && <span style={{ display: 'inline-block', marginLeft: 4, padding: '1px 5px', borderRadius: 3, fontSize: 8, fontWeight: 600, background: '#FEF2F2', color: '#991B1B' }}>not verified</span>}
                       </td>
                       <td style={{ ...sTD, fontSize: 10, color: '#6B7280', textAlign: 'center' }}>{c.country_code}</td>
+                      <td style={{ ...sTD, textAlign: 'center' }}>
+                        {c.is_fb_partner && <span style={{ display: 'inline-block', padding: '1px 5px', borderRadius: 3, fontSize: 8, fontWeight: 700, background: '#DBEAFE', color: '#1E40AF' }}>FB</span>}
+                      </td>
                       <td style={sTD}>
                         <span style={{ display: 'inline-block', padding: '1px 4px', borderRadius: 3, fontSize: 9, fontWeight: 700, background: '#EFF6FF', color: '#1D4ED8', minWidth: 14, textAlign: 'center', marginRight: 2 }}>{c.source_count}</span>
                         {c.source_types.map((st) => {
@@ -499,7 +521,7 @@ export default function MultiSourceIntelligenceV2() {
                     {/* ── Expanded drawer ── */}
                     {isExpanded && (
                       <tr>
-                        <td colSpan={9} style={{ padding: 0, borderBottom: '1px solid #E5E7EB' }}>
+                        <td colSpan={10} style={{ padding: 0, borderBottom: '1px solid #E5E7EB' }}>
                           <div style={{ borderTop: '2px solid #2C7BF2', borderLeft: '3px solid #2C7BF2', background: '#FAFCFF', boxShadow: '0 4px 20px rgba(44,123,242,0.09)' }}>
                             {/* Header — clickable to close */}
                             <div

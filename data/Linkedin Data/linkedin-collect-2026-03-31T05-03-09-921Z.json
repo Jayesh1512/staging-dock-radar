@@ -1,0 +1,107 @@
+{
+  "run": {
+    "id": "run_li_202603310502125",
+    "keywords": [
+      "DJI Dock"
+    ],
+    "sources": [
+      "linkedin"
+    ],
+    "regions": [],
+    "filter_days": 1,
+    "min_score": 40,
+    "max_articles": 50,
+    "status": "completed",
+    "articles_fetched": 7,
+    "articles_stored": 6,
+    "dedup_removed": 0,
+    "created_at": "2026-03-31T05:03:09.921Z",
+    "completed_at": "2026-03-31T05:03:09.921Z"
+  },
+  "stats": {
+    "totalFetched": 7,
+    "afterDateFilter": 6,
+    "afterDedup": 6,
+    "stored": 6
+  },
+  "articles": [
+    {
+      "id": "li_run_li_202603310502125_1774933389603_0",
+      "run_id": "run_li_202603310502125",
+      "source": "linkedin",
+      "title": "From 24/7 site monitoring to automated inspections the DJI Dock 3, deployment is seamless and data collection is constant. Built to withstan",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7444332429772992512/",
+      "publisher_url": "https://www.linkedin.com/company/drone-solutions-zw/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7444332429772992512",
+      "snippet": "From 24/7 site monitoring to automated inspections the DJI Dock 3, deployment is seamless and data collection is constant. Built to withstand extreme weather and harsh terrains, it ensures your fleet is always charged, protected, and ready for take-off at a moment's notice. ✅ Fully Autonomous Workflows ✅ Rapid Charging & Deployment ✅ Remote Management via DJI FlightHub 2 Follow Us For More https://lnkd.in/dhQq-xUV hashtag #DroneTechnology hashtag #AerialIntelligence hashtag #DJIEnterprise hashtag #RemoteSensing hashtag #Efficiency hashtag #zimbabwe #dronesolutionszimbabwe#fyp",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-30T11:03:09.603Z",
+      "created_at": "2026-03-31T05:03:09.603Z"
+    },
+    {
+      "id": "li_run_li_202603310502125_1774933389603_1",
+      "run_id": "run_li_202603310502125",
+      "source": "linkedin",
+      "title": "In fire prevention, early detection and fast verification make all the difference. With DJI Dock 3, teams can integrate thermal detection an",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7444322589973377024/",
+      "publisher_url": "https://www.linkedin.com/company/aerosmartuav/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7444322589973377024",
+      "snippet": "In fire prevention, early detection and fast verification make all the difference. With DJI Dock 3, teams can integrate thermal detection and visual confirmation into one streamlined workflow. Key benefits: 🧯 Rapid detection of heat anomalies 🧯 Immediate visual zoom for source verification 🧯 Confirm conditions before deploying ground crews 🧯 Reduced response times across large areas 🧯 Safer, more controlled operations Automated drone deployment combined with thermal intelligence allows public safety teams to respond faster while reducing operational risk. Aerosmart Sales Details Email : sales@aerosmart.ae Website: https://aerosmart.ae hashtag #DJIEnterprise hashtag #FirePrevention hashtag #ThermalDrone hashtag #PublicSafety hashtag #DroneOperations hashtag #Aerosmart",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-30T10:03:09.604Z",
+      "created_at": "2026-03-31T05:03:09.603Z"
+    },
+    {
+      "id": "li_run_li_202603310502125_1774933389603_2",
+      "run_id": "run_li_202603310502125",
+      "source": "linkedin",
+      "title": "The DJI Dock 2: YOUR 24/7 eye in the sky. We’ve automated site protection with patrols that never sleep. Secure YOUR assets with the best te",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7444541692000710656/",
+      "publisher_url": "https://www.linkedin.com/company/oil-well-security/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7444541692000710656",
+      "snippet": "The DJI Dock 2: YOUR 24/7 eye in the sky. We’ve automated site protection with patrols that never sleep. Secure YOUR assets with the best tech. Let's talk: https://lnkd.in/gDZpAzJ4 hashtag #DJIDock2 hashtag #DroneTech hashtag #Security hashtag #OilAndGas",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-31T01:03:09.604Z",
+      "created_at": "2026-03-31T05:03:09.603Z"
+    },
+    {
+      "id": "li_run_li_202603310502125_1774933389603_4",
+      "run_id": "run_li_202603310502125",
+      "source": "linkedin",
+      "title": "Learn more about how hashtag #DJI Dock 3 is powering smarter construction site management! 🚀",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7444247054895226880/",
+      "publisher_url": "https://www.linkedin.com/in/sta27",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7444247054895226880",
+      "snippet": "Learn more about how hashtag #DJI Dock 3 is powering smarter construction site management! 🚀",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-30T07:03:09.604Z",
+      "created_at": "2026-03-31T05:03:09.603Z"
+    },
+    {
+      "id": "li_run_li_202603310502125_1774933389603_5",
+      "run_id": "run_li_202603310502125",
+      "source": "linkedin",
+      "title": "If your drone needs a human on-site for every mission, you’re still operating Aircraft — not aerial infrastructure. One of the clearest 2026",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7444459214678269952/",
+      "publisher_url": "https://www.linkedin.com/in/qamar-ul-islam",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7444459214678269952",
+      "snippet": "If your drone needs a human on-site for every mission, you’re still operating Aircraft — not aerial infrastructure. One of the clearest 2026 directions in UAV autonomy is the shift toward drone-in-a-box systems: docked drones that can launch, inspect, return, recharge, and relaunch as part of a remote operational workflow. That shift matters because the value is no longer just in the flight. It is in the continuous service loop. DJI’s official Dock 3 release explicitly positions the system for 24/7 remote operations, including vehicle-mounted deployments and operation across harsh conditions, which shows how seriously the industry is moving toward persistent remote UAV workflows. At the same time, the autonomy challenge is broader than hardware. A open-access review on autonomous UAV control highlights the ongoing requirements around reliability, safety, communication, and robust decision-making in real applications. And regulation remains central: the FAA’s 2025 enforcement notice rei",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-30T20:03:09.604Z",
+      "created_at": "2026-03-31T05:03:09.603Z"
+    },
+    {
+      "id": "li_run_li_202603310502125_1774933389603_6",
+      "run_id": "run_li_202603310502125",
+      "source": "linkedin",
+      "title": "¿Es posible mantener una vigilancia total con personal reducido? La seguridad de grandes extensiones territoriales ya no tiene por qué ser u",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7444413208842440705/",
+      "publisher_url": "https://www.linkedin.com/company/dji-consulting-group-enterprise-m%C3%A9xico/posts",
+      "normalized_url": "www.linkedin.com/feed/update/urn:li:activity:7444413208842440705",
+      "snippet": "¿Es posible mantener una vigilancia total con personal reducido? La seguridad de grandes extensiones territoriales ya no tiene por qué ser un desafío logístico o un riesgo para tu personal. La respuesta está en la automatización aérea. Con el sistema DJI Dock 3, transformamos la vigilancia perimetral en una operación 100% autónoma y permanente (24/7). Al instalarse en puntos estratégicos o unidades móviles, esta plataforma permite: ✅ Optimización de recursos: Cobertura total de áreas extensas sin depender de patrullajes físicos constantes. ✅ Mitigación de riesgos: Despliegue inmediato en zonas críticas sin exponer la integridad del personal. ✅ Continuidad Operativa: Programación de misiones de despegue, aterrizaje y carga de batería de forma automática. En NovaFlight (antes DJI Consulting Group), somos aliados en la integración de soluciones aéreas. Brindamos asesoría técnica desde la selección del equipo hasta su implementación para transformar esta tecnología en una ventaja competiti",
+      "publisher": "LinkedIn",
+      "published_at": "2026-03-30T16:03:09.604Z",
+      "created_at": "2026-03-31T05:03:09.603Z"
+    }
+  ]
+}

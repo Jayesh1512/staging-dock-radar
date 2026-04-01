@@ -1,0 +1,42 @@
+{
+  "run": {
+    "id": "run_li_202604010808341",
+    "keywords": [
+      "DJI Dock"
+    ],
+    "sources": [
+      "linkedin"
+    ],
+    "regions": [],
+    "filter_days": 1,
+    "min_score": 40,
+    "max_articles": 50,
+    "status": "completed",
+    "articles_fetched": 1,
+    "articles_stored": 1,
+    "dedup_removed": 0,
+    "created_at": "2026-04-01T08:10:53.984Z",
+    "completed_at": "2026-04-01T08:10:53.984Z"
+  },
+  "stats": {
+    "totalFetched": 1,
+    "afterDateFilter": 1,
+    "afterDedup": 1,
+    "stored": 1
+  },
+  "articles": [
+    {
+      "id": "li_run_li_202604010808341_1775031053580_0",
+      "run_id": "run_li_202604010808341",
+      "source": "linkedin",
+      "title": "Austrian Ski Resort Uses DJI Dock 3 to Optimize Snow There's a version of ski resort management where a guy in a snowsuit trudges across a f",
+      "url": "https://dronexl.co/2026/03/31/austrian-ski-resort-dji-dock-3-snow/?fsp_sid=33069",
+      "publisher_url": "https://www.linkedin.com/company/dronexl/posts/",
+      "normalized_url": "dronexl.co/2026/03/31/austrian-ski-resort-dji-dock-3-snow",
+      "snippet": "Austrian Ski Resort Uses DJI Dock 3 to Optimize Snow There's a version of ski resort management where a guy in a snowsuit trudges across a frozen slope at 2 a.m. with a flashlight to check the snowmaking equipment. Austrian resort Planai-Hochwurzen-Bahnen decided that version was inefficient, and possibly a little cruel. Photo credit: DJI Enterprise The resort partnered with technology firm KIONIQ to deploy DJI Matrice 4TD drones on DJI Dock 3 through its SPECT service, replacing those nocturnal inspections with automated aerial monitoring, as Thomasnet reports. The drones fly pre-programmed routes, capture thermal and optical data, and sync everything to Geonicpack software in real time, giving operators a live overview of slope conditions without leaving the office. The Problem Snow Managers Actually Face Snowmaking is expensive. Water, energy, and labor costs stack up fast, and wind is the enemy. When it's blowing across the mountain, much of the produced snow ends up somewhere it w",
+      "publisher": "DroneXL.co",
+      "published_at": "2026-03-31T12:10:53.581Z",
+      "created_at": "2026-04-01T08:10:53.580Z"
+    }
+  ]
+}
